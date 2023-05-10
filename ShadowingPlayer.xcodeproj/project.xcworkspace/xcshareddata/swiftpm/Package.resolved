@@ -1,0 +1,41 @@
+{
+  "pins" : [
+    {
+      "identity" : "dsfregex",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dagronf/DSFRegex",
+      "state" : {
+        "revision" : "29f9a2924e318ab3a3c39692bcc48757cf2756e4",
+        "version" : "3.1.0"
+      }
+    },
+    {
+      "identity" : "swiftsubtitles",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dagronf/SwiftSubtitles.git",
+      "state" : {
+        "revision" : "c0986eb26fbfc4ac40a805d3e68f619a9fc94950",
+        "version" : "0.5.0"
+      }
+    },
+    {
+      "identity" : "swiftui-gesture-velocity",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swiftui-gesture-velocity",
+      "state" : {
+        "revision" : "9c83f8995f9e5efc29db2fca4b9ff058283f1603",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "swiftui-support",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swiftui-support/",
+      "state" : {
+        "revision" : "8ef53190c33bd345e7a95ef504dafe0f85ad9c4d",
+        "version" : "0.4.1"
+      }
+    }
+  ],
+  "version" : 2
+}
