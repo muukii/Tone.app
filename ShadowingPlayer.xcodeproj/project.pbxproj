@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4BB8F0842A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BB8F0822A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt */; };
+		4BB8F0852A0BF58500606452 /* overwhelmed - Peter Mckinnon.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4BB8F0832A0BF58500606452 /* overwhelmed - Peter Mckinnon.mp3 */; };
+		4BB8F0882A0BF89E00606452 /* SwiftUIStack in Frameworks */ = {isa = PBXBuildFile; productRef = 4BB8F0872A0BF89E00606452 /* SwiftUIStack */; };
+		4BB8F08B2A0BF9B300606452 /* WrapLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 4BB8F08A2A0BF9B300606452 /* WrapLayout */; };
+		4BB8F08D2A0BFB9E00606452 /* ListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB8F08C2A0BFB9E00606452 /* ListView.swift */; };
 		4BFF37A32A0BBFE5008ACA2A /* ShadowingPlayerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BFF37A22A0BBFE5008ACA2A /* ShadowingPlayerApp.swift */; };
 		4BFF37A52A0BBFE5008ACA2A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BFF37A42A0BBFE5008ACA2A /* ContentView.swift */; };
 		4BFF37A72A0BBFE6008ACA2A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BFF37A62A0BBFE6008ACA2A /* Assets.xcassets */; };
@@ -19,6 +24,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4BB8F0822A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "overwhelmed - Peter Mckinnon.srt"; sourceTree = "<group>"; };
+		4BB8F0832A0BF58500606452 /* overwhelmed - Peter Mckinnon.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "overwhelmed - Peter Mckinnon.mp3"; sourceTree = "<group>"; };
+		4BB8F08C2A0BFB9E00606452 /* ListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListView.swift; sourceTree = "<group>"; };
 		4BFF379F2A0BBFE5008ACA2A /* ShadowingPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ShadowingPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4BFF37A22A0BBFE5008ACA2A /* ShadowingPlayerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowingPlayerApp.swift; sourceTree = "<group>"; };
 		4BFF37A42A0BBFE5008ACA2A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -36,12 +44,23 @@
 			files = (
 				4BFF37BB2A0BD687008ACA2A /* SwiftUISupport in Frameworks */,
 				4BFF37B22A0BC02C008ACA2A /* SwiftSubtitles in Frameworks */,
+				4BB8F08B2A0BF9B300606452 /* WrapLayout in Frameworks */,
+				4BB8F0882A0BF89E00606452 /* SwiftUIStack in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4BB8F0812A0BF57D00606452 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4BB8F0832A0BF58500606452 /* overwhelmed - Peter Mckinnon.mp3 */,
+				4BB8F0822A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		4BFF37962A0BBFE5008ACA2A = {
 			isa = PBXGroup;
 			children = (
@@ -61,10 +80,12 @@
 		4BFF37A12A0BBFE5008ACA2A /* ShadowingPlayer */ = {
 			isa = PBXGroup;
 			children = (
+				4BB8F0812A0BF57D00606452 /* Resources */,
 				4BFF37B42A0BC044008ACA2A /* example.mp3 */,
 				4BFF37B32A0BC044008ACA2A /* example.srt */,
 				4BFF37A22A0BBFE5008ACA2A /* ShadowingPlayerApp.swift */,
 				4BFF37A42A0BBFE5008ACA2A /* ContentView.swift */,
+				4BB8F08C2A0BFB9E00606452 /* ListView.swift */,
 				4BFF37B72A0BC068008ACA2A /* PlayerView.swift */,
 				4BFF37A62A0BBFE6008ACA2A /* Assets.xcassets */,
 				4BFF37A82A0BBFE6008ACA2A /* Preview Content */,
@@ -99,6 +120,8 @@
 			packageProductDependencies = (
 				4BFF37B12A0BC02C008ACA2A /* SwiftSubtitles */,
 				4BFF37BA2A0BD687008ACA2A /* SwiftUISupport */,
+				4BB8F0872A0BF89E00606452 /* SwiftUIStack */,
+				4BB8F08A2A0BF9B300606452 /* WrapLayout */,
 			);
 			productName = ShadowingPlayer;
 			productReference = 4BFF379F2A0BBFE5008ACA2A /* ShadowingPlayer.app */;
@@ -131,6 +154,8 @@
 			packageReferences = (
 				4BFF37B02A0BC02C008ACA2A /* XCRemoteSwiftPackageReference "SwiftSubtitles" */,
 				4BFF37B92A0BD687008ACA2A /* XCRemoteSwiftPackageReference "swiftui-support" */,
+				4BB8F0862A0BF89E00606452 /* XCRemoteSwiftPackageReference "swiftui-stack" */,
+				4BB8F0892A0BF9B300606452 /* XCRemoteSwiftPackageReference "swiftui-WrapLayout" */,
 			);
 			productRefGroup = 4BFF37A02A0BBFE5008ACA2A /* Products */;
 			projectDirPath = "";
@@ -146,9 +171,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4BB8F0842A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt in Resources */,
 				4BFF37B52A0BC044008ACA2A /* example.srt in Resources */,
 				4BFF37B62A0BC044008ACA2A /* example.mp3 in Resources */,
 				4BFF37AA2A0BBFE6008ACA2A /* Preview Assets.xcassets in Resources */,
+				4BB8F0852A0BF58500606452 /* overwhelmed - Peter Mckinnon.mp3 in Resources */,
 				4BFF37A72A0BBFE6008ACA2A /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -161,6 +188,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4BFF37B82A0BC068008ACA2A /* PlayerView.swift in Sources */,
+				4BB8F08D2A0BFB9E00606452 /* ListView.swift in Sources */,
 				4BFF37A52A0BBFE5008ACA2A /* ContentView.swift in Sources */,
 				4BFF37A32A0BBFE5008ACA2A /* ShadowingPlayerApp.swift in Sources */,
 			);
@@ -293,6 +321,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ShadowingPlayer/Preview Content\"";
+				DEVELOPMENT_TEAM = JX92XL88RZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -321,6 +350,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ShadowingPlayer/Preview Content\"";
+				DEVELOPMENT_TEAM = JX92XL88RZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -365,6 +395,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		4BB8F0862A0BF89E00606452 /* XCRemoteSwiftPackageReference "swiftui-stack" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/FluidGroup/swiftui-stack";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		4BB8F0892A0BF9B300606452 /* XCRemoteSwiftPackageReference "swiftui-WrapLayout" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/muukii/swiftui-WrapLayout";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.0;
+			};
+		};
 		4BFF37B02A0BC02C008ACA2A /* XCRemoteSwiftPackageReference "SwiftSubtitles" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/dagronf/SwiftSubtitles.git";
@@ -384,6 +430,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4BB8F0872A0BF89E00606452 /* SwiftUIStack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4BB8F0862A0BF89E00606452 /* XCRemoteSwiftPackageReference "swiftui-stack" */;
+			productName = SwiftUIStack;
+		};
+		4BB8F08A2A0BF9B300606452 /* WrapLayout */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4BB8F0892A0BF9B300606452 /* XCRemoteSwiftPackageReference "swiftui-WrapLayout" */;
+			productName = WrapLayout;
+		};
 		4BFF37B12A0BC02C008ACA2A /* SwiftSubtitles */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4BFF37B02A0BC02C008ACA2A /* XCRemoteSwiftPackageReference "SwiftSubtitles" */;

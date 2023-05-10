@@ -2,10 +2,23 @@ import AVFoundation
 import SwiftSubtitles
 import SwiftUI
 import SwiftUISupport
+import WrapLayout
 
 struct PlayerView: View {
 
-  @StateObject private var controller = try! PlayerController(item: .example)
+  struct Term: Identifiable {
+    var id: String { value }
+    var value: String
+  }
+
+  @StateObject private var controller: PlayerController
+
+  @State private var term: Term?
+  @State private var focusing: DisplayCue?
+
+  init(item: Item) {
+    self._controller = .init(wrappedValue: try! PlayerController(item: item))
+  }
 
   var body: some View {
 
@@ -15,54 +28,167 @@ struct PlayerView: View {
         ScrollViewReader { proxy in
           LazyVStack(alignment: .leading) {
             ForEach(controller.cues) { cue in
-              Text(cue.backed.text)
+              Text(cue.backed.text).font(.system(size: 30, weight: .bold, design: .default))
                 .modifier(
-                  condition: cue != controller.currentCue,
-                  identity: StyleModifier.identity,
-                  active: StyleModifier(opacity: 0.5, scale: .init(width: 0.6, height: 0.6))
+                  condition: cue != focusing,
+                  identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
+                  active: StyleModifier(opacity: 0.2)
                 )
-                .font(.system(size: 34, weight: .bold, design: .default))
-
                 .padding(6)
-
-                .padding(.vertical, cue != controller.currentCue ? -20 : 0)
                 ._onButtonGesture(
                   pressing: { isPressing in },
                   perform: {
                     controller.move(to: cue)
                   }
                 )
-//                .background(Color.red)
+                .id(cue.id)
             }
           }
-          .animation(
-            .interactiveSpring(response: 0.8, dampingFraction: 1, blendDuration: 0),
-            value: controller.currentCue
-          )
+          .padding(.horizontal, 20)
           .onReceive(controller.$currentCue) { cue in
 
             guard let cue else { return }
 
+            print(cue.backed.text)
+
             withAnimation(.interactiveSpring(response: 0.8, dampingFraction: 1, blendDuration: 0)) {
               proxy.scrollTo(cue.id, anchor: .center)
+              focusing = cue
             }
 
           }
         }
       }
 
+      Spacer(minLength: 20).fixedSize()
+
       HStack {
-        Button("Play") {
-          controller.play()
+
+        Button {
+          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          if controller.isPlaying {
+            controller.pause()
+          } else {
+            controller.play()
+          }
+        } label: {
+          if controller.isPlaying {
+            Image(systemName: "pause.fill")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(square: 40)
+              .foregroundColor(Color.primary)
+          } else {
+            Image(systemName: "play.fill")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(square: 40)
+              .foregroundColor(Color.primary)
+          }
+
         }
-        Text("isPlaying, \(controller.isPlaying.description)")
-        Button("Pause") {
-          controller.pause()
+
+        Spacer(minLength: 45).fixedSize()
+
+        Button {
+          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+          if controller.isRepeating {
+            controller.setRepeat(in: nil)
+          } else {
+            if let currentCue = controller.currentCue {
+              controller.setRepeat(in: currentCue)
+            }
+          }
+        } label: {
+          VStack {
+            Image(systemName: "repeat")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 40)
+              .foregroundColor(Color.primary)
+
+            Circle()
+              .opacity(controller.isRepeating ? 1 : 0)
+              .frame(square: 5)
+          }
         }
+
       }
+
+      Spacer(minLength: 40).fixedSize()
+
+      HStack {
+        Button {
+          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          controller.setRate(0.5)
+        } label: {
+          HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Image(systemName: "multiply")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 10)
+            Text("0.5")
+              .font(.body)
+          }
+        }
+
+        Button {
+          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          controller.setRate(0.75)
+        } label: {
+          HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Image(systemName: "multiply")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 10)
+            Text("0.75")
+              .font(.body)
+          }
+        }
+
+        Button {
+          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          controller.setRate(1)
+        } label: {
+          HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Image(systemName: "multiply")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 10)
+            Text("1")
+              .font(.body)
+          }
+        }
+
+      }
+      .buttonStyle(.borderedProminent)
     }
+    .sheet(
+      item: $term,
+      onDismiss: {
+        term = nil
+      },
+      content: { term in
+        DefinitionView(term: term.value)
+      }
+    )
   }
 
+}
+
+struct DefinitionView: UIViewControllerRepresentable {
+  let term: String
+
+  func makeUIViewController(context: Context) -> UIReferenceLibraryViewController {
+    return UIReferenceLibraryViewController(term: term)
+  }
+
+  func updateUIViewController(
+    _ uiViewController: UIReferenceLibraryViewController,
+    context: Context
+  ) {
+  }
 }
 
 struct DisplayCue: Identifiable, Equatable {
@@ -79,29 +205,60 @@ struct DisplayCue: Identifiable, Equatable {
   }
 }
 
-struct Item: Equatable {
+struct Item: Equatable, Identifiable {
+
+  let id: String
 
   let audioFileURL: URL
   let subtitleFileURL: URL
 
-  init(audioFileURL: URL, subtitleFileURL: URL) {
+  init(
+    identifier: String,
+    audioFileURL: URL,
+    subtitleFileURL: URL
+  ) {
+    self.id = identifier
     self.audioFileURL = audioFileURL
     self.subtitleFileURL = subtitleFileURL
   }
 
   static var example: Self {
-    let audioFileURL = Bundle.main.path(forResource: "example", ofType: "mp3").map {
+    make(name: "example")
+  }
+
+  static var overwhelmed: Self {
+    make(name: "overwhelmed - Peter Mckinnon")
+  }
+
+  static func make(name: String) -> Self {
+
+    let audioFileURL = Bundle.main.path(forResource: name, ofType: "mp3").map {
       URL(fileURLWithPath: $0)
     }!
-    let subtitleFileURL = Bundle.main.path(forResource: "example", ofType: "srt").map {
+    let subtitleFileURL = Bundle.main.path(forResource: name, ofType: "srt").map {
       URL(fileURLWithPath: $0)
     }!
-    return .init(audioFileURL: audioFileURL, subtitleFileURL: subtitleFileURL)
+    return .init(
+      identifier: name,
+      audioFileURL: audioFileURL,
+      subtitleFileURL: subtitleFileURL
+    )
   }
 }
 
 @MainActor
 private final class PlayerController: ObservableObject {
+
+  struct PlayingRange: Equatable {
+    let startTime: TimeInterval
+    let endTime: TimeInterval
+  }
+
+  @Published private var playingRange: PlayingRange?
+
+  var isRepeating: Bool {
+    playingRange != nil
+  }
 
   @Published var isPlaying: Bool = false
   @Published var currentCue: DisplayCue?
@@ -118,7 +275,7 @@ private final class PlayerController: ObservableObject {
 
     self.player = try AVAudioPlayer(contentsOf: item.audioFileURL)
     player.enableRate = true
-    player.rate = 0.5
+    player.rate = 1.0
 
     self.subtitles = try Subtitles(fileURL: item.subtitleFileURL, encoding: .utf8)
     self.cues = subtitles.cues.map { .init(backed: $0) }
@@ -139,8 +296,12 @@ private final class PlayerController: ObservableObject {
       let c = self.findCurrentCue()
       if self.currentCue != c {
         self.currentCue = c
-
       }
+
+      if let playingRange, playingRange.endTime < player.currentTime {
+        player.currentTime = playingRange.startTime
+      }
+
     }
   }
 
@@ -154,6 +315,24 @@ private final class PlayerController: ObservableObject {
 
     self.currentCue = cue
 
+  }
+
+  func setRepeat(in cue: DisplayCue?) {
+
+    if let cue {
+
+      playingRange = .init(
+        startTime: cue.backed.startTime.timeInterval,
+        endTime: cue.backed.endTime.timeInterval
+      )
+      move(to: cue)
+    } else {
+      playingRange = nil
+    }
+  }
+
+  func setRate(_ rate: Float) {
+    player.rate = rate
   }
 
   func pause() {
@@ -170,8 +349,7 @@ private final class PlayerController: ObservableObject {
 
     let currentCue = cues.first { cue in
 
-      cue.backed.startTime.timeInterval >= currentTime
-        && cue.backed.endTime.timeInterval > currentTime
+      (cue.backed.startTime.timeInterval..<cue.backed.endTime.timeInterval).contains(currentTime)
 
     }
 
@@ -205,7 +383,8 @@ enum Preview_PlayerView: PreviewProvider {
   static var previews: some View {
 
     Group {
-      TargetComponent()
+      TargetComponent(item: .overwhelmed)
+      TargetComponent(item: .example)
     }
 
   }

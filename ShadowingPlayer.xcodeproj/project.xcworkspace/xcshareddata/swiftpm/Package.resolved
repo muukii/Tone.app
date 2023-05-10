@@ -10,6 +10,15 @@
       }
     },
     {
+      "identity" : "placement",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sampettersson/Placement",
+      "state" : {
+        "revision" : "4178880e4c67754b5b1b9720939f679382127604",
+        "version" : "1.5.0"
+      }
+    },
+    {
       "identity" : "swiftsubtitles",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dagronf/SwiftSubtitles.git",
@@ -28,12 +37,39 @@
       }
     },
     {
+      "identity" : "swiftui-snap-dragging-modifier",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swiftui-snap-dragging-modifier",
+      "state" : {
+        "revision" : "ad642b411086ef1eabf94e8bc9bc00024ec78b22",
+        "version" : "1.1.1"
+      }
+    },
+    {
+      "identity" : "swiftui-stack",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swiftui-stack",
+      "state" : {
+        "branch" : "main",
+        "revision" : "cdbea8c54d6a6d5328b6ea5a932a106f02c02133"
+      }
+    },
+    {
       "identity" : "swiftui-support",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/FluidGroup/swiftui-support/",
       "state" : {
         "revision" : "8ef53190c33bd345e7a95ef504dafe0f85ad9c4d",
         "version" : "0.4.1"
+      }
+    },
+    {
+      "identity" : "swiftui-wraplayout",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/muukii/swiftui-WrapLayout",
+      "state" : {
+        "revision" : "5e889b243cb48eb9a22eb13f3a3458e278718c81",
+        "version" : "0.2.1"
       }
     }
   ],
