@@ -6,12 +6,24 @@
 //
 
 import SwiftUI
+import AVFAudio
 
 @main
 struct ShadowingPlayerApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
+
+  init() {
+    do {
+      let instance = AVAudioSession.sharedInstance()
+      try instance.setCategory(.playback)
+
+    } catch {
+
     }
+  }
+
+  var body: some Scene {
+    WindowGroup {
+      ContentView()
+    }
+  }
 }

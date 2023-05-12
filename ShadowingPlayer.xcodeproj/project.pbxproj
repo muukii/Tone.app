@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4BB143BE2A0C0930001AFD35 /* Why Aliens Might Already Be On Their Way To Us.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4BB143BC2A0C0930001AFD35 /* Why Aliens Might Already Be On Their Way To Us.mp3 */; };
-		4BB143C12A0C0A3E001AFD35 /* Why Aliens Might Already Be On Their Way To Us.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BB143C02A0C0A3E001AFD35 /* Why Aliens Might Already Be On Their Way To Us.srt */; };
+		4B2720142A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B2720122A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt */; };
+		4B2720152A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B2720132A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 */; };
 		4BB143C42A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BB143C22A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt */; };
 		4BB143C52A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4BB143C32A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */; };
 		4BB8F0842A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BB8F0822A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt */; };
@@ -28,8 +28,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4BB143BC2A0C0930001AFD35 /* Why Aliens Might Already Be On Their Way To Us.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Why Aliens Might Already Be On Their Way To Us.mp3"; sourceTree = "<group>"; };
-		4BB143C02A0C0A3E001AFD35 /* Why Aliens Might Already Be On Their Way To Us.srt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Why Aliens Might Already Be On Their Way To Us.srt"; sourceTree = "<group>"; };
+		4B2720122A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Why Aliens Might Already Be On Their Way To Us.srt"; sourceTree = "<group>"; };
+		4B2720132A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Why Aliens Might Already Be On Their Way To Us.mp3"; sourceTree = "<group>"; };
 		4BB143C22A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt"; sourceTree = "<group>"; };
 		4BB143C32A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3"; sourceTree = "<group>"; };
 		4BB8F0822A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "overwhelmed - Peter Mckinnon.srt"; sourceTree = "<group>"; };
@@ -63,12 +63,12 @@
 		4BB8F0812A0BF57D00606452 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4B2720132A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 */,
+				4B2720122A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt */,
 				4BB143C32A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */,
 				4BB143C22A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt */,
 				4BFF37B42A0BC044008ACA2A /* example.mp3 */,
 				4BFF37B32A0BC044008ACA2A /* example.srt */,
-				4BB143BC2A0C0930001AFD35 /* Why Aliens Might Already Be On Their Way To Us.mp3 */,
-				4BB143C02A0C0A3E001AFD35 /* Why Aliens Might Already Be On Their Way To Us.srt */,
 				4BB8F0832A0BF58500606452 /* overwhelmed - Peter Mckinnon.mp3 */,
 				4BB8F0822A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt */,
 			);
@@ -183,16 +183,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4BB143BE2A0C0930001AFD35 /* Why Aliens Might Already Be On Their Way To Us.mp3 in Resources */,
 				4BB8F0842A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt in Resources */,
 				4BFF37B52A0BC044008ACA2A /* example.srt in Resources */,
+				4B2720142A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt in Resources */,
 				4BB143C42A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt in Resources */,
 				4BFF37B62A0BC044008ACA2A /* example.mp3 in Resources */,
 				4BFF37AA2A0BBFE6008ACA2A /* Preview Assets.xcassets in Resources */,
 				4BB143C52A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 in Resources */,
+				4B2720152A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 in Resources */,
 				4BB8F0852A0BF58500606452 /* overwhelmed - Peter Mckinnon.mp3 in Resources */,
 				4BFF37A72A0BBFE6008ACA2A /* Assets.xcassets in Resources */,
-				4BB143C12A0C0A3E001AFD35 /* Why Aliens Might Already Be On Their Way To Us.srt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

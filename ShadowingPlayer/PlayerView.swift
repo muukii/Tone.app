@@ -38,7 +38,12 @@ struct PlayerView: View {
                 ._onButtonGesture(
                   pressing: { isPressing in },
                   perform: {
-                    controller.move(to: cue)
+                    if controller.isRepeating {
+                      controller.setRepeat(in: cue)
+                    } else {
+                      controller.move(to: cue)
+                    }
+
                   }
                 )
                 .id(cue.id)
@@ -149,6 +154,20 @@ struct PlayerView: View {
 
         Button {
           UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          controller.setRate(0.85)
+        } label: {
+          HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Image(systemName: "multiply")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 10)
+            Text("0.85")
+              .font(.body)
+          }
+        }
+
+        Button {
+          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
           controller.setRate(1)
         } label: {
           HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -173,6 +192,12 @@ struct PlayerView: View {
         DefinitionView(term: term.value)
       }
     )
+    .onAppear {
+      UIApplication.shared.isIdleTimerDisabled = true
+    }
+    .onDisappear {
+      UIApplication.shared.isIdleTimerDisabled = false
+    }
   }
 
 }
@@ -384,7 +409,7 @@ enum Preview_PlayerView: PreviewProvider {
 
     Group {
       TargetComponent(item: .overwhelmed)
-      TargetComponent(item: .example)
+      TargetComponent(item: .make(name: "Why Aliens Might Already Be On Their Way To Us"))
     }
 
   }
