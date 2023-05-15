@@ -30,6 +30,7 @@
 /* Begin PBXFileReference section */
 		4B2720122A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Why Aliens Might Already Be On Their Way To Us.srt"; sourceTree = "<group>"; };
 		4B2720132A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Why Aliens Might Already Be On Their Way To Us.mp3"; sourceTree = "<group>"; };
+		4B2720162A0FFCD00080A0BD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4BB143C22A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt"; sourceTree = "<group>"; };
 		4BB143C32A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3"; sourceTree = "<group>"; };
 		4BB8F0822A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "overwhelmed - Peter Mckinnon.srt"; sourceTree = "<group>"; };
@@ -94,6 +95,7 @@
 		4BFF37A12A0BBFE5008ACA2A /* ShadowingPlayer */ = {
 			isa = PBXGroup;
 			children = (
+				4B2720162A0FFCD00080A0BD /* Info.plist */,
 				4BB8F0812A0BF57D00606452 /* Resources */,
 				4BFF37A22A0BBFE5008ACA2A /* ShadowingPlayerApp.swift */,
 				4BFF37A42A0BBFE5008ACA2A /* ContentView.swift */,
@@ -340,6 +342,7 @@
 				DEVELOPMENT_TEAM = JX92XL88RZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShadowingPlayer/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -369,6 +372,7 @@
 				DEVELOPMENT_TEAM = JX92XL88RZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShadowingPlayer/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -20,6 +20,39 @@ struct PlayerView: View {
     self._controller = .init(wrappedValue: try! PlayerController(item: item))
   }
 
+  private nonisolated static func chunk(
+    text: String,
+    identifier: some Hashable,
+    isFocusing: Bool,
+    onSelect: @escaping () -> Void
+  )
+    -> some View
+  {
+    HStack {
+      Text(text).font(.system(size: 30, weight: .bold, design: .default))
+        .modifier(
+          condition: isFocusing == false,
+          identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
+          active: StyleModifier(opacity: 0.2)
+        )
+        .padding(6)
+        .id(identifier)
+        .textSelection(.enabled)
+
+      Spacer()
+
+      RoundedRectangle(cornerRadius: 8, style: .continuous)
+        .fill(isFocusing ? Color.primary : Color.primary.opacity(0.3))
+        .frame(width: 40)
+        ._onButtonGesture(
+          pressing: { isPressing in },
+          perform: {
+            onSelect()
+          }
+        )
+    }
+  }
+
   var body: some View {
 
     VStack {
@@ -28,33 +61,24 @@ struct PlayerView: View {
         ScrollViewReader { proxy in
           LazyVStack(alignment: .leading) {
             ForEach(controller.cues) { cue in
-              Text(cue.backed.text).font(.system(size: 30, weight: .bold, design: .default))
-                .modifier(
-                  condition: cue != focusing,
-                  identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
-                  active: StyleModifier(opacity: 0.2)
-                )
-                .padding(6)
-                ._onButtonGesture(
-                  pressing: { isPressing in },
-                  perform: {
-                    if controller.isRepeating {
-                      controller.setRepeat(in: cue)
-                    } else {
-                      controller.move(to: cue)
-                    }
-
+              PlayerView.chunk(
+                text: cue.backed.text,
+                identifier: cue.id,
+                isFocusing: cue == focusing,
+                onSelect: {
+                  if controller.isRepeating {
+                    controller.setRepeat(in: cue)
+                  } else {
+                    controller.move(to: cue)
                   }
-                )
-                .id(cue.id)
+                }
+              )
             }
           }
           .padding(.horizontal, 20)
           .onReceive(controller.$currentCue) { cue in
 
             guard let cue else { return }
-
-            print(cue.backed.text)
 
             withAnimation(.interactiveSpring(response: 0.8, dampingFraction: 1, blendDuration: 0)) {
               proxy.scrollTo(cue.id, anchor: .center)
