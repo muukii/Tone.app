@@ -1,9 +1,9 @@
 import AVFoundation
+import AudioKit
 import SwiftSubtitles
 import SwiftUI
 import SwiftUISupport
 import WrapLayout
-import AudioKit
 
 struct PlayerView: View {
 
@@ -255,7 +255,6 @@ struct DisplayCue: Identifiable, Equatable {
   }
 }
 
-
 @MainActor
 private final class PlayerController: ObservableObject {
 
@@ -278,17 +277,26 @@ private final class PlayerController: ObservableObject {
   private let item: Item
   private var currentTimeObservation: NSKeyValueObservation?
   private var currentTimer: Timer?
-  private let player: AVAudioPlayer
+  //  private let player: AVAudioPlayer
+
+  let engine = AudioEngine()
+  let player: AudioPlayer
+  let timePitch: TimePitch
 
   init(item: Item) throws {
     self.item = item
 
-    self.player = try AVAudioPlayer(contentsOf: item.audioFileURL)
-    player.enableRate = true
-    player.rate = 1.0
+    player = .init(url: item.audioFileURL, buffered: false)!
+
+    timePitch = .init(player)
+    timePitch.rate = 1.0
+
+    engine.output = timePitch
 
     self.subtitles = try Subtitles(fileURL: item.subtitleFileURL, encoding: .utf8)
     self.cues = subtitles.cues.map { .init(backed: $0) }
+
+    try engine.start()
   }
 
   deinit {
@@ -297,9 +305,10 @@ private final class PlayerController: ObservableObject {
 
   func play() {
     isPlaying = true
+
     player.play()
 
-    currentTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) {
+    currentTimer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) {
       @MainActor(unsafe) [weak self] _ in
 
       guard let self else { return }
@@ -309,7 +318,8 @@ private final class PlayerController: ObservableObject {
       }
 
       if let playingRange, playingRange.endTime < player.currentTime {
-        player.currentTime = playingRange.startTime
+        let diff = player.currentTime - playingRange.startTime
+        player.seek(time: -diff)
       }
 
     }
@@ -317,7 +327,9 @@ private final class PlayerController: ObservableObject {
 
   func move(to cue: DisplayCue) {
 
-    player.currentTime = cue.backed.startTime.timeInterval
+    let diff = player.currentTime - cue.backed.startTime.timeInterval
+
+    player.seek(time: -diff)
 
     if isPlaying == false {
       play()
@@ -342,7 +354,7 @@ private final class PlayerController: ObservableObject {
   }
 
   func setRate(_ rate: Float) {
-    player.rate = rate
+    timePitch.rate = rate
   }
 
   func pause() {
@@ -364,23 +376,6 @@ private final class PlayerController: ObservableObject {
     }
 
     return currentCue
-  }
-}
-
-extension AVAudioFile {
-
-  var duration: Double {
-    Double(length) / fileFormat.sampleRate
-  }
-
-}
-extension AVAudioPlayerNode {
-
-  var currentTime: TimeInterval {
-    if let nodeTime = lastRenderTime, let playerTime = playerTime(forNodeTime: nodeTime) {
-      return Double(playerTime.sampleTime) / playerTime.sampleRate
-    }
-    return 0
   }
 }
 
