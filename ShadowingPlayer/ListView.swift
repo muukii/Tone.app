@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ListView: View {
 
-  let items: [Item] = [.example, .overwhelmed, .make(name: "Why Aliens Might Already Be On Their Way To Us"), .make(name: "140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back")]
+  let items: [Item] = Item.globInBundle()
 
   var body: some View {
     NavigationStack {

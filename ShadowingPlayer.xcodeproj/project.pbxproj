@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		4B2720142A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B2720122A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt */; };
 		4B2720152A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B2720132A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 */; };
+		4B84BDB82A16894300B95D87 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4B84BDB72A16894300B95D87 /* AudioKit */; };
+		4B99C3942A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B99C3922A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt */; };
+		4B99C3952A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B99C3932A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 */; };
+		4B99C3972A16850F005F97B4 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B99C3962A16850F005F97B4 /* Item.swift */; };
 		4BB143C42A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BB143C22A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt */; };
 		4BB143C52A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4BB143C32A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */; };
 		4BB8F0842A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BB8F0822A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt */; };
@@ -31,6 +35,9 @@
 		4B2720122A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Why Aliens Might Already Be On Their Way To Us.srt"; sourceTree = "<group>"; };
 		4B2720132A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Why Aliens Might Already Be On Their Way To Us.mp3"; sourceTree = "<group>"; };
 		4B2720162A0FFCD00080A0BD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4B99C3922A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Quitting Digital Photography - Peter Mckinnon.srt"; sourceTree = "<group>"; };
+		4B99C3932A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Quitting Digital Photography - Peter Mckinnon.mp3"; sourceTree = "<group>"; };
+		4B99C3962A16850F005F97B4 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		4BB143C22A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt"; sourceTree = "<group>"; };
 		4BB143C32A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3"; sourceTree = "<group>"; };
 		4BB8F0822A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "overwhelmed - Peter Mckinnon.srt"; sourceTree = "<group>"; };
@@ -53,6 +60,7 @@
 			files = (
 				4BFF37BB2A0BD687008ACA2A /* SwiftUISupport in Frameworks */,
 				4BFF37B22A0BC02C008ACA2A /* SwiftSubtitles in Frameworks */,
+				4B84BDB82A16894300B95D87 /* AudioKit in Frameworks */,
 				4BB8F08B2A0BF9B300606452 /* WrapLayout in Frameworks */,
 				4BB8F0882A0BF89E00606452 /* SwiftUIStack in Frameworks */,
 			);
@@ -64,6 +72,8 @@
 		4BB8F0812A0BF57D00606452 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4B99C3932A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 */,
+				4B99C3922A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt */,
 				4B2720132A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 */,
 				4B2720122A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt */,
 				4BB143C32A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */,
@@ -101,6 +111,7 @@
 				4BFF37A42A0BBFE5008ACA2A /* ContentView.swift */,
 				4BB8F08C2A0BFB9E00606452 /* ListView.swift */,
 				4BFF37B72A0BC068008ACA2A /* PlayerView.swift */,
+				4B99C3962A16850F005F97B4 /* Item.swift */,
 				4BFF37A62A0BBFE6008ACA2A /* Assets.xcassets */,
 				4BFF37A82A0BBFE6008ACA2A /* Preview Content */,
 			);
@@ -136,6 +147,7 @@
 				4BFF37BA2A0BD687008ACA2A /* SwiftUISupport */,
 				4BB8F0872A0BF89E00606452 /* SwiftUIStack */,
 				4BB8F08A2A0BF9B300606452 /* WrapLayout */,
+				4B84BDB72A16894300B95D87 /* AudioKit */,
 			);
 			productName = ShadowingPlayer;
 			productReference = 4BFF379F2A0BBFE5008ACA2A /* ShadowingPlayer.app */;
@@ -170,6 +182,7 @@
 				4BFF37B92A0BD687008ACA2A /* XCRemoteSwiftPackageReference "swiftui-support" */,
 				4BB8F0862A0BF89E00606452 /* XCRemoteSwiftPackageReference "swiftui-stack" */,
 				4BB8F0892A0BF9B300606452 /* XCRemoteSwiftPackageReference "swiftui-WrapLayout" */,
+				4B84BDB62A16894300B95D87 /* XCRemoteSwiftPackageReference "AudioKit" */,
 			);
 			productRefGroup = 4BFF37A02A0BBFE5008ACA2A /* Products */;
 			projectDirPath = "";
@@ -185,6 +198,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B99C3942A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt in Resources */,
+				4B99C3952A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 in Resources */,
 				4BB8F0842A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt in Resources */,
 				4BFF37B52A0BC044008ACA2A /* example.srt in Resources */,
 				4B2720142A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt in Resources */,
@@ -205,6 +220,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B99C3972A16850F005F97B4 /* Item.swift in Sources */,
 				4BFF37B82A0BC068008ACA2A /* PlayerView.swift in Sources */,
 				4BB8F08D2A0BFB9E00606452 /* ListView.swift in Sources */,
 				4BFF37A52A0BBFE5008ACA2A /* ContentView.swift in Sources */,
@@ -415,6 +431,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		4B84BDB62A16894300B95D87 /* XCRemoteSwiftPackageReference "AudioKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/AudioKit/AudioKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
 		4BB8F0862A0BF89E00606452 /* XCRemoteSwiftPackageReference "swiftui-stack" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/FluidGroup/swiftui-stack";
@@ -450,6 +474,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4B84BDB72A16894300B95D87 /* AudioKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4B84BDB62A16894300B95D87 /* XCRemoteSwiftPackageReference "AudioKit" */;
+			productName = AudioKit;
+		};
 		4BB8F0872A0BF89E00606452 /* SwiftUIStack */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4BB8F0862A0BF89E00606452 /* XCRemoteSwiftPackageReference "swiftui-stack" */;

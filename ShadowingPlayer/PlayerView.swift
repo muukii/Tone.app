@@ -3,6 +3,7 @@ import SwiftSubtitles
 import SwiftUI
 import SwiftUISupport
 import WrapLayout
+import AudioKit
 
 struct PlayerView: View {
 
@@ -254,46 +255,6 @@ struct DisplayCue: Identifiable, Equatable {
   }
 }
 
-struct Item: Equatable, Identifiable {
-
-  let id: String
-
-  let audioFileURL: URL
-  let subtitleFileURL: URL
-
-  init(
-    identifier: String,
-    audioFileURL: URL,
-    subtitleFileURL: URL
-  ) {
-    self.id = identifier
-    self.audioFileURL = audioFileURL
-    self.subtitleFileURL = subtitleFileURL
-  }
-
-  static var example: Self {
-    make(name: "example")
-  }
-
-  static var overwhelmed: Self {
-    make(name: "overwhelmed - Peter Mckinnon")
-  }
-
-  static func make(name: String) -> Self {
-
-    let audioFileURL = Bundle.main.path(forResource: name, ofType: "mp3").map {
-      URL(fileURLWithPath: $0)
-    }!
-    let subtitleFileURL = Bundle.main.path(forResource: name, ofType: "srt").map {
-      URL(fileURLWithPath: $0)
-    }!
-    return .init(
-      identifier: name,
-      audioFileURL: audioFileURL,
-      subtitleFileURL: subtitleFileURL
-    )
-  }
-}
 
 @MainActor
 private final class PlayerController: ObservableObject {

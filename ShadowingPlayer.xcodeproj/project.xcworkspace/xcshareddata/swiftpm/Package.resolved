@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "audiokit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AudioKit/AudioKit",
+      "state" : {
+        "revision" : "c30a151fea40696ad0a45c60c2bba29112bb4279",
+        "version" : "5.6.1"
+      }
+    },
+    {
       "identity" : "dsfregex",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dagronf/DSFRegex",
