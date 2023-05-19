@@ -13,9 +13,7 @@ struct ShadowingPlayerApp: App {
 
   init() {
     do {
-      let instance = AVAudioSession.sharedInstance()
-      try instance.setCategory(.playback, mode: .default, options: [.mixWithOthers, .allowAirPlay])
-      try instance.setActive(true)
+    
 
     } catch {
 

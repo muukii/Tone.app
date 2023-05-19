@@ -20,6 +20,7 @@
 		4BB8F0882A0BF89E00606452 /* SwiftUIStack in Frameworks */ = {isa = PBXBuildFile; productRef = 4BB8F0872A0BF89E00606452 /* SwiftUIStack */; };
 		4BB8F08B2A0BF9B300606452 /* WrapLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 4BB8F08A2A0BF9B300606452 /* WrapLayout */; };
 		4BB8F08D2A0BFB9E00606452 /* ListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB8F08C2A0BFB9E00606452 /* ListView.swift */; };
+		4BF5ED9D2A179840000E080B /* PlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF5ED9C2A179840000E080B /* PlayerController.swift */; };
 		4BFF37A32A0BBFE5008ACA2A /* ShadowingPlayerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BFF37A22A0BBFE5008ACA2A /* ShadowingPlayerApp.swift */; };
 		4BFF37A52A0BBFE5008ACA2A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BFF37A42A0BBFE5008ACA2A /* ContentView.swift */; };
 		4BFF37A72A0BBFE6008ACA2A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BFF37A62A0BBFE6008ACA2A /* Assets.xcassets */; };
@@ -43,6 +44,7 @@
 		4BB8F0822A0BF58500606452 /* overwhelmed - Peter Mckinnon.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "overwhelmed - Peter Mckinnon.srt"; sourceTree = "<group>"; };
 		4BB8F0832A0BF58500606452 /* overwhelmed - Peter Mckinnon.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "overwhelmed - Peter Mckinnon.mp3"; sourceTree = "<group>"; };
 		4BB8F08C2A0BFB9E00606452 /* ListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListView.swift; sourceTree = "<group>"; };
+		4BF5ED9C2A179840000E080B /* PlayerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerController.swift; sourceTree = "<group>"; };
 		4BFF379F2A0BBFE5008ACA2A /* ShadowingPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ShadowingPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4BFF37A22A0BBFE5008ACA2A /* ShadowingPlayerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowingPlayerApp.swift; sourceTree = "<group>"; };
 		4BFF37A42A0BBFE5008ACA2A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -114,6 +116,7 @@
 				4B99C3962A16850F005F97B4 /* Item.swift */,
 				4BFF37A62A0BBFE6008ACA2A /* Assets.xcassets */,
 				4BFF37A82A0BBFE6008ACA2A /* Preview Content */,
+				4BF5ED9C2A179840000E080B /* PlayerController.swift */,
 			);
 			path = ShadowingPlayer;
 			sourceTree = "<group>";
@@ -222,6 +225,7 @@
 			files = (
 				4B99C3972A16850F005F97B4 /* Item.swift in Sources */,
 				4BFF37B82A0BC068008ACA2A /* PlayerView.swift in Sources */,
+				4BF5ED9D2A179840000E080B /* PlayerController.swift in Sources */,
 				4BB8F08D2A0BFB9E00606452 /* ListView.swift in Sources */,
 				4BFF37A52A0BBFE5008ACA2A /* ContentView.swift in Sources */,
 				4BFF37A32A0BBFE5008ACA2A /* ShadowingPlayerApp.swift in Sources */,
@@ -371,9 +375,12 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.muukii.ShadowingPlayer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -401,9 +408,12 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.muukii.ShadowingPlayer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

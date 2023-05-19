@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dagronf/SwiftSubtitles.git",
       "state" : {
-        "revision" : "c0986eb26fbfc4ac40a805d3e68f619a9fc94950",
-        "version" : "0.5.0"
+        "revision" : "9ba27fa411ac9591931616c69f0f634e2098a7b4",
+        "version" : "0.5.1"
       }
     },
     {
