@@ -70,7 +70,7 @@ final class PlayerController: NSObject, ObservableObject {
 
     let commandCenter = MPRemoteCommandCenter.shared()
 
-//    commandCenter.togglePlayPauseCommand.addTarget(self, action: #selector(onTogglePlayPauseCommand))
+    //    commandCenter.togglePlayPauseCommand.addTarget(self, action: #selector(onTogglePlayPauseCommand))
     commandCenter.playCommand.addTarget(self, action: #selector(onPlayCommand))
     commandCenter.pauseCommand.addTarget(self, action: #selector(onPauseCommand))
     commandCenter.nextTrackCommand.addTarget(self, action: #selector(onNextTrackCommand))
@@ -95,18 +95,20 @@ final class PlayerController: NSObject, ObservableObject {
   }
 
   @objc
-  private dynamic func onPauseCommand() -> MPRemoteCommandHandlerStatus  {
+  private dynamic func onPauseCommand() -> MPRemoteCommandHandlerStatus {
     self.pause()
     return .success
   }
 
   @objc
-  private dynamic func onNextTrackCommand() -> MPRemoteCommandHandlerStatus  {
+  private dynamic func onNextTrackCommand() -> MPRemoteCommandHandlerStatus {
+    self.moveToNext()
     return .success
   }
 
   @objc
-  private dynamic func onPreviousTrackCommand() -> MPRemoteCommandHandlerStatus  {
+  private dynamic func onPreviousTrackCommand() -> MPRemoteCommandHandlerStatus {
+    self.moveToPrevious()
     return .success
   }
 
@@ -127,8 +129,11 @@ final class PlayerController: NSObject, ObservableObject {
 
       let instance = AVAudioSession.sharedInstance()
       try instance.setActive(true, options: .notifyOthersOnDeactivation)
-      try instance.setCategory(.playback, mode: .default, options: [.allowBluetooth, .allowAirPlay])
-
+      try instance.setCategory(
+        .playback,
+        mode: .default,
+        options: [.allowBluetooth, .allowAirPlay]
+      )
 
     } catch {
 
@@ -199,6 +204,36 @@ final class PlayerController: NSObject, ObservableObject {
 
   }
 
+  func moveToNext() {
+
+    guard let currentCue else {
+      return
+    }
+
+    guard let target = cues.nextElement(after: currentCue) else { return }
+
+    if playingRange == nil {
+      move(to: target)
+    } else {
+      setRepeat(in: target)
+    }
+  }
+
+  func moveToPrevious() {
+
+    guard let currentCue else {
+      return
+    }
+
+    guard let target = cues.previousElement(before: currentCue) else { return }
+
+    if playingRange == nil {
+      move(to: target)
+    } else {
+      setRepeat(in: target)
+    }
+  }
+
   func setRepeat(in cue: DisplayCue?) {
 
     if let cue {
@@ -217,8 +252,6 @@ final class PlayerController: NSObject, ObservableObject {
     timePitch.rate = rate
   }
 
-
-
   func findCurrentCue() -> DisplayCue? {
 
     let currentTime = player.currentTime
@@ -231,4 +264,23 @@ final class PlayerController: NSObject, ObservableObject {
 
     return currentCue
   }
+}
+
+extension Array where Element: Equatable {
+
+  func nextElement(after: Element) -> Element? {
+    guard let index = self.firstIndex(of: after), self.indices.contains(index + 1) else {
+      return nil
+    }
+    return self[index + 1]
+  }
+
+  func previousElement(before: Element) -> Element? {
+    guard let index = self.firstIndex(of: before), self.indices.contains(index - 1) else {
+      return nil
+    }
+    return self[index - 1]
+
+  }
+
 }
