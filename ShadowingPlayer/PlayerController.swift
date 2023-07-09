@@ -20,8 +20,18 @@ struct DisplayCue: Identifiable, Equatable {
 final class PlayerController: NSObject, ObservableObject {
 
   struct PlayingRange: Equatable {
-    let startTime: TimeInterval
-    let endTime: TimeInterval
+
+    var startTime: TimeInterval { startCue.backed.startTime.timeInterval }
+    var endTime: TimeInterval { endCue.backed.endTime.timeInterval }
+
+    let startCue: DisplayCue
+    let endCue: DisplayCue
+
+    init(startCue: DisplayCue, endCue: DisplayCue) {
+      self.startCue = startCue
+      self.endCue = endCue
+    }
+
   }
 
   @Published private var playingRange: PlayingRange?
@@ -215,7 +225,8 @@ final class PlayerController: NSObject, ObservableObject {
     if playingRange == nil {
       move(to: target)
     } else {
-      setRepeat(in: target)
+      // TODO: considier what to do
+//      setRepeat(in: target)
     }
   }
 
@@ -230,21 +241,22 @@ final class PlayerController: NSObject, ObservableObject {
     if playingRange == nil {
       move(to: target)
     } else {
-      setRepeat(in: target)
+      // TODO: considier what to do
+//      setRepeat(in: target)
     }
   }
 
-  func setRepeat(in cue: DisplayCue?) {
+  func setRepeat(range: PlayingRange?) {
 
-    if let cue {
+    if let range {
 
-      playingRange = .init(
-        startTime: cue.backed.startTime.timeInterval,
-        endTime: cue.backed.endTime.timeInterval
-      )
-      move(to: cue)
+      playingRange = range
+      move(to: range.startCue)
+
     } else {
+
       playingRange = nil
+
     }
   }
 

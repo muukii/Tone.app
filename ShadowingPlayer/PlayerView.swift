@@ -67,7 +67,7 @@ struct PlayerView: View {
                 isFocusing: cue == focusing,
                 onSelect: {
                   if controller.isRepeating {
-                    controller.setRepeat(in: cue)
+                    controller.setRepeat(range: .init(startCue: cue, endCue: cue))
                   } else {
                     controller.move(to: cue)
                   }
@@ -119,14 +119,15 @@ struct PlayerView: View {
 
         Spacer(minLength: 45).fixedSize()
 
+        // repeat button
         Button {
           UIImpactFeedbackGenerator(style: .medium).impactOccurred()
 
           if controller.isRepeating {
-            controller.setRepeat(in: nil)
+            controller.setRepeat(range: nil)
           } else {
             if let currentCue = controller.currentCue {
-              controller.setRepeat(in: currentCue)
+              controller.setRepeat(range: .init(startCue: currentCue, endCue: currentCue))
             }
           }
         } label: {
@@ -137,6 +138,7 @@ struct PlayerView: View {
               .frame(width: 40)
               .foregroundColor(Color.primary)
 
+            // indicator
             Circle()
               .opacity(controller.isRepeating ? 1 : 0)
               .frame(square: 5)
