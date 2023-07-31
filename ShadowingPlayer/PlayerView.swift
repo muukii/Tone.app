@@ -28,7 +28,6 @@ struct PlayerView: View {
   )
     -> some View
   {
-    HStack {
       Text(text).font(.system(size: 30, weight: .bold, design: .default))
         .modifier(
           condition: isFocusing == false,
@@ -37,20 +36,12 @@ struct PlayerView: View {
         )
         .padding(6)
         .id(identifier)
-        .textSelection(.enabled)
-
-      Spacer()
-
-      RoundedRectangle(cornerRadius: 8, style: .continuous)
-        .fill(isFocusing ? Color.primary : Color.primary.opacity(0.3))
-        .frame(width: 40)
         ._onButtonGesture(
           pressing: { isPressing in },
           perform: {
             onSelect()
           }
         )
-    }
   }
 
   var body: some View {
@@ -59,8 +50,9 @@ struct PlayerView: View {
 
       ScrollView {
         ScrollViewReader { proxy in
-          LazyVStack(alignment: .leading) {
+          WrapLayout(horizontalSpacing: 0) {
             ForEach(controller.cues) { cue in
+
               PlayerView.chunk(
                 text: cue.backed.text,
                 identifier: cue.id,
