@@ -23,6 +23,8 @@
 		4BB8F0882A0BF89E00606452 /* SwiftUIStack in Frameworks */ = {isa = PBXBuildFile; productRef = 4BB8F0872A0BF89E00606452 /* SwiftUIStack */; };
 		4BB8F08B2A0BF9B300606452 /* WrapLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 4BB8F08A2A0BF9B300606452 /* WrapLayout */; };
 		4BB8F08D2A0BFB9E00606452 /* ListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB8F08C2A0BFB9E00606452 /* ListView.swift */; };
+		4BCFCC2F2A860CE300EB97E2 /* Current State of The Channel.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4BCFCC2E2A860CE300EB97E2 /* Current State of The Channel.mp3 */; };
+		4BCFCC312A860CE800EB97E2 /* Current State of The Channel.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BCFCC302A860CE800EB97E2 /* Current State of The Channel.srt */; };
 		4BD4AA7B2A2288E50008AC6E /* No Margin For Error.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4BD4AA792A2288E50008AC6E /* No Margin For Error.mp3 */; };
 		4BD4AA7C2A2288E50008AC6E /* No Margin For Error.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BD4AA7A2A2288E50008AC6E /* No Margin For Error.srt */; };
 		4BF5ED9D2A179840000E080B /* PlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF5ED9C2A179840000E080B /* PlayerController.swift */; };
@@ -52,6 +54,8 @@
 		4B99C3962A16850F005F97B4 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		4BB143C22A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt"; sourceTree = "<group>"; };
 		4BB8F08C2A0BFB9E00606452 /* ListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListView.swift; sourceTree = "<group>"; };
+		4BCFCC2E2A860CE300EB97E2 /* Current State of The Channel.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Current State of The Channel.mp3"; sourceTree = "<group>"; };
+		4BCFCC302A860CE800EB97E2 /* Current State of The Channel.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Current State of The Channel.srt"; sourceTree = "<group>"; };
 		4BD4AA792A2288E50008AC6E /* No Margin For Error.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "No Margin For Error.mp3"; sourceTree = "<group>"; };
 		4BD4AA7A2A2288E50008AC6E /* No Margin For Error.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "No Margin For Error.srt"; sourceTree = "<group>"; };
 		4BF5ED9C2A179840000E080B /* PlayerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerController.swift; sourceTree = "<group>"; };
@@ -99,6 +103,8 @@
 				4B523F332A1A5E9E004D4B5F /* The Unfortunate Truth about Leica - Peter Mckinnon.mp3 */,
 				4B523F3B2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt */,
 				4B523F392A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 */,
+				4BCFCC302A860CE800EB97E2 /* Current State of The Channel.srt */,
+				4BCFCC2E2A860CE300EB97E2 /* Current State of The Channel.mp3 */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -223,6 +229,7 @@
 				4B99C3952A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 in Resources */,
 				4B0B783C2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 in Resources */,
 				4BFF37B52A0BC044008ACA2A /* example.srt in Resources */,
+				4BCFCC312A860CE800EB97E2 /* Current State of The Channel.srt in Resources */,
 				4B2720142A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt in Resources */,
 				4BB143C42A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt in Resources */,
 				4BFF37B62A0BC044008ACA2A /* example.mp3 in Resources */,
@@ -230,6 +237,7 @@
 				4B2720152A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 in Resources */,
 				4B523F3A2A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 in Resources */,
 				4B523F342A1A5E9E004D4B5F /* The Unfortunate Truth about Leica - Peter Mckinnon.mp3 in Resources */,
+				4BCFCC2F2A860CE300EB97E2 /* Current State of The Channel.mp3 in Resources */,
 				4BD4AA7C2A2288E50008AC6E /* No Margin For Error.srt in Resources */,
 				4B0B783E2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt in Resources */,
 				4BFF37A72A0BBFE6008ACA2A /* Assets.xcassets in Resources */,
