@@ -29,7 +29,7 @@ struct PlayerView: View {
     -> some View
   {
     HStack {
-      Text(text).font(.system(size: 30, weight: .bold, design: .default))
+      Text(text).font(.system(size: 24, weight: .bold, design: .default))
         .modifier(
           condition: isFocusing == false,
           identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
@@ -80,7 +80,7 @@ struct PlayerView: View {
 
             guard let cue else { return }
 
-            withAnimation(.interactiveSpring(response: 0.8, dampingFraction: 1, blendDuration: 0)) {
+            withAnimation(.bouncy) {
               proxy.scrollTo(cue.id, anchor: .center)
               focusing = cue
             }
@@ -91,6 +91,29 @@ struct PlayerView: View {
 
       Spacer(minLength: 20).fixedSize()
 
+      control
+
+    }
+    .sheet(
+      item: $term,
+      onDismiss: {
+        term = nil
+      },
+      content: { term in
+        DefinitionView(term: term.value)
+      }
+    )
+    .onAppear {
+      UIApplication.shared.isIdleTimerDisabled = true
+    }
+    .onDisappear {
+      UIApplication.shared.isIdleTimerDisabled = false
+    }
+  }
+
+  @ViewBuilder
+  private var control: some View {
+    VStack {
       HStack {
 
         Button {
@@ -117,7 +140,7 @@ struct PlayerView: View {
 
         }
 
-        Spacer(minLength: 45).fixedSize()
+        Spacer(minLength: 35).fixedSize()
 
         // repeat button
         Button {
@@ -147,82 +170,32 @@ struct PlayerView: View {
 
       }
 
-      Spacer(minLength: 40).fixedSize()
+      Spacer(minLength: 20).fixedSize()
 
-      HStack {
-        Button {
-          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-          controller.setRate(0.5)
-        } label: {
-          HStack(alignment: .firstTextBaseline, spacing: 4) {
-            Image(systemName: "multiply")
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(width: 10)
-            Text("0.5")
-              .font(.body)
+      ScrollView(.horizontal) {
+        HStack {
+
+          ForEach([1.0, 0.95, 0.85, 0.8, 0.75, 0.5, 0.4, 0.3, 0.2] as [Float], id: \.self) {
+            value in
+            Button {
+              UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+              controller.setRate(value)
+            } label: {
+              HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Image(systemName: "multiply")
+                  .resizable()
+                  .aspectRatio(contentMode: .fit)
+                  .frame(width: 10)
+                Text("\(value.description)")
+                  .font(.body)
+              }
+            }
           }
-        }
 
-        Button {
-          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-          controller.setRate(0.75)
-        } label: {
-          HStack(alignment: .firstTextBaseline, spacing: 4) {
-            Image(systemName: "multiply")
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(width: 10)
-            Text("0.75")
-              .font(.body)
-          }
         }
-
-        Button {
-          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-          controller.setRate(0.85)
-        } label: {
-          HStack(alignment: .firstTextBaseline, spacing: 4) {
-            Image(systemName: "multiply")
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(width: 10)
-            Text("0.85")
-              .font(.body)
-          }
-        }
-
-        Button {
-          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-          controller.setRate(1)
-        } label: {
-          HStack(alignment: .firstTextBaseline, spacing: 4) {
-            Image(systemName: "multiply")
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(width: 10)
-            Text("1")
-              .font(.body)
-          }
-        }
-
+        .buttonStyle(.borderedProminent)
       }
-      .buttonStyle(.borderedProminent)
-    }
-    .sheet(
-      item: $term,
-      onDismiss: {
-        term = nil
-      },
-      content: { term in
-        DefinitionView(term: term.value)
-      }
-    )
-    .onAppear {
-      UIApplication.shared.isIdleTimerDisabled = true
-    }
-    .onDisappear {
-      UIApplication.shared.isIdleTimerDisabled = false
+      .contentMargins(20)
     }
   }
 
@@ -241,7 +214,6 @@ struct DefinitionView: UIViewControllerRepresentable {
   ) {
   }
 }
-
 
 #if DEBUG
 
