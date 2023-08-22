@@ -24,17 +24,25 @@ final class PlayerController: NSObject, ObservableObject {
     var startTime: TimeInterval { startCue.backed.startTime.timeInterval }
     var endTime: TimeInterval { endCue.backed.endTime.timeInterval }
 
-    let startCue: DisplayCue
-    let endCue: DisplayCue
-
+    var startCue: DisplayCue
+    var endCue: DisplayCue
+  
     init(startCue: DisplayCue, endCue: DisplayCue) {
       self.startCue = startCue
       self.endCue = endCue
     }
 
+    func contains(_ cue: DisplayCue) -> Bool {
+      cue.backed.startTime >= startCue.backed.startTime
+        && cue.backed.endTime <= endCue.backed.endTime    
+    }
+
+    func isExact(with cue: DisplayCue) -> Bool {
+      startCue == cue && endCue == cue
+    }
   }
 
-  @Published private var playingRange: PlayingRange?
+  @Published private(set) var playingRange: PlayingRange?
 
   var isRepeating: Bool {
     playingRange != nil

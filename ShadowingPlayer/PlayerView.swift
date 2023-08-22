@@ -24,6 +24,7 @@ struct PlayerView: View {
     text: String,
     identifier: some Hashable,
     isFocusing: Bool,
+    isInRange: Bool,
     onSelect: @escaping () -> Void
   )
     -> some View
@@ -41,8 +42,17 @@ struct PlayerView: View {
 
       Spacer()
 
+      // Indicator
       RoundedRectangle(cornerRadius: 8, style: .continuous)
-        .fill(isFocusing ? Color.primary : Color.primary.opacity(0.3))
+        .fill({ () -> Color in
+          if isInRange {
+            return Color.blue
+          } else if isFocusing {
+            return Color.primary
+          } else {
+            return Color.primary.opacity(0.3)
+          }
+        }())
         .frame(width: 40)
         ._onButtonGesture(
           pressing: { isPressing in },
@@ -65,9 +75,34 @@ struct PlayerView: View {
                 text: cue.backed.text,
                 identifier: cue.id,
                 isFocusing: cue == focusing,
+                isInRange: controller.playingRange?.contains(cue) ?? false,
                 onSelect: {
                   if controller.isRepeating {
-                    controller.setRepeat(range: .init(startCue: cue, endCue: cue))
+
+                    if var currentRange = controller.playingRange {
+
+                      if currentRange.isExact(with: cue) {
+                        // selected current active range
+                        return
+                      }
+
+                      if currentRange.contains(cue) == false {
+
+                        if cue.backed.startTime < currentRange.startCue.backed.startTime {
+                          currentRange.startCue = cue
+                        } else if cue.backed.endTime > currentRange.endCue.backed.endTime {
+                          currentRange.endCue = cue
+                        }
+
+                      } else {
+
+                      }
+
+                      controller.setRepeat(range: currentRange)
+
+                    } else {
+                      controller.setRepeat(range: .init(startCue: cue, endCue: cue))
+                    }
                   } else {
                     controller.move(to: cue)
                   }
@@ -175,7 +210,7 @@ struct PlayerView: View {
       ScrollView(.horizontal) {
         HStack {
 
-          ForEach([1.0, 0.95, 0.85, 0.8, 0.75, 0.5, 0.4, 0.3, 0.2] as [Float], id: \.self) {
+          ForEach([1.0, 0.95, 0.85, 0.8, 0.75, 0.65, 0.5, 0.4, 0.3, 0.2] as [Float], id: \.self) {
             value in
             Button {
               UIImpactFeedbackGenerator(style: .medium).impactOccurred()

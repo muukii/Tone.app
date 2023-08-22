@@ -15,6 +15,8 @@
 		4B523F382A1A5F86004D4B5F /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B523F372A1A5F86004D4B5F /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */; };
 		4B523F3A2A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B523F392A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 */; };
 		4B523F3C2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B523F3B2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt */; };
+		4B6AF26B2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B6AF26A2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 */; };
+		4B6AF26D2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B6AF26C2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt */; };
 		4B84BDB82A16894300B95D87 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4B84BDB72A16894300B95D87 /* AudioKit */; };
 		4B99C3942A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B99C3922A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt */; };
 		4B99C3952A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B99C3932A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 */; };
@@ -49,6 +51,8 @@
 		4B523F372A1A5F86004D4B5F /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3"; sourceTree = "<group>"; };
 		4B523F392A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3"; sourceTree = "<group>"; };
 		4B523F3B2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt"; sourceTree = "<group>"; };
+		4B6AF26A2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Finally Switching Cameras - Leica Q2.mp3"; sourceTree = "<group>"; };
+		4B6AF26C2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Finally Switching Cameras - Leica Q2.srt"; sourceTree = "<group>"; };
 		4B99C3922A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Quitting Digital Photography - Peter Mckinnon.srt"; sourceTree = "<group>"; };
 		4B99C3932A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Quitting Digital Photography - Peter Mckinnon.mp3"; sourceTree = "<group>"; };
 		4B99C3962A16850F005F97B4 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
@@ -105,6 +109,8 @@
 				4B523F392A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 */,
 				4BCFCC302A860CE800EB97E2 /* Current State of The Channel.srt */,
 				4BCFCC2E2A860CE300EB97E2 /* Current State of The Channel.mp3 */,
+				4B6AF26A2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 */,
+				4B6AF26C2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -237,7 +243,9 @@
 				4B2720152A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 in Resources */,
 				4B523F3A2A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 in Resources */,
 				4B523F342A1A5E9E004D4B5F /* The Unfortunate Truth about Leica - Peter Mckinnon.mp3 in Resources */,
+				4B6AF26B2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 in Resources */,
 				4BCFCC2F2A860CE300EB97E2 /* Current State of The Channel.mp3 in Resources */,
+				4B6AF26D2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt in Resources */,
 				4BD4AA7C2A2288E50008AC6E /* No Margin For Error.srt in Resources */,
 				4B0B783E2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt in Resources */,
 				4BFF37A72A0BBFE6008ACA2A /* Assets.xcassets in Resources */,
