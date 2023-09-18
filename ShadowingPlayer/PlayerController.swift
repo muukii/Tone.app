@@ -1,6 +1,7 @@
 import AudioKit
 import MediaPlayer
 import SwiftSubtitles
+import Observation
 
 struct DisplayCue: Identifiable, Equatable {
 
@@ -16,8 +17,8 @@ struct DisplayCue: Identifiable, Equatable {
   }
 }
 
-@MainActor
-final class PlayerController: NSObject, ObservableObject {
+@Observable
+final class PlayerController: NSObject {
 
   struct PlayingRange: Equatable {
 
@@ -42,14 +43,15 @@ final class PlayerController: NSObject, ObservableObject {
     }
   }
 
-  @Published private(set) var playingRange: PlayingRange?
+  private(set) var playingRange: PlayingRange?
 
   var isRepeating: Bool {
     playingRange != nil
   }
 
-  @Published var isPlaying: Bool = false
-  @Published var currentCue: DisplayCue?
+  var isPlaying: Bool = false
+  var currentCue: DisplayCue?
+
   let cues: [DisplayCue]
   private let subtitles: Subtitles
 

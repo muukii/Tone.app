@@ -11,13 +11,13 @@ struct PlayerView: View {
     var value: String
   }
 
-  @StateObject private var controller: PlayerController
+  private let controller: PlayerController
 
   @State private var term: Term?
   @State private var focusing: DisplayCue?
 
-  init(item: Item) {
-    self._controller = .init(wrappedValue: try! PlayerController(item: item))
+  init(playerController: PlayerController) {
+    self.controller = playerController
   }
 
   private nonisolated static func chunk(
@@ -111,7 +111,7 @@ struct PlayerView: View {
             }
           }
           .padding(.horizontal, 20)
-          .onReceive(controller.$currentCue) { cue in
+          .onChange(of: controller.currentCue, { oldValue, cue in
 
             guard let cue else { return }
 
@@ -120,7 +120,7 @@ struct PlayerView: View {
               focusing = cue
             }
 
-          }
+          })
         }
       }
 
@@ -152,7 +152,9 @@ struct PlayerView: View {
       HStack {
 
         Button {
-          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          MainActor.assumeIsolated {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          }
           if controller.isPlaying {
             controller.pause()
           } else {
@@ -179,7 +181,9 @@ struct PlayerView: View {
 
         // repeat button
         Button {
-          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          MainActor.assumeIsolated {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          }
 
           if controller.isRepeating {
             controller.setRepeat(range: nil)
@@ -213,7 +217,9 @@ struct PlayerView: View {
           ForEach([1.0, 0.95, 0.85, 0.8, 0.75, 0.65, 0.5, 0.4, 0.3, 0.2] as [Float], id: \.self) {
             value in
             Button {
-              UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+              MainActor.assumeIsolated {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+              }
               controller.setRate(value)
             } label: {
               HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -259,8 +265,8 @@ enum Preview_PlayerView: PreviewProvider {
   static var previews: some View {
 
     Group {
-      TargetComponent(item: .overwhelmed)
-      TargetComponent(item: .make(name: "Why Aliens Might Already Be On Their Way To Us"))
+      TargetComponent(playerController: try! .init(item: .overwhelmed))
+      TargetComponent(playerController: try! .init(item: .make(name: "Why Aliens Might Already Be On Their Way To Us")))
     }
 
   }
