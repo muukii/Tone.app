@@ -12,12 +12,6 @@ import AVFAudio
 struct ShadowingPlayerApp: App {
 
   init() {
-    do {
-    
-
-    } catch {
-
-    }
   }
 
   var body: some Scene {

@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dagronf/SwiftSubtitles.git",
       "state" : {
-        "revision" : "9ba27fa411ac9591931616c69f0f634e2098a7b4",
-        "version" : "0.5.1"
+        "revision" : "033bc2ec4b0089e8c09f4e644292ae1f080f6c89",
+        "version" : "0.11.1"
       }
     },
     {
@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/FluidGroup/swiftui-snap-dragging-modifier",
       "state" : {
-        "revision" : "ad642b411086ef1eabf94e8bc9bc00024ec78b22",
-        "version" : "1.1.1"
+        "revision" : "f105008910ee03fe50c23954bee98df8caec0ebe",
+        "version" : "1.1.2"
       }
     },
     {
@@ -79,6 +79,15 @@
       "state" : {
         "revision" : "5e889b243cb48eb9a22eb13f3a3458e278718c81",
         "version" : "0.2.1"
+      }
+    },
+    {
+      "identity" : "tinycsv",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dagronf/TinyCSV",
+      "state" : {
+        "revision" : "63f30830cd986de84cd844d59926cf1aa2009f0b",
+        "version" : "0.5.3"
       }
     }
   ],

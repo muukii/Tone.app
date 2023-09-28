@@ -22,8 +22,8 @@ final class PlayerController: NSObject {
 
   struct PlayingRange: Equatable {
 
-    var startTime: TimeInterval { startCue.backed.startTime.timeInterval }
-    var endTime: TimeInterval { endCue.backed.endTime.timeInterval }
+    var startTime: TimeInterval { startCue.backed.startTime.timeInSeconds }
+    var endTime: TimeInterval { endCue.backed.endTime.timeInSeconds }
 
     var startCue: DisplayCue
     var endCue: DisplayCue
@@ -216,7 +216,7 @@ final class PlayerController: NSObject {
       play()
     }
 
-    let diff = player.currentTime - cue.backed.startTime.timeInterval
+    let diff = player.currentTime - cue.backed.startTime.timeInSeconds
 
     player.seek(time: -diff)
 
@@ -280,7 +280,7 @@ final class PlayerController: NSObject {
 
     let currentCue = cues.first { cue in
 
-      (cue.backed.startTime.timeInterval..<cue.backed.endTime.timeInterval).contains(currentTime)
+      (cue.backed.startTime.timeInSeconds..<cue.backed.endTime.timeInSeconds).contains(currentTime)
 
     }
 

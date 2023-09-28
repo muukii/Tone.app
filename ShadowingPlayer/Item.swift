@@ -23,17 +23,20 @@ struct Item: Equatable, Identifiable {
 
   let id: String
 
+  let name: String
   let audioFileURL: URL
   let subtitleFileURL: URL
 
   init(
     identifier: String,
+    name: String,
     audioFileURL: URL,
     subtitleFileURL: URL
   ) {
     self.id = identifier
     self.audioFileURL = audioFileURL
     self.subtitleFileURL = subtitleFileURL
+    self.name = name
   }
 
   static var example: Self {
@@ -54,6 +57,7 @@ struct Item: Equatable, Identifiable {
     }!
     return .init(
       identifier: name,
+      name: name,
       audioFileURL: audioFileURL,
       subtitleFileURL: subtitleFileURL
     )
@@ -72,12 +76,39 @@ struct Item: Equatable, Identifiable {
 
       return Item.init(
         identifier: base,
+        name: base,
         audioFileURL: audioFileURL,
         subtitleFileURL: subtitleFileURL
       )
     }
 
     return items
+  }
+
+  static func globInDocuments() -> [Self] {
+
+    let target = URL.documentsDirectory.appendingPathComponent("audio", isDirectory: true)
+
+    var isDirectory = ObjCBool(true)
+    guard FileManager.default.fileExists(atPath: target.path(), isDirectory: &isDirectory) else {
+      return []
+    }
+
+    guard isDirectory.boolValue else {
+      assertionFailure("audio directory is not directory")
+      return []
+    }
+
+    let audioFiles = try! FileManager.default.contentsOfDirectory(
+      at: target,
+      includingPropertiesForKeys: nil,
+      options: .skipsHiddenFiles
+    )
+
+    print(audioFiles)
+
+    return []
 
   }
+
 }
