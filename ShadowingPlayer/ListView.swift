@@ -1,8 +1,12 @@
 import SwiftUI
+import SwiftData
 
 struct ListView: View {
 
   let items: [Item] = Item.globInBundle()
+
+  @Query 
+  var itemEntities: [ItemEntity]
 
   @State private var currentItem: Item_Hashable?
   @State private var isImporting: Bool = false

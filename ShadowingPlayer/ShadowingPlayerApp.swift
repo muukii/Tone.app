@@ -6,17 +6,23 @@
 //
 
 import SwiftUI
-import AVFAudio
+import SwiftData
 
 @main
 struct ShadowingPlayerApp: App {
 
+  private let modelContainer: ModelContainer
+
   init() {
+    let container = try? ModelContainer(for: ItemEntity.self, configurations: .init())
+    self.modelContainer = container!
   }
 
   var body: some Scene {
     WindowGroup {
       ContentView()
     }
+    .modelContainer(modelContainer)
+
   }
 }

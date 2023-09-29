@@ -17,6 +17,7 @@
 		4B523F3C2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B523F3B2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt */; };
 		4B6AF26B2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B6AF26A2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 */; };
 		4B6AF26D2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B6AF26C2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt */; };
+		4B7DBBB72AC5CB9400AC6557 /* ItemEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7DBBB62AC5CB9400AC6557 /* ItemEntity.swift */; };
 		4B84BDB82A16894300B95D87 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4B84BDB72A16894300B95D87 /* AudioKit */; };
 		4B99C3942A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B99C3922A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt */; };
 		4B99C3952A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B99C3932A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 */; };
@@ -55,6 +56,7 @@
 		4B523F3B2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt"; sourceTree = "<group>"; };
 		4B6AF26A2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Finally Switching Cameras - Leica Q2.mp3"; sourceTree = "<group>"; };
 		4B6AF26C2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Finally Switching Cameras - Leica Q2.srt"; sourceTree = "<group>"; };
+		4B7DBBB62AC5CB9400AC6557 /* ItemEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemEntity.swift; sourceTree = "<group>"; };
 		4B99C3922A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Quitting Digital Photography - Peter Mckinnon.srt"; sourceTree = "<group>"; };
 		4B99C3932A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Quitting Digital Photography - Peter Mckinnon.mp3"; sourceTree = "<group>"; };
 		4B99C3962A16850F005F97B4 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 				4BFF37A82A0BBFE6008ACA2A /* Preview Content */,
 				4BF5ED9C2A179840000E080B /* PlayerController.swift */,
 				4BC26C622AC5BFA5002AB391 /* Logger.swift */,
+				4B7DBBB62AC5CB9400AC6557 /* ItemEntity.swift */,
 			);
 			path = ShadowingPlayer;
 			sourceTree = "<group>";
@@ -268,6 +271,7 @@
 				4BC26C612AC5AF80002AB391 /* ImportView.swift in Sources */,
 				4B99C3972A16850F005F97B4 /* Item.swift in Sources */,
 				4BFF37B82A0BC068008ACA2A /* PlayerView.swift in Sources */,
+				4B7DBBB72AC5CB9400AC6557 /* ItemEntity.swift in Sources */,
 				4BF5ED9D2A179840000E080B /* PlayerController.swift in Sources */,
 				4BB8F08D2A0BFB9E00606452 /* ListView.swift in Sources */,
 				4BFF37A52A0BBFE5008ACA2A /* ContentView.swift in Sources */,
