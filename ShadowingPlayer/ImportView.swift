@@ -83,10 +83,7 @@ struct ImportView: View {
         Log.error("\(error)")
       }
 
-    })
-    .onAppear(perform: {
-      Item.globInDocuments()
-    })
+    })    
   }
 }
 
