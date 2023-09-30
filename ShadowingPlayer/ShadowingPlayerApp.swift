@@ -14,8 +14,15 @@ struct ShadowingPlayerApp: App {
   private let modelContainer: ModelContainer
 
   init() {
-    let container = try? ModelContainer(for: ItemEntity.self, configurations: .init())
-    self.modelContainer = container!
+    let databasePath = URL.documentsDirectory.appending(path: "database")
+    do {
+      let container = try ModelContainer(for: ItemEntity.self, configurations: .init(url: databasePath))
+      self.modelContainer = container
+    } catch {
+      // TODO: delete database if schema mismatches or consider migration
+      Log.error("\(error)")
+      fatalError()
+    }
   }
 
   var body: some Scene {

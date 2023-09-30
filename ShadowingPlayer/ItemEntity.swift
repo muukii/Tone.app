@@ -1,16 +1,19 @@
 import SwiftData
+import Foundation
 
 @Model
 final class ItemEntity {
 
   @Attribute(.unique)
-  var identifier: String
+  var title: String?
 
-  var name: String
+  var createdAt: Date
 
-  init() {
-    self.identifier = ""
-    self.name = ""
+  var audioFileURL: URL?
+  var subtitleFileURL: URL?
+
+  init() {    
+    self.createdAt = .init()
   }
 }
 

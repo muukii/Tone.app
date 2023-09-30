@@ -55,30 +55,37 @@ final class PlayerController: NSObject {
   let cues: [DisplayCue]
   private let subtitles: Subtitles
 
-  private let item: Item
   private var currentTimeObservation: NSKeyValueObservation?
   private var currentTimer: Timer?
   //  private let player: AVAudioPlayer
 
+  let title: String
   let engine = AudioEngine()
   let player: AudioPlayer
   let timePitch: TimePitch
 
-  init(item: Item) throws {
-    self.item = item
+  convenience init(item: Item) throws {
+    try self.init(title: item.id, audioFileURL: item.audioFileURL, subtitleFileURL: item.subtitleFileURL)
+  }
 
-    player = .init(url: item.audioFileURL, buffered: false)!
+  convenience init(item: ItemEntity) throws {
+    try self.init(title: item.title!, audioFileURL: item.audioFileURL!, subtitleFileURL: item.subtitleFileURL!)
+  }
+
+  init(title: String, audioFileURL: URL, subtitleFileURL: URL) throws {
+
+    player = .init(url: audioFileURL, buffered: false)!
 
     timePitch = .init(player)
     timePitch.rate = 1.0
 
     engine.output = timePitch
 
-    self.subtitles = try Subtitles(fileURL: item.subtitleFileURL, encoding: .utf8)
+    self.subtitles = try Subtitles(fileURL: subtitleFileURL, encoding: .utf8)
     self.cues = subtitles.cues.map { .init(backed: $0) }
+    self.title = title
 
     super.init()
-
   }
 
   private func resetCommandCenter() {
@@ -184,7 +191,7 @@ final class PlayerController: NSObject {
       do {
         var nowPlayingInfo: [String: Any] = [:]
 
-        nowPlayingInfo[MPMediaItemPropertyTitle] = item.id
+        nowPlayingInfo[MPMediaItemPropertyTitle] = title
         nowPlayingInfo[MPMediaItemPropertyArtist] = "Audio"
         nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = player.duration
         nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime

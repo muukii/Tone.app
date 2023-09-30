@@ -67,9 +67,8 @@ struct PlayerView: View {
 
     VStack {
 
-      ScrollView {
-        ScrollViewReader { proxy in
-          LazyVStack(alignment: .leading) {
+      ScrollViewReader { proxy in
+          List {
             ForEach(controller.cues) { cue in
               PlayerView.chunk(
                 text: cue.backed.text,
@@ -108,9 +107,11 @@ struct PlayerView: View {
                   }
                 }
               )
+              .listRowSeparator(.hidden)
+              .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
             }
           }
-          .padding(.horizontal, 20)
+          .listStyle(.plain)
           .onChange(of: controller.currentCue, { oldValue, cue in
 
             guard let cue else { return }
@@ -121,7 +122,6 @@ struct PlayerView: View {
             }
 
           })
-        }
       }
 
       Spacer(minLength: 20).fixedSize()
@@ -266,7 +266,6 @@ enum Preview_PlayerView: PreviewProvider {
 
     Group {
       TargetComponent(playerController: try! .init(item: .overwhelmed))
-      TargetComponent(playerController: try! .init(item: .make(name: "Why Aliens Might Already Be On Their Way To Us")))
     }
 
   }

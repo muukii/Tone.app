@@ -108,8 +108,6 @@
 				4BB143C22A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt */,
 				4BFF37B42A0BC044008ACA2A /* example.mp3 */,
 				4BFF37B32A0BC044008ACA2A /* example.srt */,
-				4B0B783B2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 */,
-				4B0B783D2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt */,
 				4B523F332A1A5E9E004D4B5F /* The Unfortunate Truth about Leica - Peter Mckinnon.mp3 */,
 				4B523F3B2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt */,
 				4B523F392A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 */,
@@ -160,6 +158,8 @@
 		4BFF37A82A0BBFE6008ACA2A /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
+				4B0B783B2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 */,
+				4B0B783D2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt */,
 				4BFF37A92A0BBFE6008ACA2A /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";

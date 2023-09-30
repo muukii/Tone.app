@@ -5,8 +5,10 @@ struct ListView: View {
 
   let items: [Item] = Item.globInBundle()
 
-  @Query 
+  @Query(sort: \ItemEntity.createdAt, order: .reverse)
   var itemEntities: [ItemEntity]
+
+  @Environment(\.modelContext) var modelContext
 
   @State private var currentItem: Item_Hashable?
   @State private var isImporting: Bool = false
@@ -14,11 +16,19 @@ struct ListView: View {
   var body: some View {
     NavigationStack {
 
-      List(items) { item in
+      List(itemEntities) { item in
 
         NavigationLink(value: Item_Hashable(body: item)) {
-          Text(item.audioFileURL.lastPathComponent)
+          VStack {
+            Text("\(item.title ?? "")")
+            Text("\(item.createdAt)")
+          }
         }
+        .contextMenu(menuItems: {
+          Button("Delete", role: .destructive) {
+            modelContext.delete(item)
+          }
+        })
 
       }
       .navigationDestination(for: Item_Hashable.self, destination: { item in
@@ -31,7 +41,9 @@ struct ListView: View {
       })
       .navigationTitle("Shadowing Player")
       .sheet(isPresented: $isImporting, content: {
-        ImportView()
+        ImportView(onCompleted: {
+          isImporting = false        
+        })
       })
 
     }
