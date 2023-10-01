@@ -54,14 +54,14 @@ struct ImportView: View {
 
         }
 
-        let audioFileDestinationpath = target.appendingPathComponent(draft.title + "." + draft.audioFileURL.pathExtension)
-        let subtitleFileDestinationPath = target.appendingPathComponent(draft.title + ".srt")
+        let audioFileDestinationPath = AbsolutePath(url: target.appendingPathComponent(draft.title + "." + draft.audioFileURL.pathExtension))
+        let subtitleFileDestinationPath = AbsolutePath(url: target.appendingPathComponent(draft.title + ".srt"))
         do {
-          try overwrite(file: draft.audioFileURL, to: audioFileDestinationpath)
+          try overwrite(file: draft.audioFileURL, to: audioFileDestinationPath.url)
         }
 
         do {
-          try overwrite(file: draft.subtitleFileURL, to: subtitleFileDestinationPath)
+          try overwrite(file: draft.subtitleFileURL, to: subtitleFileDestinationPath.url)
         }
 
         try modelContext.transaction {
@@ -70,8 +70,8 @@ struct ImportView: View {
 
           new.createdAt = .init()
           new.title = draft.title
-          new.subtitleFileURL = subtitleFileDestinationPath
-          new.audioFileURL = audioFileDestinationpath
+          new.subtitleFilePath = subtitleFileDestinationPath.relative(basedOn: .init(url: URL.documentsDirectory)).rawValue
+          new.audioFilePath = audioFileDestinationPath.relative(basedOn: .init(url: URL.documentsDirectory)).rawValue
 
           modelContext.insert(new)
 
@@ -83,7 +83,7 @@ struct ImportView: View {
         Log.error("\(error)")
       }
 
-    })    
+    })
   }
 }
 

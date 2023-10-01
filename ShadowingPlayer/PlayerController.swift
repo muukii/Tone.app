@@ -69,12 +69,17 @@ final class PlayerController: NSObject {
   }
 
   convenience init(item: ItemEntity) throws {
-    try self.init(title: item.title!, audioFileURL: item.audioFileURL!, subtitleFileURL: item.subtitleFileURL!)
+
+    try self.init(
+      title: item.title!,
+      audioFileURL: item.audioFileRelativePath!.absolute(basedOn: AbsolutePath(url: URL.documentsDirectory)).url,
+      subtitleFileURL: item.subtitleRelativePath!.absolute(basedOn: AbsolutePath(url: URL.documentsDirectory)).url
+    )
   }
 
   init(title: String, audioFileURL: URL, subtitleFileURL: URL) throws {
 
-    player = .init(url: audioFileURL, buffered: false)!
+    player = .init(url: audioFileURL, buffered: true)!
 
     timePitch = .init(player)
     timePitch.rate = 1.0

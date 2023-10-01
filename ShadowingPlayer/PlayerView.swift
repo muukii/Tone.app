@@ -6,6 +6,10 @@ import WrapLayout
 
 struct PlayerView: View {
 
+  enum Action {
+    case onPin(DisplayCue)
+  }
+
   struct Term: Identifiable {
     var id: String { value }
     var value: String
@@ -16,8 +20,15 @@ struct PlayerView: View {
   @State private var term: Term?
   @State private var focusing: DisplayCue?
 
-  init(playerController: PlayerController) {
+  private let actionHandler: @MainActor (Action) -> Void
+
+  init(
+    playerController: PlayerController,
+    focusingID: String?,
+    actionHandler: @escaping @MainActor (Action) -> Void
+  ) {
     self.controller = playerController
+    self.actionHandler = actionHandler
   }
 
   private nonisolated static func chunk(
@@ -109,6 +120,11 @@ struct PlayerView: View {
               )
               .listRowSeparator(.hidden)
               .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
+              .contextMenu {
+                Button("Pin") {
+                  actionHandler(.onPin(cue))
+                }
+              }
             }
           }
           .listStyle(.plain)
@@ -265,7 +281,12 @@ enum Preview_PlayerView: PreviewProvider {
   static var previews: some View {
 
     Group {
-      TargetComponent(playerController: try! .init(item: .overwhelmed))
+      TargetComponent(
+        playerController: try! .init(item: .overwhelmed),
+        focusingID: nil,
+        actionHandler: { action in
+
+      })
     }
 
   }

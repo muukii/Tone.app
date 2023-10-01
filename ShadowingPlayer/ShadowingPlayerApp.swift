@@ -16,7 +16,7 @@ struct ShadowingPlayerApp: App {
   init() {
     let databasePath = URL.documentsDirectory.appending(path: "database")
     do {
-      let container = try ModelContainer(for: ItemEntity.self, configurations: .init(url: databasePath))
+      let container = try ModelContainer(for: ItemEntity.self, PinEntity.self, configurations: .init(url: databasePath))
       self.modelContainer = container
     } catch {
       // TODO: delete database if schema mismatches or consider migration
