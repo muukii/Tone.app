@@ -9,36 +9,22 @@
 /* Begin PBXBuildFile section */
 		4B0B783C2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B0B783B2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 */; };
 		4B0B783E2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B0B783D2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt */; };
-		4B2720142A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B2720122A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt */; };
-		4B2720152A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B2720132A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 */; };
-		4B523F342A1A5E9E004D4B5F /* The Unfortunate Truth about Leica - Peter Mckinnon.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B523F332A1A5E9E004D4B5F /* The Unfortunate Truth about Leica - Peter Mckinnon.mp3 */; };
-		4B523F382A1A5F86004D4B5F /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B523F372A1A5F86004D4B5F /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */; };
-		4B523F3A2A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B523F392A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 */; };
-		4B523F3C2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B523F3B2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt */; };
-		4B6AF26B2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B6AF26A2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 */; };
-		4B6AF26D2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B6AF26C2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt */; };
+		4B7CC6392AC8E20D009E2E85 /* PinEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7CC6382AC8E20D009E2E85 /* PinEntity.swift */; };
+		4B7CC63B2AC8EEF0009E2E85 /* URL+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7CC63A2AC8EEF0009E2E85 /* URL+.swift */; };
+		4B7DBBB72AC5CB9400AC6557 /* ItemEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7DBBB62AC5CB9400AC6557 /* ItemEntity.swift */; };
 		4B84BDB82A16894300B95D87 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4B84BDB72A16894300B95D87 /* AudioKit */; };
-		4B99C3942A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B99C3922A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt */; };
-		4B99C3952A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B99C3932A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 */; };
 		4B99C3972A16850F005F97B4 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B99C3962A16850F005F97B4 /* Item.swift */; };
-		4BB143C42A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BB143C22A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt */; };
 		4BB8F0882A0BF89E00606452 /* SwiftUIStack in Frameworks */ = {isa = PBXBuildFile; productRef = 4BB8F0872A0BF89E00606452 /* SwiftUIStack */; };
 		4BB8F08B2A0BF9B300606452 /* WrapLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 4BB8F08A2A0BF9B300606452 /* WrapLayout */; };
 		4BB8F08D2A0BFB9E00606452 /* ListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB8F08C2A0BFB9E00606452 /* ListView.swift */; };
 		4BC26C612AC5AF80002AB391 /* ImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC26C602AC5AF80002AB391 /* ImportView.swift */; };
 		4BC26C632AC5BFA5002AB391 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC26C622AC5BFA5002AB391 /* Logger.swift */; };
-		4BCFCC2F2A860CE300EB97E2 /* Current State of The Channel.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4BCFCC2E2A860CE300EB97E2 /* Current State of The Channel.mp3 */; };
-		4BCFCC312A860CE800EB97E2 /* Current State of The Channel.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BCFCC302A860CE800EB97E2 /* Current State of The Channel.srt */; };
-		4BD4AA7B2A2288E50008AC6E /* No Margin For Error.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4BD4AA792A2288E50008AC6E /* No Margin For Error.mp3 */; };
-		4BD4AA7C2A2288E50008AC6E /* No Margin For Error.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BD4AA7A2A2288E50008AC6E /* No Margin For Error.srt */; };
 		4BF5ED9D2A179840000E080B /* PlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF5ED9C2A179840000E080B /* PlayerController.swift */; };
 		4BFF37A32A0BBFE5008ACA2A /* ShadowingPlayerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BFF37A22A0BBFE5008ACA2A /* ShadowingPlayerApp.swift */; };
 		4BFF37A52A0BBFE5008ACA2A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BFF37A42A0BBFE5008ACA2A /* ContentView.swift */; };
 		4BFF37A72A0BBFE6008ACA2A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BFF37A62A0BBFE6008ACA2A /* Assets.xcassets */; };
 		4BFF37AA2A0BBFE6008ACA2A /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BFF37A92A0BBFE6008ACA2A /* Preview Assets.xcassets */; };
 		4BFF37B22A0BC02C008ACA2A /* SwiftSubtitles in Frameworks */ = {isa = PBXBuildFile; productRef = 4BFF37B12A0BC02C008ACA2A /* SwiftSubtitles */; };
-		4BFF37B52A0BC044008ACA2A /* example.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4BFF37B32A0BC044008ACA2A /* example.srt */; };
-		4BFF37B62A0BC044008ACA2A /* example.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4BFF37B42A0BC044008ACA2A /* example.mp3 */; };
 		4BFF37B82A0BC068008ACA2A /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BFF37B72A0BC068008ACA2A /* PlayerView.swift */; };
 		4BFF37BB2A0BD687008ACA2A /* SwiftUISupport in Frameworks */ = {isa = PBXBuildFile; productRef = 4BFF37BA2A0BD687008ACA2A /* SwiftUISupport */; };
 /* End PBXBuildFile section */
@@ -46,34 +32,20 @@
 /* Begin PBXFileReference section */
 		4B0B783B2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "overwhelmed - Peter Mckinnon.mp3"; sourceTree = "<group>"; };
 		4B0B783D2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "overwhelmed - Peter Mckinnon.srt"; sourceTree = "<group>"; };
-		4B2720122A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Why Aliens Might Already Be On Their Way To Us.srt"; sourceTree = "<group>"; };
-		4B2720132A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Why Aliens Might Already Be On Their Way To Us.mp3"; sourceTree = "<group>"; };
 		4B2720162A0FFCD00080A0BD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		4B523F332A1A5E9E004D4B5F /* The Unfortunate Truth about Leica - Peter Mckinnon.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "The Unfortunate Truth about Leica - Peter Mckinnon.mp3"; sourceTree = "<group>"; };
-		4B523F372A1A5F86004D4B5F /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3"; sourceTree = "<group>"; };
-		4B523F392A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3"; sourceTree = "<group>"; };
-		4B523F3B2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt"; sourceTree = "<group>"; };
-		4B6AF26A2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Finally Switching Cameras - Leica Q2.mp3"; sourceTree = "<group>"; };
-		4B6AF26C2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Finally Switching Cameras - Leica Q2.srt"; sourceTree = "<group>"; };
-		4B99C3922A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Quitting Digital Photography - Peter Mckinnon.srt"; sourceTree = "<group>"; };
-		4B99C3932A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Quitting Digital Photography - Peter Mckinnon.mp3"; sourceTree = "<group>"; };
+		4B7CC6382AC8E20D009E2E85 /* PinEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinEntity.swift; sourceTree = "<group>"; };
+		4B7CC63A2AC8EEF0009E2E85 /* URL+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+.swift"; sourceTree = "<group>"; };
+		4B7DBBB62AC5CB9400AC6557 /* ItemEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemEntity.swift; sourceTree = "<group>"; };
 		4B99C3962A16850F005F97B4 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
-		4BB143C22A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt"; sourceTree = "<group>"; };
 		4BB8F08C2A0BFB9E00606452 /* ListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListView.swift; sourceTree = "<group>"; };
 		4BC26C602AC5AF80002AB391 /* ImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportView.swift; sourceTree = "<group>"; };
 		4BC26C622AC5BFA5002AB391 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		4BCFCC2E2A860CE300EB97E2 /* Current State of The Channel.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Current State of The Channel.mp3"; sourceTree = "<group>"; };
-		4BCFCC302A860CE800EB97E2 /* Current State of The Channel.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Current State of The Channel.srt"; sourceTree = "<group>"; };
-		4BD4AA792A2288E50008AC6E /* No Margin For Error.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "No Margin For Error.mp3"; sourceTree = "<group>"; };
-		4BD4AA7A2A2288E50008AC6E /* No Margin For Error.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "No Margin For Error.srt"; sourceTree = "<group>"; };
 		4BF5ED9C2A179840000E080B /* PlayerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerController.swift; sourceTree = "<group>"; };
 		4BFF379F2A0BBFE5008ACA2A /* ShadowingPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ShadowingPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4BFF37A22A0BBFE5008ACA2A /* ShadowingPlayerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowingPlayerApp.swift; sourceTree = "<group>"; };
 		4BFF37A42A0BBFE5008ACA2A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		4BFF37A62A0BBFE6008ACA2A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4BFF37A92A0BBFE6008ACA2A /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		4BFF37B32A0BC044008ACA2A /* example.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = example.srt; sourceTree = "<group>"; };
-		4BFF37B42A0BC044008ACA2A /* example.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = example.mp3; sourceTree = "<group>"; };
 		4BFF37B72A0BC068008ACA2A /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -93,32 +65,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4BB8F0812A0BF57D00606452 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				4BD4AA792A2288E50008AC6E /* No Margin For Error.mp3 */,
-				4BD4AA7A2A2288E50008AC6E /* No Margin For Error.srt */,
-				4B99C3932A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 */,
-				4B99C3922A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt */,
-				4B2720132A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 */,
-				4B2720122A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt */,
-				4B523F372A1A5F86004D4B5F /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 */,
-				4BB143C22A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt */,
-				4BFF37B42A0BC044008ACA2A /* example.mp3 */,
-				4BFF37B32A0BC044008ACA2A /* example.srt */,
-				4B0B783B2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 */,
-				4B0B783D2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt */,
-				4B523F332A1A5E9E004D4B5F /* The Unfortunate Truth about Leica - Peter Mckinnon.mp3 */,
-				4B523F3B2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt */,
-				4B523F392A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 */,
-				4BCFCC302A860CE800EB97E2 /* Current State of The Channel.srt */,
-				4BCFCC2E2A860CE300EB97E2 /* Current State of The Channel.mp3 */,
-				4B6AF26A2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 */,
-				4B6AF26C2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt */,
-			);
-			path = Resources;
-			sourceTree = "<group>";
-		};
 		4BFF37962A0BBFE5008ACA2A = {
 			isa = PBXGroup;
 			children = (
@@ -139,7 +85,6 @@
 			isa = PBXGroup;
 			children = (
 				4B2720162A0FFCD00080A0BD /* Info.plist */,
-				4BB8F0812A0BF57D00606452 /* Resources */,
 				4BFF37A22A0BBFE5008ACA2A /* ShadowingPlayerApp.swift */,
 				4BFF37A42A0BBFE5008ACA2A /* ContentView.swift */,
 				4BB8F08C2A0BFB9E00606452 /* ListView.swift */,
@@ -150,6 +95,9 @@
 				4BFF37A82A0BBFE6008ACA2A /* Preview Content */,
 				4BF5ED9C2A179840000E080B /* PlayerController.swift */,
 				4BC26C622AC5BFA5002AB391 /* Logger.swift */,
+				4B7DBBB62AC5CB9400AC6557 /* ItemEntity.swift */,
+				4B7CC6382AC8E20D009E2E85 /* PinEntity.swift */,
+				4B7CC63A2AC8EEF0009E2E85 /* URL+.swift */,
 			);
 			path = ShadowingPlayer;
 			sourceTree = "<group>";
@@ -157,6 +105,8 @@
 		4BFF37A82A0BBFE6008ACA2A /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
+				4B0B783B2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 */,
+				4B0B783D2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt */,
 				4BFF37A92A0BBFE6008ACA2A /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
@@ -234,25 +184,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4B523F3C2A1A6117004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .srt in Resources */,
-				4BD4AA7B2A2288E50008AC6E /* No Margin For Error.mp3 in Resources */,
-				4B523F382A1A5F86004D4B5F /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.mp3 in Resources */,
-				4B99C3942A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.srt in Resources */,
-				4B99C3952A1684F6005F97B4 /* Quitting Digital Photography - Peter Mckinnon.mp3 in Resources */,
 				4B0B783C2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 in Resources */,
-				4BFF37B52A0BC044008ACA2A /* example.srt in Resources */,
-				4BCFCC312A860CE800EB97E2 /* Current State of The Channel.srt in Resources */,
-				4B2720142A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.srt in Resources */,
-				4BB143C42A0C0CEB001AFD35 /* 140_-_TO_POP_IN___OUT___OFF___ON___UP_A_Phrasal_Verb_a_Day_is_back.srt in Resources */,
-				4BFF37B62A0BC044008ACA2A /* example.mp3 in Resources */,
 				4BFF37AA2A0BBFE6008ACA2A /* Preview Assets.xcassets in Resources */,
-				4B2720152A0E67A90080A0BD /* Why Aliens Might Already Be On Their Way To Us.mp3 in Resources */,
-				4B523F3A2A1A60F3004D4B5F /* The Day the Dinosaurs Died  Minute by Minute - In a nutshell .mp3 in Resources */,
-				4B523F342A1A5E9E004D4B5F /* The Unfortunate Truth about Leica - Peter Mckinnon.mp3 in Resources */,
-				4B6AF26B2A94FA6E00B25524 /* Finally Switching Cameras - Leica Q2.mp3 in Resources */,
-				4BCFCC2F2A860CE300EB97E2 /* Current State of The Channel.mp3 in Resources */,
-				4B6AF26D2A94FB4000B25524 /* Finally Switching Cameras - Leica Q2.srt in Resources */,
-				4BD4AA7C2A2288E50008AC6E /* No Margin For Error.srt in Resources */,
 				4B0B783E2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt in Resources */,
 				4BFF37A72A0BBFE6008ACA2A /* Assets.xcassets in Resources */,
 			);
@@ -265,12 +198,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B7CC6392AC8E20D009E2E85 /* PinEntity.swift in Sources */,
 				4BC26C612AC5AF80002AB391 /* ImportView.swift in Sources */,
 				4B99C3972A16850F005F97B4 /* Item.swift in Sources */,
 				4BFF37B82A0BC068008ACA2A /* PlayerView.swift in Sources */,
+				4B7DBBB72AC5CB9400AC6557 /* ItemEntity.swift in Sources */,
 				4BF5ED9D2A179840000E080B /* PlayerController.swift in Sources */,
 				4BB8F08D2A0BFB9E00606452 /* ListView.swift in Sources */,
 				4BFF37A52A0BBFE5008ACA2A /* ContentView.swift in Sources */,
+				4B7CC63B2AC8EEF0009E2E85 /* URL+.swift in Sources */,
 				4BFF37A32A0BBFE5008ACA2A /* ShadowingPlayerApp.swift in Sources */,
 				4BC26C632AC5BFA5002AB391 /* Logger.swift in Sources */,
 			);

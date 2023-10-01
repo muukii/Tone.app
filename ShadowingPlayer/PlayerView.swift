@@ -6,6 +6,10 @@ import WrapLayout
 
 struct PlayerView: View {
 
+  enum Action {
+    case onPin(DisplayCue)
+  }
+
   struct Term: Identifiable {
     var id: String { value }
     var value: String
@@ -16,8 +20,14 @@ struct PlayerView: View {
   @State private var term: Term?
   @State private var focusing: DisplayCue?
 
-  init(playerController: PlayerController) {
+  private let actionHandler: @MainActor (Action) -> Void
+
+  init(
+    playerController: PlayerController,
+    actionHandler: @escaping @MainActor (Action) -> Void
+  ) {
     self.controller = playerController
+    self.actionHandler = actionHandler
   }
 
   private nonisolated static func chunk(
@@ -67,9 +77,8 @@ struct PlayerView: View {
 
     VStack {
 
-      ScrollView {
-        ScrollViewReader { proxy in
-          LazyVStack(alignment: .leading) {
+      ScrollViewReader { proxy in
+          List {
             ForEach(controller.cues) { cue in
               PlayerView.chunk(
                 text: cue.backed.text,
@@ -108,9 +117,16 @@ struct PlayerView: View {
                   }
                 }
               )
+              .listRowSeparator(.hidden)
+              .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
+              .contextMenu {
+                Button("Pin") {
+                  actionHandler(.onPin(cue))
+                }
+              }
             }
           }
-          .padding(.horizontal, 20)
+          .listStyle(.plain)
           .onChange(of: controller.currentCue, { oldValue, cue in
 
             guard let cue else { return }
@@ -121,7 +137,6 @@ struct PlayerView: View {
             }
 
           })
-        }
       }
 
       Spacer(minLength: 20).fixedSize()
@@ -214,29 +229,41 @@ struct PlayerView: View {
       ScrollView(.horizontal) {
         HStack {
 
-          ForEach([1.0, 0.95, 0.85, 0.8, 0.75, 0.65, 0.5, 0.4, 0.3, 0.2] as [Float], id: \.self) {
+          ForEach([1.0, 0.85, 0.8, 0.75, 0.65, 0.5, 0.4] as [Double], id: \.self) {
             value in
             Button {
               MainActor.assumeIsolated {
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
               }
-              controller.setRate(value)
+              controller.setRate(Float(value))
             } label: {
               HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Image(systemName: "multiply")
-                  .resizable()
-                  .aspectRatio(contentMode: .fit)
-                  .frame(width: 10)
-                Text("\(value.description)")
-                  .font(.body)
+                Text("\(Self.fractionLabel(fraction: value))")
+                  .font(.system(size: 16, weight: .bold, design: .default))
               }
+              .aspectRatio(1, contentMode: .fill)
+              .frame(square: 30)
             }
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.circle)
+            .tint(Color.orange)
           }
 
         }
         .buttonStyle(.borderedProminent)
       }
       .contentMargins(20)
+    }
+    .scrollIndicators(.hidden)
+  }
+
+  private static func fractionLabel(fraction: Double) -> String {
+    if fraction < 1 {
+      var text = String.init(format: "%0.2f", fraction)
+      text.removeFirst()
+      return text
+    } else {
+      return .init(format: "%.1f", fraction)
     }
   }
 
@@ -265,8 +292,11 @@ enum Preview_PlayerView: PreviewProvider {
   static var previews: some View {
 
     Group {
-      TargetComponent(playerController: try! .init(item: .overwhelmed))
-      TargetComponent(playerController: try! .init(item: .make(name: "Why Aliens Might Already Be On Their Way To Us")))
+      TargetComponent(
+        playerController: try! .init(item: .overwhelmed),
+        actionHandler: { action in
+
+      })
     }
 
   }

@@ -11,9 +11,9 @@ struct Item_Hashable: Hashable {
     body.id.hash(into: &hasher)
   }
 
-  let body: Item
+  let body: ItemEntity
 
-  init(body: Item) {
+  init(body: ItemEntity) {
     self.body = body
   }
 

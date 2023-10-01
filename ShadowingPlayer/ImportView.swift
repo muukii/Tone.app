@@ -4,12 +4,107 @@ import UniformTypeIdentifiers
 
 struct ImportView: View {
 
+  @Environment(\.modelContext) var modelContext
+
+  var onCompleted: () -> Void
+
+  var body: some View {
+    ImportContentView(onImport: { draft in
+
+      guard draft.audioFileURL.startAccessingSecurityScopedResource() else {
+        Log.error("Failed to start accessing security scoped resource")
+        return
+      }
+
+      guard draft.subtitleFileURL.startAccessingSecurityScopedResource() else {
+        Log.error("Failed to start accessing security scoped resource")
+        return
+      }
+
+      defer {
+        draft.audioFileURL.stopAccessingSecurityScopedResource()
+        draft.subtitleFileURL.stopAccessingSecurityScopedResource()
+      }
+
+      let target = URL.documentsDirectory.appendingPathComponent("audio", isDirectory: true)
+
+      let fileManager = FileManager.default
+
+      do {
+
+        if fileManager.fileExists(atPath: target.absoluteString) == false {
+
+          try fileManager.createDirectory(
+            at: target,
+            withIntermediateDirectories: true,
+            attributes: nil
+          )
+        }
+
+        func overwrite(file: URL, to url: URL) throws {
+
+          if fileManager.fileExists(atPath: url.path(percentEncoded: false)) {
+            try fileManager.removeItem(at: url)
+          }
+
+          try fileManager.copyItem(
+            at: file,
+            to: url
+          )
+
+        }
+
+        let audioFileDestinationPath = AbsolutePath(url: target.appendingPathComponent(draft.title + "." + draft.audioFileURL.pathExtension))
+        let subtitleFileDestinationPath = AbsolutePath(url: target.appendingPathComponent(draft.title + ".srt"))
+        do {
+          try overwrite(file: draft.audioFileURL, to: audioFileDestinationPath.url)
+        }
+
+        do {
+          try overwrite(file: draft.subtitleFileURL, to: subtitleFileDestinationPath.url)
+        }
+
+        try modelContext.transaction {
+
+          let new = ItemEntity()
+
+          new.createdAt = .init()
+          new.title = draft.title
+          new.subtitleFilePath = subtitleFileDestinationPath.relative(basedOn: .init(url: URL.documentsDirectory)).rawValue
+          new.audioFilePath = audioFileDestinationPath.relative(basedOn: .init(url: URL.documentsDirectory)).rawValue
+
+          modelContext.insert(new)
+
+        }
+
+        onCompleted()
+
+      } catch {
+        Log.error("\(error)")
+      }
+
+    })
+  }
+}
+
+fileprivate struct Draft {
+
+  let title: String
+  let audioFileURL: URL
+  let subtitleFileURL: URL
+
+}
+
+fileprivate struct ImportContentView: View {
+
   @State private var isAudioSelectingFiles: Bool = false
   @State private var isSubtitleSelectingFiles: Bool = false
 
   @State private var audioFileURL: URL?
   @State private var subtitleFileURL: URL?
   @State private var title: String = ""
+
+  var onImport: (Draft) -> Void
 
   var body: some View {
 
@@ -89,9 +184,6 @@ struct ImportView: View {
 
     }
     .modifier(modifier)
-    .onAppear {
-      Item.globInDocuments()
-    }
 
   }
 
@@ -109,47 +201,13 @@ struct ImportView: View {
       return
     }
 
-    guard audioFileURL.startAccessingSecurityScopedResource() else {      
-      Log.error("Failed to start accessing security scoped resource")
-      return
-    }
+    let draft = Draft(
+      title: title,
+      audioFileURL: audioFileURL,
+      subtitleFileURL: subtitleFileURL
+    )
 
-    guard subtitleFileURL.startAccessingSecurityScopedResource() else {
-      Log.error("Failed to start accessing security scoped resource")
-      return
-    }
-
-    defer {
-      audioFileURL.stopAccessingSecurityScopedResource()
-      subtitleFileURL.stopAccessingSecurityScopedResource()
-    }
-
-    let target = URL.documentsDirectory.appendingPathComponent("audio", isDirectory: true)
-
-    do {
-
-      if FileManager.default.fileExists(atPath: target.absoluteString) == false {
-
-        try FileManager.default.createDirectory(
-          at: target,
-          withIntermediateDirectories: true,
-          attributes: nil
-        )
-      }
-
-      try FileManager.default.copyItem(
-        at: audioFileURL,
-        to: target.appendingPathComponent(title + "." + audioFileURL.pathExtension)
-      )
-
-      try FileManager.default.copyItem(
-        at: subtitleFileURL,
-        to: target.appendingPathComponent(title + ".srt")
-      )
-
-    } catch {
-      print(error)
-    }
+    onImport(draft)
 
   }
 
@@ -174,5 +232,7 @@ struct ImportView: View {
 }
 
 #Preview {
-  ImportView()
+  ImportView(onCompleted: {
+    
+  })
 }
