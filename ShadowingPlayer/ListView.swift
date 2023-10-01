@@ -43,17 +43,63 @@ struct ListView: View {
                 Text(pin.subtitle)
               }
             }
+            .contextMenu(menuItems: {
+              Button("Delete", role: .destructive) {
+                modelContext.delete(pin)
+              }
+            })
           }
         }
 
       }
       .navigationDestination(for: PinEntity.self, destination: { pin in
 
+        if let item = pin.item {
+          let controller = try! PlayerController(item: item)
+          let _ = controller.setRepeating(identifier: pin.identifier)
+          PlayerView(
+            playerController: controller,
+            actionHandler: { action in
+              switch action {
+              case .onPin(let cue):
+
+                do {
+                  try modelContext.transaction {
+
+                    let new = PinEntity()
+                    new.createdAt = .init()
+                    new.subtitle = cue.backed.text
+                    new.startTime = cue.backed.startTime.timeInSeconds
+                    new.endTime = cue.backed.endTime.timeInSeconds
+                    new.identifier = cue.id
+
+                    let targetItem = try modelContext.fetch(.init(predicate: #Predicate<ItemEntity> { [id = item.persistentModelID] in
+                      $0.persistentModelID == id
+                    })).first
+
+                    guard let targetItem else {
+                      assertionFailure("not found item")
+                      return
+                    }
+
+                    new.item = targetItem
+
+                    modelContext.insert(new)
+                  }
+                } catch {
+                  Log.error("Failed to make a pin entity. \(error)")
+                }
+
+                break
+              }
+            })
+        } else {
+          EmptyView()
+        }
       })
       .navigationDestination(for: ItemEntity.self, destination: { item in
         PlayerView(
           playerController: try! .init(item: item),
-          focusingID: nil,
           actionHandler: { action in
             switch action {
             case .onPin(let cue):
@@ -67,6 +113,17 @@ struct ListView: View {
                   new.startTime = cue.backed.startTime.timeInSeconds
                   new.endTime = cue.backed.endTime.timeInSeconds
                   new.identifier = cue.id
+
+                  let targetItem = try modelContext.fetch(.init(predicate: #Predicate<ItemEntity> { [id = item.persistentModelID] in
+                    $0.persistentModelID == id
+                  })).first
+
+                  guard let targetItem else {
+                    assertionFailure("not found item")
+                    return
+                  }
+
+                  new.item = targetItem
 
                   modelContext.insert(new)
                 }

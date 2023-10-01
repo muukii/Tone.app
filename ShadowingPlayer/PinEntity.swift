@@ -14,7 +14,7 @@ final class PinEntity {
   var startTime: TimeInterval
   var endTime: TimeInterval
 
-  @Relationship(.unique)
+  @Relationship
   var item: ItemEntity?
 
   init() {

@@ -79,7 +79,7 @@ final class PlayerController: NSObject {
 
   init(title: String, audioFileURL: URL, subtitleFileURL: URL) throws {
 
-    player = .init(url: audioFileURL, buffered: true)!
+    player = .init(url: audioFileURL, buffered: false)!
 
     timePitch = .init(player)
     timePitch.rate = 1.0
@@ -91,6 +91,11 @@ final class PlayerController: NSObject {
     self.title = title
 
     super.init()
+  }
+
+  func setRepeating(identifier: String) {
+    guard let cue = cues.first(where: { $0.id == identifier }) else { return }
+    setRepeat(range: .init(startCue: cue, endCue: cue))
   }
 
   private func resetCommandCenter() {
