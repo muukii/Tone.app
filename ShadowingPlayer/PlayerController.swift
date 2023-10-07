@@ -150,6 +150,8 @@ final class PlayerController: NSObject {
   }
 
   deinit {
+
+    print("deinit")
     currentTimeObservation?.invalidate()
 
     MPRemoteCommandCenter.shared().playCommand.removeTarget(self)
