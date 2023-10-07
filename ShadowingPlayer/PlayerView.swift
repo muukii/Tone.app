@@ -4,6 +4,67 @@ import SwiftUI
 import SwiftUISupport
 import WrapLayout
 
+@propertyWrapper
+public struct LazyState<Value>: DynamicProperty {
+
+  @State var _value: Value?
+
+  private let _initializer: () -> Value
+
+  public init(wrappedValue value: @autoclosure @escaping () -> Value) {
+    self._initializer = value
+  }
+
+  public init(initialValue value: @escaping () -> Value) {
+    self._initializer = value
+  }
+
+  public func update() {
+    if _value == nil {
+      _value = _initializer()
+    }
+  }
+
+  public var wrappedValue: Value {
+    get {
+      _value!
+    }
+    nonmutating set {
+      _value = newValue
+    }
+  }
+}
+
+public struct ObjectProvider<Object, Content: View>: View {
+
+  @State private var object: Object?
+
+  private let _objectInitializer: () -> Object
+  private let _content: (Object) -> Content
+
+  public init(object: @autoclosure @escaping () -> Object, @ViewBuilder content: @escaping (Object) -> Content) {
+    self._objectInitializer = object
+    self._content = content
+  }
+
+  public var body: some View {
+    Group {
+      if let object = object {
+        _content(object)
+      } else {
+        Color.clear
+          .onAppear {
+            assert(object == nil, "it should not be running twice or more.")
+            guard object == nil else { return }
+            object = _objectInitializer()
+          }
+      }
+    }
+
+  }
+
+}
+
 struct PlayerView: View {
 
   enum Action {
@@ -37,7 +98,7 @@ struct PlayerView: View {
     isInRange: Bool,
     onSelect: @escaping () -> Void
   )
-    -> some View
+  -> some View
   {
     HStack {
       Text(text).font(.system(size: 24, weight: .bold, design: .default))
@@ -78,70 +139,70 @@ struct PlayerView: View {
     VStack {
 
       ScrollViewReader { proxy in
-          List {
-            ForEach(controller.cues) { cue in
-              PlayerView.chunk(
-                text: cue.backed.text,
-                identifier: cue.id,
-                isFocusing: cue == focusing,
-                isInRange: controller.playingRange?.contains(cue) ?? false,
-                onSelect: {
-                  if controller.isRepeating {
+        List {
+          ForEach(controller.cues) { cue in
+            PlayerView.chunk(
+              text: cue.backed.text,
+              identifier: cue.id,
+              isFocusing: cue == focusing,
+              isInRange: controller.playingRange?.contains(cue) ?? false,
+              onSelect: {
+                if controller.isRepeating {
 
-                    if var currentRange = controller.playingRange {
+                  if var currentRange = controller.playingRange {
 
-                      if currentRange.isExact(with: cue) {
-                        // selected current active range
-                        return
+                    if currentRange.isExact(with: cue) {
+                      // selected current active range
+                      return
+                    }
+
+                    if currentRange.contains(cue) == false {
+
+                      if cue.backed.startTime < currentRange.startCue.backed.startTime {
+                        currentRange.startCue = cue
+                      } else if cue.backed.endTime > currentRange.endCue.backed.endTime {
+                        currentRange.endCue = cue
                       }
-
-                      if currentRange.contains(cue) == false {
-
-                        if cue.backed.startTime < currentRange.startCue.backed.startTime {
-                          currentRange.startCue = cue
-                        } else if cue.backed.endTime > currentRange.endCue.backed.endTime {
-                          currentRange.endCue = cue
-                        }
-
-                      } else {
-
-                      }
-
-                      controller.setRepeat(range: currentRange)
 
                     } else {
-                      controller.setRepeat(range: .init(startCue: cue, endCue: cue))
+
                     }
+
+                    controller.setRepeat(range: currentRange)
+
                   } else {
-                    controller.move(to: cue)
+                    controller.setRepeat(range: .init(startCue: cue, endCue: cue))
                   }
+                } else {
+                  controller.move(to: cue)
                 }
-              )
-              .listRowSeparator(.hidden)
-              .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
-              .contextMenu {
-                Button("Pin") {
-                  actionHandler(.onPin(cue))
-                }
+              }
+            )
+            .listRowSeparator(.hidden)
+            .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
+            .contextMenu {
+              Button("Pin") {
+                actionHandler(.onPin(cue))
               }
             }
           }
-          .listStyle(.plain)
-          .onChange(of: controller.currentCue, { oldValue, cue in
+        }
+        .listStyle(.plain)
+        .onChange(of: controller.currentCue, { oldValue, cue in
 
-            guard let cue else { return }
+          guard let cue else { return }
 
-            withAnimation(.bouncy) {
-              proxy.scrollTo(cue.id, anchor: .center)
-              focusing = cue
-            }
+          withAnimation(.bouncy) {
+            proxy.scrollTo(cue.id, anchor: .center)
+            focusing = cue
+          }
 
-          })
+        })
       }
 
       Spacer(minLength: 20).fixedSize()
 
-      control
+      control(controller: controller)
 
     }
     .sheet(
@@ -159,10 +220,13 @@ struct PlayerView: View {
     .onDisappear {
       UIApplication.shared.isIdleTimerDisabled = false
     }
+
+
+
   }
 
   @ViewBuilder
-  private var control: some View {
+  private func control(controller: PlayerController) -> some View {
     VStack {
       HStack {
 
@@ -292,11 +356,10 @@ enum Preview_PlayerView: PreviewProvider {
   static var previews: some View {
 
     Group {
-      TargetComponent(
-        playerController: try! .init(item: .overwhelmed),
-        actionHandler: { action in
-
-      })
+      //      TargetComponent(
+      //        item: .overwhelmed,
+      //        actionHandler: { action in
+      //      })
     }
 
   }
