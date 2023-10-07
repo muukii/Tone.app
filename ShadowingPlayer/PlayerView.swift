@@ -35,6 +35,9 @@ public struct LazyState<Value>: DynamicProperty {
   }
 }
 
+/**
+ https://developer.apple.com/forums/thread/739163
+ */
 public struct ObjectProvider<Object, Content: View>: View {
 
   @State private var object: Object?
