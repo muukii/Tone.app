@@ -22,24 +22,35 @@ final class PlayerController: NSObject {
 
   struct PlayingRange: Equatable {
 
-    var startTime: TimeInterval { startCue.backed.startTime.timeInSeconds }
-    var endTime: TimeInterval { endCue.backed.endTime.timeInSeconds }
+    var startTime: TimeInterval { cues.first!.backed.startTime.timeInSeconds }
+    var endTime: TimeInterval { cues.last!.backed.endTime.timeInSeconds }
 
-    var startCue: DisplayCue
-    var endCue: DisplayCue
-  
-    init(startCue: DisplayCue, endCue: DisplayCue) {
-      self.startCue = startCue
-      self.endCue = endCue
+    var startCue: DisplayCue {
+      cues.first!
+    }
+
+    private var cues: [DisplayCue] = []
+
+    init(cue: DisplayCue) {
+      self.cues = [cue]
     }
 
     func contains(_ cue: DisplayCue) -> Bool {
-      cue.backed.startTime >= startCue.backed.startTime
-        && cue.backed.endTime <= endCue.backed.endTime    
+      cues.contains(cue)
     }
 
     func isExact(with cue: DisplayCue) -> Bool {
-      startCue == cue && endCue == cue
+      cues == [cue]
+    }
+
+    mutating func add(cue: DisplayCue) {
+      guard cues.contains(cue) == false else { return }
+      cues.append(cue)
+      cues.sort { $0.backed.startTime < $1.backed.startTime }
+    }
+
+    mutating func remove(cue: DisplayCue) {
+      cues.removeAll { $0 == cue }
     }
   }
 
@@ -95,7 +106,7 @@ final class PlayerController: NSObject {
 
   func setRepeating(identifier: String) {
     guard let cue = cues.first(where: { $0.id == identifier }) else { return }
-    setRepeat(range: .init(startCue: cue, endCue: cue))
+    setRepeat(range: .init(cue: cue))
   }
 
   private func resetCommandCenter() {

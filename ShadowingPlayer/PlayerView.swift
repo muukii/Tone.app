@@ -97,20 +97,16 @@ struct PlayerView: View {
 
                     if currentRange.contains(cue) == false {
 
-                      if cue.backed.startTime < currentRange.startCue.backed.startTime {
-                        currentRange.startCue = cue
-                      } else if cue.backed.endTime > currentRange.endCue.backed.endTime {
-                        currentRange.endCue = cue
-                      }
+                      currentRange.add(cue: cue)
 
                     } else {
-
+                      currentRange.remove(cue: cue)
                     }
 
                     controller.setRepeat(range: currentRange)
 
                   } else {
-                    controller.setRepeat(range: .init(startCue: cue, endCue: cue))
+                    controller.setRepeat(range: .init(cue: cue))
                   }
                 } else {
                   controller.move(to: cue)
@@ -207,7 +203,7 @@ struct PlayerView: View {
             controller.setRepeat(range: nil)
           } else {
             if let currentCue = controller.currentCue {
-              controller.setRepeat(range: .init(startCue: currentCue, endCue: currentCue))
+              controller.setRepeat(range: .init(cue: currentCue))
             }
           }
         } label: {
