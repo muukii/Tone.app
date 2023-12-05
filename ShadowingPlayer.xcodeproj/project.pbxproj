@@ -14,7 +14,6 @@
 		4B7DBBB72AC5CB9400AC6557 /* ItemEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7DBBB62AC5CB9400AC6557 /* ItemEntity.swift */; };
 		4B84BDB82A16894300B95D87 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4B84BDB72A16894300B95D87 /* AudioKit */; };
 		4B99C3972A16850F005F97B4 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B99C3962A16850F005F97B4 /* Item.swift */; };
-		4BB8F0882A0BF89E00606452 /* SwiftUIStack in Frameworks */ = {isa = PBXBuildFile; productRef = 4BB8F0872A0BF89E00606452 /* SwiftUIStack */; };
 		4BB8F08B2A0BF9B300606452 /* WrapLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 4BB8F08A2A0BF9B300606452 /* WrapLayout */; };
 		4BB8F08D2A0BFB9E00606452 /* ListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB8F08C2A0BFB9E00606452 /* ListView.swift */; };
 		4BC26C612AC5AF80002AB391 /* ImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC26C602AC5AF80002AB391 /* ImportView.swift */; };
@@ -62,7 +61,6 @@
 				4BFF37B22A0BC02C008ACA2A /* SwiftSubtitles in Frameworks */,
 				4B84BDB82A16894300B95D87 /* AudioKit in Frameworks */,
 				4BB8F08B2A0BF9B300606452 /* WrapLayout in Frameworks */,
-				4BB8F0882A0BF89E00606452 /* SwiftUIStack in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,7 +135,6 @@
 			packageProductDependencies = (
 				4BFF37B12A0BC02C008ACA2A /* SwiftSubtitles */,
 				4BFF37BA2A0BD687008ACA2A /* SwiftUISupport */,
-				4BB8F0872A0BF89E00606452 /* SwiftUIStack */,
 				4BB8F08A2A0BF9B300606452 /* WrapLayout */,
 				4B84BDB72A16894300B95D87 /* AudioKit */,
 			);
@@ -172,7 +169,6 @@
 			packageReferences = (
 				4BFF37B02A0BC02C008ACA2A /* XCRemoteSwiftPackageReference "SwiftSubtitles" */,
 				4BFF37B92A0BD687008ACA2A /* XCRemoteSwiftPackageReference "swiftui-support" */,
-				4BB8F0862A0BF89E00606452 /* XCRemoteSwiftPackageReference "swiftui-stack" */,
 				4BB8F0892A0BF9B300606452 /* XCRemoteSwiftPackageReference "swiftui-WrapLayout" */,
 				4B84BDB62A16894300B95D87 /* XCRemoteSwiftPackageReference "AudioKit" */,
 			);
@@ -439,14 +435,6 @@
 				minimumVersion = 5.0.0;
 			};
 		};
-		4BB8F0862A0BF89E00606452 /* XCRemoteSwiftPackageReference "swiftui-stack" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/FluidGroup/swiftui-stack";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		4BB8F0892A0BF9B300606452 /* XCRemoteSwiftPackageReference "swiftui-WrapLayout" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/muukii/swiftui-WrapLayout";
@@ -478,11 +466,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4B84BDB62A16894300B95D87 /* XCRemoteSwiftPackageReference "AudioKit" */;
 			productName = AudioKit;
-		};
-		4BB8F0872A0BF89E00606452 /* SwiftUIStack */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4BB8F0862A0BF89E00606452 /* XCRemoteSwiftPackageReference "swiftui-stack" */;
-			productName = SwiftUIStack;
 		};
 		4BB8F08A2A0BF9B300606452 /* WrapLayout */ = {
 			isa = XCSwiftPackageProductDependency;

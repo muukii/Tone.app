@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/AudioKit/AudioKit",
       "state" : {
-        "revision" : "c30a151fea40696ad0a45c60c2bba29112bb4279",
-        "version" : "5.6.1"
+        "revision" : "82cab9d4c168b5b03b67e2ff099819f589b530f7",
+        "version" : "5.6.2"
       }
     },
     {
@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dagronf/DSFRegex",
       "state" : {
-        "revision" : "29f9a2924e318ab3a3c39692bcc48757cf2756e4",
-        "version" : "3.1.0"
+        "revision" : "f1ce5c208384bb238b07905d140c2e60182e3601",
+        "version" : "3.3.1"
       }
     },
     {
@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/sampettersson/Placement",
       "state" : {
-        "revision" : "4178880e4c67754b5b1b9720939f679382127604",
-        "version" : "1.5.0"
+        "revision" : "1a43e5c9c26094d79916529473e9fe65387eb676",
+        "version" : "1.6.0"
       }
     },
     {
@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dagronf/SwiftSubtitles.git",
       "state" : {
-        "revision" : "033bc2ec4b0089e8c09f4e644292ae1f080f6c89",
-        "version" : "0.11.1"
+        "revision" : "9610acc4a62f0b274f4fc62c4d600da098fe5892",
+        "version" : "0.12.0"
       }
     },
     {
@@ -43,24 +43,6 @@
       "state" : {
         "revision" : "9c83f8995f9e5efc29db2fca4b9ff058283f1603",
         "version" : "1.0.0"
-      }
-    },
-    {
-      "identity" : "swiftui-snap-dragging-modifier",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FluidGroup/swiftui-snap-dragging-modifier",
-      "state" : {
-        "revision" : "f105008910ee03fe50c23954bee98df8caec0ebe",
-        "version" : "1.1.2"
-      }
-    },
-    {
-      "identity" : "swiftui-stack",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FluidGroup/swiftui-stack",
-      "state" : {
-        "branch" : "main",
-        "revision" : "cdbea8c54d6a6d5328b6ea5a932a106f02c02133"
       }
     },
     {
