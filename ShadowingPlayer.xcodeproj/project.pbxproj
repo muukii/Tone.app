@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		4B0B783C2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4B0B783B2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 */; };
 		4B0B783E2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4B0B783D2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt */; };
+		4B571ECB2B20CE9D001436AC /* Verge in Frameworks */ = {isa = PBXBuildFile; productRef = 4B571ECA2B20CE9D001436AC /* Verge */; };
+		4B571ECD2B20CE9D001436AC /* VergeMacros in Frameworks */ = {isa = PBXBuildFile; productRef = 4B571ECC2B20CE9D001436AC /* VergeMacros */; };
+		4B571ECF2B20D1DA001436AC /* PlayerListDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B571ECE2B20D1DA001436AC /* PlayerListDisplayView.swift */; };
+		4B571ED12B20D20F001436AC /* PlayerListHorizontalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B571ED02B20D20F001436AC /* PlayerListHorizontalView.swift */; };
 		4B7CC6392AC8E20D009E2E85 /* PinEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7CC6382AC8E20D009E2E85 /* PinEntity.swift */; };
 		4B7CC63B2AC8EEF0009E2E85 /* URL+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7CC63A2AC8EEF0009E2E85 /* URL+.swift */; };
 		4B7DBBB72AC5CB9400AC6557 /* ItemEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7DBBB62AC5CB9400AC6557 /* ItemEntity.swift */; };
@@ -34,6 +38,8 @@
 		4B0B783B2A1A18090041262B /* overwhelmed - Peter Mckinnon.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "overwhelmed - Peter Mckinnon.mp3"; sourceTree = "<group>"; };
 		4B0B783D2A1A187E0041262B /* overwhelmed - Peter Mckinnon.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "overwhelmed - Peter Mckinnon.srt"; sourceTree = "<group>"; };
 		4B2720162A0FFCD00080A0BD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4B571ECE2B20D1DA001436AC /* PlayerListDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerListDisplayView.swift; sourceTree = "<group>"; };
+		4B571ED02B20D20F001436AC /* PlayerListHorizontalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerListHorizontalView.swift; sourceTree = "<group>"; };
 		4B7CC6382AC8E20D009E2E85 /* PinEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinEntity.swift; sourceTree = "<group>"; };
 		4B7CC63A2AC8EEF0009E2E85 /* URL+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+.swift"; sourceTree = "<group>"; };
 		4B7DBBB62AC5CB9400AC6557 /* ItemEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemEntity.swift; sourceTree = "<group>"; };
@@ -58,6 +64,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				4BFF37BB2A0BD687008ACA2A /* SwiftUISupport in Frameworks */,
+				4B571ECD2B20CE9D001436AC /* VergeMacros in Frameworks */,
+				4B571ECB2B20CE9D001436AC /* Verge in Frameworks */,
 				4BFF37B22A0BC02C008ACA2A /* SwiftSubtitles in Frameworks */,
 				4B84BDB82A16894300B95D87 /* AudioKit in Frameworks */,
 				4BB8F08B2A0BF9B300606452 /* WrapLayout in Frameworks */,
@@ -92,6 +100,8 @@
 				4BB8F08C2A0BFB9E00606452 /* ListView.swift */,
 				4BC26C602AC5AF80002AB391 /* ImportView.swift */,
 				4BFF37B72A0BC068008ACA2A /* PlayerView.swift */,
+				4B571ECE2B20D1DA001436AC /* PlayerListDisplayView.swift */,
+				4B571ED02B20D20F001436AC /* PlayerListHorizontalView.swift */,
 				4B99C3962A16850F005F97B4 /* Item.swift */,
 				4BFF37A62A0BBFE6008ACA2A /* Assets.xcassets */,
 				4BFF37A82A0BBFE6008ACA2A /* Preview Content */,
@@ -137,6 +147,8 @@
 				4BFF37BA2A0BD687008ACA2A /* SwiftUISupport */,
 				4BB8F08A2A0BF9B300606452 /* WrapLayout */,
 				4B84BDB72A16894300B95D87 /* AudioKit */,
+				4B571ECA2B20CE9D001436AC /* Verge */,
+				4B571ECC2B20CE9D001436AC /* VergeMacros */,
 			);
 			productName = ShadowingPlayer;
 			productReference = 4BFF379F2A0BBFE5008ACA2A /* ShadowingPlayer.app */;
@@ -171,6 +183,7 @@
 				4BFF37B92A0BD687008ACA2A /* XCRemoteSwiftPackageReference "swiftui-support" */,
 				4BB8F0892A0BF9B300606452 /* XCRemoteSwiftPackageReference "swiftui-WrapLayout" */,
 				4B84BDB62A16894300B95D87 /* XCRemoteSwiftPackageReference "AudioKit" */,
+				4B571EC92B20CE9D001436AC /* XCRemoteSwiftPackageReference "Verge" */,
 			);
 			productRefGroup = 4BFF37A02A0BBFE5008ACA2A /* Products */;
 			projectDirPath = "";
@@ -200,6 +213,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B571ECF2B20D1DA001436AC /* PlayerListDisplayView.swift in Sources */,
 				4B7CC6392AC8E20D009E2E85 /* PinEntity.swift in Sources */,
 				4BC26C612AC5AF80002AB391 /* ImportView.swift in Sources */,
 				4B99C3972A16850F005F97B4 /* Item.swift in Sources */,
@@ -210,6 +224,7 @@
 				4BB8F08D2A0BFB9E00606452 /* ListView.swift in Sources */,
 				4BFF37A52A0BBFE5008ACA2A /* ContentView.swift in Sources */,
 				4B7CC63B2AC8EEF0009E2E85 /* URL+.swift in Sources */,
+				4B571ED12B20D20F001436AC /* PlayerListHorizontalView.swift in Sources */,
 				4BFF37A32A0BBFE5008ACA2A /* ShadowingPlayerApp.swift in Sources */,
 				4BC26C632AC5BFA5002AB391 /* Logger.swift in Sources */,
 				4BFC8C952AD1D748009A4389 /* LazyState.swift in Sources */,
@@ -427,6 +442,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		4B571EC92B20CE9D001436AC /* XCRemoteSwiftPackageReference "Verge" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/VergeGroup/Verge.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		4B84BDB62A16894300B95D87 /* XCRemoteSwiftPackageReference "AudioKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/AudioKit/AudioKit";
@@ -462,6 +485,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4B571ECA2B20CE9D001436AC /* Verge */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4B571EC92B20CE9D001436AC /* XCRemoteSwiftPackageReference "Verge" */;
+			productName = Verge;
+		};
+		4B571ECC2B20CE9D001436AC /* VergeMacros */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4B571EC92B20CE9D001436AC /* XCRemoteSwiftPackageReference "Verge" */;
+			productName = VergeMacros;
+		};
 		4B84BDB72A16894300B95D87 /* AudioKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4B84BDB62A16894300B95D87 /* XCRemoteSwiftPackageReference "AudioKit" */;

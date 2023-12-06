@@ -4,7 +4,18 @@ import SwiftUI
 import SwiftUISupport
 import WrapLayout
 
-struct PlayerView: View {
+protocol PlayerDisplay: View {
+
+  init(
+    cues: [DisplayCue],
+    focusing: DisplayCue?,
+    playingRange: PlayerController.PlayingRange?,
+    isRepeating: Bool,
+    actionHandler: @escaping (PlayerDisplayAction) -> Void
+  )
+}
+
+struct PlayerView<Display: PlayerDisplay>: View {
 
   enum Action {
     case onPin(DisplayCue)
@@ -17,7 +28,6 @@ struct PlayerView: View {
 
   private let controller: PlayerController
 
-//  @State private var term: Term?
   @State private var focusing: DisplayCue?
 
   private let actionHandler: @MainActor (Action) -> Void
@@ -37,7 +47,7 @@ struct PlayerView: View {
     isInRange: Bool,
     onSelect: @escaping () -> Void
   )
-  -> some View
+    -> some View
   {
     HStack {
       Text(text).font(.system(size: 24, weight: .bold, design: .default))
@@ -54,15 +64,17 @@ struct PlayerView: View {
 
       // Indicator
       RoundedRectangle(cornerRadius: 8, style: .continuous)
-        .fill({ () -> Color in
-          if isInRange {
-            return Color.blue
-          } else if isFocusing {
-            return Color.primary
-          } else {
-            return Color.primary.opacity(0.3)
-          }
-        }())
+        .fill(
+          { () -> Color in
+            if isInRange {
+              return Color.blue
+            } else if isFocusing {
+              return Color.primary
+            } else {
+              return Color.primary.opacity(0.3)
+            }
+          }()
+        )
         .frame(width: 40)
         ._onButtonGesture(
           pressing: { isPressing in },
@@ -77,78 +89,37 @@ struct PlayerView: View {
 
     VStack {
 
-      ScrollViewReader { proxy in
-        List {
-          ForEach(controller.cues) { cue in
-            PlayerView.chunk(
-              text: cue.backed.text,
-              identifier: cue.id,
-              isFocusing: cue == focusing,
-              isInRange: controller.playingRange?.contains(cue) ?? false,
-              onSelect: {
-                if controller.isRepeating {
-
-                  if var currentRange = controller.playingRange {
-
-                    if currentRange.isExact(with: cue) {
-                      // selected current active range
-                      return
-                    }
-
-                    if currentRange.contains(cue) == false {
-
-                      currentRange.add(cue: cue)
-
-                    } else {
-                      currentRange.remove(cue: cue)
-                    }
-
-                    controller.setRepeat(range: currentRange)
-
-                  } else {
-                    controller.setRepeat(range: .init(cue: cue))
-                  }
-                } else {
-                  controller.move(to: cue)
-                }
-              }
-            )
-            .listRowSeparator(.hidden)
-            .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
-            .contextMenu {
-              Button("Pin") {
-                actionHandler(.onPin(cue))
-              }
-            }
+      Display(
+        cues: controller.cues,
+        focusing: focusing,
+        playingRange: controller.playingRange,
+        isRepeating: controller.isRepeating,
+        actionHandler: { action in
+          switch action {
+          case .move(to: let cue):
+            controller.move(to: cue)
+          case .pin(let cue):
+            actionHandler(.onPin(cue))
+          case .setRepeat(let range):
+            controller.setRepeat(range: range)
           }
         }
-        .listStyle(.plain)
-        .onChange(of: controller.currentCue, { oldValue, cue in
-
-          guard let cue else { return }
-
-          withAnimation(.bouncy) {
-            proxy.scrollTo(cue.id, anchor: .center)
-            focusing = cue
-          }
-
-        })
-      }
+      )
 
       Spacer(minLength: 20).fixedSize()
 
       PlayerControlPanel(controller: controller)
 
     }
-//    .sheet(
-//      item: $term,
-//      onDismiss: {
-//        term = nil
-//      },
-//      content: { term in
-//        DefinitionView(term: term.value)
-//      }
-//    )
+    //    .sheet(
+    //      item: $term,
+    //      onDismiss: {
+    //        term = nil
+    //      },
+    //      content: { term in
+    //        DefinitionView(term: term.value)
+    //      }
+    //    )
     .onAppear {
       UIApplication.shared.isIdleTimerDisabled = true
     }
@@ -166,119 +137,6 @@ enum PlayerDisplayAction {
   case setRepeat(range: PlayerController.PlayingRange)
 }
 
-struct PlayerListDisplayView: View {
-
-  let cues: [DisplayCue]
-  let focusing: DisplayCue?
-  let playingRange: PlayerController.PlayingRange?
-  let isRepeating: Bool
-
-  let actionHandler: (PlayerDisplayAction) -> Void
-
-  var body: some View {
-    ScrollViewReader { proxy in
-      List {
-        ForEach(cues) { cue in
-          Self.chunk(
-            text: cue.backed.text,
-            identifier: cue.id,
-            isFocusing: cue == focusing,
-            isInRange: playingRange?.contains(cue) ?? false,
-            onSelect: {
-              if isRepeating {
-
-                if var currentRange = playingRange {
-
-                  if currentRange.isExact(with: cue) {
-                    // selected current active range
-                    return
-                  }
-
-                  if currentRange.contains(cue) == false {
-
-                    currentRange.add(cue: cue)
-
-                  } else {
-                    currentRange.remove(cue: cue)
-                  }
-
-                  actionHandler(.setRepeat(range: currentRange))
-
-                } else {
-
-                  actionHandler(.setRepeat(range: .init(cue: cue)))
-                }
-              } else {
-                actionHandler(.move(to: cue))
-              }
-            }
-          )
-          .listRowSeparator(.hidden)
-          .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
-          .contextMenu {
-            Button("Pin") {
-              actionHandler(.pin(cue))
-            }
-          }
-        }
-      }
-      .listStyle(.plain)
-      .onChange(of: focusing, { oldValue, cue in
-
-        guard let cue else { return }
-
-        withAnimation(.bouncy) {
-          proxy.scrollTo(cue.id, anchor: .center)
-        }
-
-      })
-    }
-
-  }
-
-  private nonisolated static func chunk(
-    text: String,
-    identifier: some Hashable,
-    isFocusing: Bool,
-    isInRange: Bool,
-    onSelect: @escaping () -> Void
-  )
-  -> some View
-  {
-    HStack {
-      Text(text).font(.system(size: 24, weight: .bold, design: .default))
-        .modifier(
-          condition: isFocusing == false,
-          identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
-          active: StyleModifier(opacity: 0.2)
-        )
-        .padding(6)
-        .id(identifier)
-        .textSelection(.enabled)
-
-      Spacer()
-
-      // Indicator
-      RoundedRectangle(cornerRadius: 8, style: .continuous)
-        .fill({ () -> Color in
-          if isInRange {
-            return Color.blue
-          } else if isFocusing {
-            return Color.primary
-          } else {
-            return Color.primary.opacity(0.3)
-          }
-        }())
-        .frame(width: 40)
-        ._onButtonGesture(
-          pressing: { isPressing in },
-          perform: {
-            onSelect()
-          }
-        )
-    }
-  }
-}
 
 struct PlayerControlPanel: View {
 
@@ -409,13 +267,3 @@ struct DefinitionView: UIViewControllerRepresentable {
   ) {
   }
 }
-
-#if DEBUG
-
-#Preview {
-  Group {
-
-  }
-}
-
-#endif

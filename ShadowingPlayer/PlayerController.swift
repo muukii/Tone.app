@@ -67,7 +67,9 @@ final class PlayerController: NSObject {
   private let subtitles: Subtitles
 
   private var currentTimeObservation: NSKeyValueObservation?
+
   private var currentTimer: Timer?
+  private var currentTimerForLoop: Timer?
   //  private let player: AVAudioPlayer
 
   let title: String
@@ -162,8 +164,9 @@ final class PlayerController: NSObject {
 
   deinit {
 
-    print("deinit")
     currentTimeObservation?.invalidate()
+    currentTimer?.invalidate()
+    currentTimerForLoop?.invalidate()
 
     MPRemoteCommandCenter.shared().playCommand.removeTarget(self)
     MPRemoteCommandCenter.shared().pauseCommand.removeTarget(self)
@@ -197,31 +200,42 @@ final class PlayerController: NSObject {
 
     MPNowPlayingInfoCenter.default().playbackState = .playing
 
-    currentTimer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) {
-      @MainActor(unsafe) [weak self] _ in
+    currentTimerForLoop = Timer.init(timeInterval: 0.005, repeats: true) { [weak self] _ in
 
-      guard let self else { return }
-      let c = self.findCurrentCue()
-      if self.currentCue != c {
-        self.currentCue = c
+      MainActor.assumeIsolated { [weak self] in
+        guard let self else { return }
+        let c = self.findCurrentCue()
+        if self.currentCue != c {
+          self.currentCue = c
+        }
+
+        if let playingRange, playingRange.endTime < player.currentTime {
+          let diff = player.currentTime - playingRange.startTime
+          player.seek(time: -diff)
+        }
       }
 
-      if let playingRange, playingRange.endTime < player.currentTime {
-        let diff = player.currentTime - playingRange.startTime
-        player.seek(time: -diff)
-      }
+    }
 
-      do {
-        var nowPlayingInfo: [String: Any] = [:]
+    RunLoop.main.add(currentTimerForLoop!, forMode: .common)
 
-        nowPlayingInfo[MPMediaItemPropertyTitle] = title
-        nowPlayingInfo[MPMediaItemPropertyArtist] = "Audio"
-        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = player.duration
-        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime
-        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = timePitch.rate
-        nowPlayingInfo[MPNowPlayingInfoPropertyMediaType] = MPNowPlayingInfoMediaType.audio.rawValue
+    currentTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
 
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+      MainActor.assumeIsolated { [weak self] in
+        guard let self else { return }
+
+        do {
+          var nowPlayingInfo: [String: Any] = [:]
+
+          nowPlayingInfo[MPMediaItemPropertyTitle] = self.title
+          nowPlayingInfo[MPMediaItemPropertyArtist] = "Audio"
+          nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = player.duration
+          nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime
+          nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = timePitch.rate
+          nowPlayingInfo[MPNowPlayingInfoPropertyMediaType] = MPNowPlayingInfoMediaType.audio.rawValue
+
+          MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+        }
       }
 
     }
