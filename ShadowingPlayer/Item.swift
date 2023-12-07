@@ -39,6 +39,7 @@ struct Item: Equatable, Identifiable {
     self.name = name
   }
 
+  #if DEBUG
   static var example: Self {
     make(name: "example")
   }
@@ -46,6 +47,11 @@ struct Item: Equatable, Identifiable {
   static var overwhelmed: Self {
     make(name: "overwhelmed - Peter Mckinnon")
   }
+
+  static var social: Self {
+    make(name: "Social Media Has Ruined Photography")
+  }
+  #endif
 
   static func make(name: String) -> Self {
 
