@@ -1,10 +1,11 @@
 import SwiftUI
 import SwiftData
+import AppService
 
 struct ListView: View {
 
 //  typealias UsingDisplay = PlayerListDisplayView
-  typealias UsingDisplay = PlayerListHorizontalView
+  typealias UsingDisplay = PlayerListFlowLayoutView
 
   let items: [Item] = Item.globInBundle()
 

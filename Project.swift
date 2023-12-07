@@ -16,36 +16,52 @@ let project = Project(
     xcodeProjectName: "Speaking"
   ),
   targets: [
-      Target(
-        name: "Speaking",
-        platform: .iOS,
-        product: .app,
-        bundleId: "app.muukii.Speaking",
-        // infoPlist: "Supporting/Info.plist",
-        infoPlist: .extendingDefault(with: [
-          "UIApplicationSceneManifest" : [
-            "UIApplicationSupportsMultipleScenes" : "YES",            
-            "UISceneConfigurations" : [:]
-          ],
-          "UILaunchScreen" : ["UILaunchScreen": [:]],
-          "UISupportedInterfaceOrientations" : ["UIInterfaceOrientationPortrait"]
-          ]),
-        sources: ["ShadowingPlayer/**"], 
-        resources: [
-          "ShadowingPlayer/Assets.xcassets",
-          "ShadowingPlayer/Preview Content/**",
-        ],        
-        dependencies: [
-          .external(name: "AudioKit"),
-          .external(name: "SwiftSubtitles"),
-          .external(name: "Verge"),
-          .external(name: "DynamicList"),
-          .external(name: "SwiftUISupport"),          
+    Target(
+      name: "Speaking",
+      platform: .iOS,
+      product: .app,
+      bundleId: "app.muukii.Speaking",
+      // infoPlist: "Supporting/Info.plist",
+      infoPlist: .extendingDefault(with: [
+        "UIApplicationSceneManifest" : [
+          "UIApplicationSupportsMultipleScenes" : "YES",            
+          "UISceneConfigurations" : [:]
         ],
-        settings: .settings(base: [
-          "DEVELOPMENT_ASSET_PATHS": #""ShadowingPlayer/Preview Content""#,
-          "TARGETED_DEVICE_FAMILY": "1"
-        ])
-      ),        
-    ]
+        "UILaunchScreen" : ["UILaunchScreen": [:]],
+        "UISupportedInterfaceOrientations" : ["UIInterfaceOrientationPortrait"]
+        ]),
+      sources: ["ShadowingPlayer/**"], 
+      resources: [
+        "ShadowingPlayer/Assets.xcassets",
+        "ShadowingPlayer/Preview Content/**",
+      ],        
+      dependencies: [
+        .external(name: "AudioKit"),
+        .external(name: "SwiftSubtitles"),
+        .external(name: "Verge"),
+        .external(name: "DynamicList"),
+        .external(name: "SwiftUISupport"),  
+        .target(name: "AppService"),        
+      ],
+      settings: .settings(base: [
+        "DEVELOPMENT_ASSET_PATHS": #""ShadowingPlayer/Preview Content""#,
+        "TARGETED_DEVICE_FAMILY": "1"
+      ])
+      // mergedBinaryType: .manual(mergeableDependencies: ["AppService"]),
+      // mergeable: false
+    ),
+
+    Target(
+      name: "AppService",
+      platform: .iOS,
+      product: .framework,      
+      bundleId: "app.muukii.Speaking.AppService",
+      sources: ["Sources/AppService/**"],
+      dependencies: [
+        .external(name: "Verge"),
+      ]
+      // mergedBinaryType: .disabled,
+      // mergeable: true
+    )        
+  ]
 )

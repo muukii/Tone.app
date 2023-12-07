@@ -1,5 +1,6 @@
 
 import Foundation
+import AppService
 
 struct Item_Hashable: Hashable {
 

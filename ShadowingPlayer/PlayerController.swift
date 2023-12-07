@@ -2,8 +2,13 @@ import AudioKit
 import MediaPlayer
 import SwiftSubtitles
 import Observation
+import AppService
 
-struct DisplayCue: Identifiable, Equatable {
+struct DisplayCue: Identifiable, Hashable {
+
+  func hash(into hasher: inout Hasher) {
+    id.hash(into: &hasher)
+  }
 
   let id: String
 
