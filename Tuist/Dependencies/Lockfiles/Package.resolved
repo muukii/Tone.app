@@ -55,15 +55,6 @@
       }
     },
     {
-      "identity" : "swift-dynamic-list",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FluidGroup/swift-dynamic-list",
-      "state" : {
-        "branch" : "main",
-        "revision" : "0b7c0ed4457a9dc657f2df1ee0be7326b7726498"
-      }
-    },
-    {
       "identity" : "swift-syntax",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-syntax.git",

@@ -1,0 +1,3 @@
+[submodule "submodules/FluidGroup/swift-dynamic-list"]
+	path = submodules/FluidGroup/swift-dynamic-list
+	url = https://github.com/FluidGroup/swift-dynamic-list
