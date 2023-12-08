@@ -41,7 +41,8 @@ let project = Project(
         .external(name: "Verge"),
         .external(name: "DynamicList"),
         .external(name: "SwiftUISupport"),  
-        .target(name: "AppService"),        
+        .target(name: "AppService"),    
+        .external(name: "Wrap"),    
       ],
       settings: .settings(base: [
         "DEVELOPMENT_ASSET_PATHS": #""ShadowingPlayer/Preview Content""#,
@@ -59,6 +60,7 @@ let project = Project(
       sources: ["Sources/AppService/**"],
       dependencies: [
         .external(name: "Verge"),
+        .external(name: "Wrap"),
       ]
       // mergedBinaryType: .disabled,
       // mergeable: true

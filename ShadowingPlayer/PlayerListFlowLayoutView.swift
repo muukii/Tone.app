@@ -27,8 +27,11 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
   var body: some View {
 
     DynamicList<String, DisplayCue>(
-      snapshot: .init(),
-      layout: { UICollectionViewFlowLayout() }, 
+      snapshot: .init()&>.modify({ s in
+        s.appendSections(["Main"])
+        s.appendItems(cues, toSection: "Main")
+      }),
+      layout: { UICollectionViewFlowLayout() },
       scrollDirection: .vertical,
       cellProvider: { context in
 

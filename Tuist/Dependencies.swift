@@ -6,6 +6,7 @@ let app = SwiftPackageManagerDependencies([
   .package(url: "https://github.com/VergeGroup/Verge", .branch("main")),
   .package(url: "https://github.com/FluidGroup/swift-dynamic-list", .branch("main")),
   .package(url: "https://github.com/FluidGroup/swiftui-support", .branch("main")),
+  .package(url: "https://github.com/VergeGroup/Wrap", .upToNextMajor(from: "4.0.0")),
 ])
 
 let dependencies = Dependencies(

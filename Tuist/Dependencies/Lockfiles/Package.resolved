@@ -107,6 +107,15 @@
         "branch" : "main",
         "revision" : "ecc5e4a3b6bfacaff54808b3e0502fd1424850b9"
       }
+    },
+    {
+      "identity" : "wrap",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/Wrap",
+      "state" : {
+        "revision" : "0d13a5b579d3f74d1f3a2bc50ccb4f9f86a711c3",
+        "version" : "4.0.0"
+      }
     }
   ],
   "version" : 2
