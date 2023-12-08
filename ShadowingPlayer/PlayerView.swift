@@ -39,58 +39,13 @@ struct PlayerView<Display: PlayerDisplay>: View {
     self.actionHandler = actionHandler
   }
 
-  private nonisolated static func chunk(
-    text: String,
-    identifier: some Hashable,
-    isFocusing: Bool,
-    isInRange: Bool,
-    onSelect: @escaping () -> Void
-  )
-    -> some View
-  {
-    HStack {
-      Text(text).font(.system(size: 24, weight: .bold, design: .default))
-        .modifier(
-          condition: isFocusing == false,
-          identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
-          active: StyleModifier(opacity: 0.2)
-        )
-        .padding(6)
-        .id(identifier)
-        .textSelection(.enabled)
-
-      Spacer()
-
-      // Indicator
-      RoundedRectangle(cornerRadius: 8, style: .continuous)
-        .fill(
-          { () -> Color in
-            if isInRange {
-              return Color.blue
-            } else if isFocusing {
-              return Color.primary
-            } else {
-              return Color.primary.opacity(0.3)
-            }
-          }()
-        )
-        .frame(width: 40)
-        ._onButtonGesture(
-          pressing: { isPressing in },
-          perform: {
-            onSelect()
-          }
-        )
-    }
-  }
-
   var body: some View {
 
     VStack {
 
       Display(
         cues: controller.cues,
-        focusing: focusing,
+        focusing: controller.currentCue,
         playingRange: controller.playingRange,
         isRepeating: controller.isRepeating,
         actionHandler: { action in
