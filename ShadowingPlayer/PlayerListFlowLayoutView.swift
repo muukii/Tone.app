@@ -31,7 +31,11 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         s.appendSections(["Main"])
         s.appendItems(cues, toSection: "Main")
       }),
-      layout: { UICollectionViewFlowLayout() },
+      layout: {
+        let layout = UICollectionViewFlowLayout()
+        layout.estimatedItemSize = .init(width: 50, height: 50)
+        return layout
+      },
       scrollDirection: .vertical,
       cellProvider: { context in
 
@@ -92,7 +96,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     isInRange: Bool,
     onSelect: @escaping () -> Void
   )
-  -> some View
+    -> some View
   {
     VStack {
       Text(text).font(.system(size: 24, weight: .bold, design: .default))
@@ -143,4 +147,3 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 }
 
 #endif
-
