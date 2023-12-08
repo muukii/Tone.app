@@ -1,7 +1,11 @@
 import SwiftUI
 import SwiftData
+import AppService
 
 struct ListView: View {
+
+//  typealias UsingDisplay = PlayerListDisplayView
+  typealias UsingDisplay = PlayerListFlowLayoutView
 
   let items: [Item] = Item.globInBundle()
 
@@ -62,7 +66,7 @@ struct ListView: View {
             let _ = controller.setRepeating(identifier: pin.identifier)
             return controller
           }()) { controller in
-            PlayerView(
+            PlayerView<UsingDisplay>(
               playerController: controller,
               actionHandler: { action in
                 switch action {
@@ -108,7 +112,7 @@ struct ListView: View {
           let controller = try! PlayerController(item: item)
           return controller
         }()) { controller in
-          PlayerView(
+          PlayerView<UsingDisplay>(
             playerController: controller,
             actionHandler: { action in
               switch action {

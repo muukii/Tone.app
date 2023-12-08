@@ -7,29 +7,34 @@
 
 import SwiftUI
 import SwiftData
+import AppService
 
 @main
 struct ShadowingPlayerApp: App {
 
-  private let modelContainer: ModelContainer
+  private let service = Service()
 
   init() {
-    let databasePath = URL.documentsDirectory.appending(path: "database")
-    do {
-      let container = try ModelContainer(for: ItemEntity.self, PinEntity.self, configurations: .init(url: databasePath))
-      self.modelContainer = container
-    } catch {
-      // TODO: delete database if schema mismatches or consider migration
-      Log.error("\(error)")
-      fatalError()
+    #if targetEnvironment(simulator)
+
+    let item = Item.social
+
+    Task { [service] in
+      try await service.importItem(
+        title: "Example",
+        audioFileURL: item.audioFileURL,
+        subtitleFileURL: item.subtitleFileURL
+      )
     }
+
+    #endif
   }
 
   var body: some Scene {
     WindowGroup {
       ContentView()
     }
-    .modelContainer(modelContainer)
+    .modelContainer(service.modelContainer)
 
   }
 }
