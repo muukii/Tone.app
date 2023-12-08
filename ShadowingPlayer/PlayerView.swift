@@ -26,9 +26,6 @@ struct PlayerView<Display: PlayerDisplay>: View {
   }
 
   private let controller: PlayerController
-
-  @State private var focusing: DisplayCue?
-
   private let actionHandler: @MainActor (Action) -> Void
 
   init(
