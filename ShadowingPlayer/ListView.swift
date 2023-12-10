@@ -26,6 +26,12 @@ struct ListView: View {
 
       List {
 
+        NavigationLink {
+          VoiceRecorderView()
+        } label: {
+          Text("Recorder")
+        }
+
         Section {
           ForEach(itemEntities) { item in
             NavigationLink(value: item) {

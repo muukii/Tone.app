@@ -23,6 +23,7 @@ let project = Project(
       bundleId: "app.muukii.Speaking",
       // infoPlist: "Supporting/Info.plist",
       infoPlist: .extendingDefault(with: [
+        "UIBackgroundModes" : ["App plays audio or streams audio/video using AirPlay"],
         "UIApplicationSceneManifest" : [
           "UIApplicationSupportsMultipleScenes" : "YES",            
           "UISceneConfigurations" : [:]
