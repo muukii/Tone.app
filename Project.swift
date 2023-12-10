@@ -18,18 +18,20 @@ let project = Project(
   targets: [
     Target(
       name: "Speaking",
-      platform: .iOS,
+      destinations: [.iPhone],
       product: .app,
       bundleId: "app.muukii.Speaking",
+      deploymentTargets: .iOS("17.0"),
       // infoPlist: "Supporting/Info.plist",
       infoPlist: .extendingDefault(with: [
-        "UIBackgroundModes" : ["App plays audio or streams audio/video using AirPlay"],
+        "UIBackgroundModes" : ["audio"],
         "UIApplicationSceneManifest" : [
           "UIApplicationSupportsMultipleScenes" : "YES",            
           "UISceneConfigurations" : [:]
         ],
         "UILaunchScreen" : ["UILaunchScreen": [:]],
-        "UISupportedInterfaceOrientations" : ["UIInterfaceOrientationPortrait"]
+        "UISupportedInterfaceOrientations" : ["UIInterfaceOrientationPortrait"],
+        "NSMicrophoneUsageDescription" : "For recording audio from microphone"
         ]),
       sources: ["ShadowingPlayer/**"], 
       resources: [
@@ -47,7 +49,8 @@ let project = Project(
       ],
       settings: .settings(base: [
         "DEVELOPMENT_ASSET_PATHS": #""ShadowingPlayer/Preview Content""#,
-        "TARGETED_DEVICE_FAMILY": "1"
+        "TARGETED_DEVICE_FAMILY": "1",
+        "DEVELOPMENT_TEAM" : "KU2QEJ9K3Z"
       ])
       // mergedBinaryType: .manual(mergeableDependencies: ["AppService"]),
       // mergeable: false
@@ -55,9 +58,10 @@ let project = Project(
 
     Target(
       name: "AppService",
-      platform: .iOS,
-      product: .framework,      
+      destinations: [.iPhone],
+      product: .framework,
       bundleId: "app.muukii.Speaking.AppService",
+      deploymentTargets: .iOS("17.0"),
       sources: ["Sources/AppService/**"],
       dependencies: [
         .external(name: "Verge"),

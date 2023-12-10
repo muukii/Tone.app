@@ -27,7 +27,9 @@ struct ListView: View {
       List {
 
         NavigationLink {
-          VoiceRecorderView()
+          ObjectProvider(object: RecorderAndPlayer()) { controller in
+            VoiceRecorderView(controller: controller)
+          }
         } label: {
           Text("Recorder")
         }
