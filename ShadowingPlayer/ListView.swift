@@ -163,7 +163,7 @@ struct ListView: View {
           isImporting = true
         }
       })
-      .navigationTitle("Shadowing Player")
+      .navigationTitle("Tone")
       .sheet(isPresented: $isImporting, content: {
         ImportView(onCompleted: {
           isImporting = false        

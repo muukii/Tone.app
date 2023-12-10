@@ -1,10 +1,10 @@
 import ProjectDescription
 
 let project = Project(
-  name: "Speaking",
+  name: "Tone",
   organizationName: "MuukLab",
   options: .options(
-    developmentRegion: "ja",
+    developmentRegion: "en",
     disableBundleAccessors: true,
     disableSynthesizedResourceAccessors: true,
     textSettings: .textSettings(
@@ -13,11 +13,11 @@ let project = Project(
       tabWidth: 2, 
       wrapsLines: true
     ),
-    xcodeProjectName: "Speaking"
+    xcodeProjectName: "Tone"
   ),
   targets: [
     Target(
-      name: "Speaking",
+      name: "Tone",
       destinations: [.iPhone],
       product: .app,
       bundleId: "app.muukii.Speaking",
