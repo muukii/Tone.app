@@ -1,6 +1,7 @@
 import DynamicList
 import SwiftUI
 import SwiftUISupport
+import Verge
 
 struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
@@ -51,25 +52,13 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
               if isRepeating {
 
                 if var currentRange = playingRange {
-
-                  if currentRange.isExact(with: cue) {
-                    // selected current active range
-                    return
-                  }
-
-                  if currentRange.contains(cue) == false {
-
-                    currentRange.add(cue: cue)
-
-                  } else {
-                    currentRange.remove(cue: cue)
-                  }
+                  
+                  currentRange.select(cue: cue)
 
                   actionHandler(.setRepeat(range: currentRange))
 
                 } else {
 
-                  actionHandler(.setRepeat(range: .init(cue: cue)))
                 }
               } else {
                 actionHandler(.move(to: cue))
@@ -86,6 +75,15 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         }
       }
     )
+//    .selectionHandler { action in
+//      switch action {
+//      case .didSelect(let data, _):
+//        print(data)
+//        break
+//      case .didDeselect(_, _):
+//        break
+//      }
+//    }
 
   }
 
@@ -123,15 +121,29 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
           }()
         )
         .frame(height: 16)
-        ._onButtonGesture(
-          pressing: { isPressing in },
-          perform: {
-            onSelect()
-          }
-        )
     }
     .padding(8)
+    ._onButtonGesture(
+      pressing: { isPressing in },
+      perform: {
+        onSelect()
+      }
+    )
   }
+}
+
+private final class ViewModel: StoreDriverType {
+
+  struct State: StateType {
+
+  }
+
+  let store: UIStateStore<State, Never>
+
+  init() {
+    self.store = .init(initialState: .init())
+  }
+
 }
 
 #if DEBUG

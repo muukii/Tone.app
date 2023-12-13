@@ -36,24 +36,12 @@ struct PlayerListDisplayView: View, PlayerDisplay {
 
                 if var currentRange = playingRange {
 
-                  if currentRange.isExact(with: cue) {
-                    // selected current active range
-                    return
-                  }
-
-                  if currentRange.contains(cue) == false {
-
-                    currentRange.add(cue: cue)
-
-                  } else {
-                    currentRange.remove(cue: cue)
-                  }
+                  currentRange.select(cue: cue)
 
                   actionHandler(.setRepeat(range: currentRange))
 
                 } else {
 
-                  actionHandler(.setRepeat(range: .init(cue: cue)))
                 }
               } else {
                 actionHandler(.move(to: cue))

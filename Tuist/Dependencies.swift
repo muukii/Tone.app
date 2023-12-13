@@ -11,6 +11,6 @@ let app = SwiftPackageManagerDependencies([
 
 let dependencies = Dependencies(
   carthage: [],
-  swiftPackageManager: app,
+  swiftPackageManager: .init(),
   platforms: [.iOS]
 )

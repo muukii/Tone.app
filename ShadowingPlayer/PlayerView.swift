@@ -150,7 +150,9 @@ struct PlayerControlPanel: View {
             controller.setRepeat(range: nil)
           } else {
             if let currentCue = controller.currentCue {
-              controller.setRepeat(range: .init(cue: currentCue))
+              var range = controller.makeRepeatingRange()
+              range.select(cue: currentCue)
+              controller.setRepeat(range: range)
             }
           }
         } label: {

@@ -28,7 +28,6 @@ struct PlayerListHorizontalView: View, PlayerDisplay {
       ScrollView(.vertical) {
         FlowLayout(alignment: .leading) {
           ForEach(cues) { cue in
-            let _ = print(cue.id)
             Self.chunk(
               text: cue.backed.text,
               identifier: cue.id,
@@ -39,24 +38,12 @@ struct PlayerListHorizontalView: View, PlayerDisplay {
 
                   if var currentRange = playingRange {
 
-                    if currentRange.isExact(with: cue) {
-                      // selected current active range
-                      return
-                    }
-
-                    if currentRange.contains(cue) == false {
-
-                      currentRange.add(cue: cue)
-
-                    } else {
-                      currentRange.remove(cue: cue)
-                    }
+                    currentRange.select(cue: cue)
 
                     actionHandler(.setRepeat(range: currentRange))
 
                   } else {
 
-                    actionHandler(.setRepeat(range: .init(cue: cue)))
                   }
                 } else {
                   actionHandler(.move(to: cue))
@@ -99,14 +86,13 @@ struct PlayerListHorizontalView: View, PlayerDisplay {
   )
     -> some View
   {
-    VStack {
+    VStack(spacing: 4) {
       Text(text).font(.system(size: 24, weight: .bold, design: .default))
         .modifier(
           condition: isFocusing == false,
-          identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
+          identity: StyleModifier(scale: .init(width: 1.05, height: 1.05)),
           active: StyleModifier(opacity: 0.2)
         )
-        .padding(6)
         .id(identifier)
         .textSelection(.enabled)
 
@@ -123,15 +109,15 @@ struct PlayerListHorizontalView: View, PlayerDisplay {
             }
           }()
         )
-        .frame(height: 16)
-        ._onButtonGesture(
-          pressing: { isPressing in },
-          perform: {
-            onSelect()
-          }
-        )
+        .frame(height: 4)
     }
-    .padding(8)
+    .padding(.horizontal, 2)
+    ._onButtonGesture(
+      pressing: { isPressing in },
+      perform: {
+        onSelect()
+      }
+    )
   }
 }
 
