@@ -86,7 +86,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 //    }
 
   }
-
+  
   private nonisolated static func chunk(
     text: String,
     identifier: some Hashable,
@@ -94,16 +94,15 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     isInRange: Bool,
     onSelect: @escaping () -> Void
   )
-    -> some View
+  -> some View
   {
-    VStack {
+    VStack(spacing: 4) {
       Text(text).font(.system(size: 24, weight: .bold, design: .default))
         .modifier(
           condition: isFocusing == false,
-          identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
+          identity: StyleModifier(scale: .init(width: 1.05, height: 1.05)),
           active: StyleModifier(opacity: 0.2)
         )
-        .padding(6)
         .id(identifier)
         .textSelection(.enabled)
 
@@ -120,9 +119,9 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
             }
           }()
         )
-        .frame(height: 16)
+        .frame(height: 4)
     }
-    .padding(8)
+    .padding(.horizontal, 2)
     ._onButtonGesture(
       pressing: { isPressing in },
       perform: {
