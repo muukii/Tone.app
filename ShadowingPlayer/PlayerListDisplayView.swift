@@ -2,27 +2,25 @@ import SwiftUI
 import SwiftUISupport
 
 struct PlayerListDisplayView: View, PlayerDisplay {
+
+  private let controller: PlayerController
+  private let actionHandler: @MainActor (PlayerAction) -> Void
+
   init(
-    cues: [DisplayCue],
-    focusing: DisplayCue?,
-    playingRange: PlayerController.PlayingRange?,
-    isRepeating: Bool,
-    actionHandler: @escaping (PlayerDisplayAction) -> Void
+    controller: PlayerController,
+    actionHandler: @escaping @MainActor (PlayerAction) -> Void
   ) {
-    self.cues = cues
-    self.focusing = focusing
-    self.playingRange = playingRange
-    self.isRepeating = isRepeating
+    self.controller = controller
     self.actionHandler = actionHandler
   }
 
-  let cues: [DisplayCue]
-  let focusing: DisplayCue?
-  let playingRange: PlayerController.PlayingRange?
-  let isRepeating: Bool
-  let actionHandler: (PlayerDisplayAction) -> Void
-
   var body: some View {
+
+    let cues = controller.cues
+    let focusing = controller.currentCue
+    let playingRange = controller.playingRange
+    let isRepeating = controller.isRepeating
+
     ScrollViewReader { proxy in
       List {
         ForEach(cues) { cue in
@@ -38,13 +36,14 @@ struct PlayerListDisplayView: View, PlayerDisplay {
 
                   currentRange.select(cue: cue)
 
-                  actionHandler(.setRepeat(range: currentRange))
+                  controller.setRepeat(range: currentRange)
 
                 } else {
 
                 }
               } else {
-                actionHandler(.move(to: cue))
+
+                controller.move(to: cue)
               }
             }
           )
@@ -53,7 +52,7 @@ struct PlayerListDisplayView: View, PlayerDisplay {
           .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
           .contextMenu {
             Button("Pin") {
-              actionHandler(.pin(cue))
+              actionHandler(.onPin(cue))
             }
           }
         }

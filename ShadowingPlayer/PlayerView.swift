@@ -6,31 +6,28 @@ import SwiftUISupport
 protocol PlayerDisplay: View {
 
   init(
-    cues: [DisplayCue],
-    focusing: DisplayCue?,
-    playingRange: PlayerController.PlayingRange?,
-    isRepeating: Bool,
-    actionHandler: @escaping (PlayerDisplayAction) -> Void
+    controller: PlayerController,
+    actionHandler: @escaping @MainActor (PlayerAction) -> Void
   )
 }
 
+enum PlayerAction {
+  case onPin(DisplayCue)
+}
+
 struct PlayerView<Display: PlayerDisplay>: View {
-
-  enum Action {
-    case onPin(DisplayCue)
-  }
-
+  
   struct Term: Identifiable {
     var id: String { value }
     var value: String
   }
 
   private let controller: PlayerController
-  private let actionHandler: @MainActor (Action) -> Void
+  private let actionHandler: @MainActor (PlayerAction) -> Void
 
   init(
     playerController: PlayerController,
-    actionHandler: @escaping @MainActor (Action) -> Void
+    actionHandler: @escaping @MainActor (PlayerAction) -> Void
   ) {
     self.controller = playerController
     self.actionHandler = actionHandler
@@ -41,20 +38,8 @@ struct PlayerView<Display: PlayerDisplay>: View {
     VStack {
 
       Display(
-        cues: controller.cues,
-        focusing: controller.currentCue,
-        playingRange: controller.playingRange,
-        isRepeating: controller.isRepeating,
-        actionHandler: { action in
-          switch action {
-          case .move(to: let cue):
-            controller.move(to: cue)
-          case .pin(let cue):
-            actionHandler(.onPin(cue))
-          case .setRepeat(let range):
-            controller.setRepeat(range: range)
-          }
-        }
+        controller: controller,
+        actionHandler: actionHandler
       )
 
       Spacer(minLength: 20).fixedSize()

@@ -3,110 +3,129 @@ import SwiftUISupport
 
 struct PlayerListHorizontalView: View, PlayerDisplay {
 
+  private let controller: PlayerController
+  private let actionHandler: @MainActor (PlayerAction) -> Void
+
   init(
-    cues: [DisplayCue],
-    focusing: DisplayCue?,
-    playingRange: PlayerController.PlayingRange?,
-    isRepeating: Bool,
-    actionHandler: @escaping (PlayerDisplayAction) -> Void
+    controller: PlayerController,
+    actionHandler: @escaping @MainActor (PlayerAction) -> Void
   ) {
-    self.cues = cues
-    self.focusing = focusing
-    self.playingRange = playingRange
-    self.isRepeating = isRepeating
+    self.controller = controller
     self.actionHandler = actionHandler
   }
 
-  let cues: [DisplayCue]
-  let focusing: DisplayCue?
-  let playingRange: PlayerController.PlayingRange?
-  let isRepeating: Bool
-  let actionHandler: (PlayerDisplayAction) -> Void
-
   var body: some View {
+
+    let cues = controller.cues
+    let playingRange = controller.playingRange
+    let isRepeating = controller.isRepeating
+    let focusing = controller.currentCue
+
     ScrollViewReader { proxy in
       ScrollView(.vertical) {
-        FlowLayout(alignment: .leading) {
-          ForEach(cues) { cue in
-            Self.chunk(
-              text: cue.backed.text,
-              identifier: cue.id,
-              isFocusing: cue == focusing,
-              isInRange: playingRange?.contains(cue) ?? false,
-              onSelect: {
-                if isRepeating {
+      ForEachChunk(scrollViewProxy: proxy, cues: cues, controller: controller) {
+            cue in
+            if isRepeating {
 
-                  if var currentRange = playingRange {
+              if var currentRange = playingRange {
 
-                    currentRange.select(cue: cue)
+                currentRange.select(cue: cue)
 
-                    actionHandler(.setRepeat(range: currentRange))
+                controller.setRepeat(range: currentRange)
 
-                  } else {
+              } else {
 
-                  }
-                } else {
-                  actionHandler(.move(to: cue))
-                }
               }
-            )
-            .listRowSeparator(.hidden)
-            .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
-            .contextMenu {
-              Button("Pin") {
-                actionHandler(.pin(cue))
-              }
+            } else {
+
+              controller.move(to: cue)
             }
           }
-        }
+
+
       }
       .safeAreaPadding(EdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10))
-      .onChange(
-        of: focusing,
-        { oldValue, cue in
+//      .onChange(
+//        of: focusing,
+//        { oldValue, cue in
+//
+//          guard let cue else { return }
+//
+//          withAnimation(.bouncy) {
+//            proxy.scrollTo(cue.id, anchor: .center)
+//          }
+//
+//        }
+//      )
 
-          guard let cue else { return }
-
-          withAnimation(.bouncy) {
-            proxy.scrollTo(cue.id, anchor: .center)
-          }
-
-        }
-      )
     }
 
   }
 
-  private nonisolated static func chunk(
-    text: String,
-    identifier: some Hashable,
-    isFocusing: Bool,
-    isInRange: Bool,
-    onSelect: @escaping () -> Void
-  )
-    -> some View
-  {
+}
+
+// to avoid re-rendering ForEach by updating parent's update
+private struct ForEachChunk: View {
+
+  let scrollViewProxy: ScrollViewProxy
+  let cues: [DisplayCue]
+  let controller: PlayerController
+  let onSelect: (DisplayCue) -> Void
+
+  var body: some View {
+
+    FlowLayout(alignment: .leading) {
+      ForEach(cues) { cue in
+        Chunk(
+          controller: controller,
+          cue: cue,
+          onSelect: {
+            onSelect(cue)
+          }
+        )
+        .listRowSeparator(.hidden)
+        .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
+      }
+    }
+
+  }
+
+}
+
+private struct Chunk: View {
+
+  let controller: PlayerController
+  let cue: DisplayCue
+  let onSelect: () -> Void
+
+  var body: some View {
+
+    let playingRange = controller.playingRange
+
     VStack(spacing: 4) {
-      Text(text).font(.system(size: 24, weight: .bold, design: .default))
+      Text(cue.backed.text).font(.system(size: 24, weight: .bold, design: .default))
         .modifier(
-          condition: isFocusing == false,
+          condition: controller.currentCue != cue,
           identity: StyleModifier(scale: .init(width: 1.05, height: 1.05)),
           active: StyleModifier(opacity: 0.2)
         )
-        .id(identifier)
+        .id(cue.id)
         .textSelection(.enabled)
 
       // Indicator
       RoundedRectangle(cornerRadius: 8, style: .continuous)
         .fill(
           { () -> Color in
-            if isInRange {
-              return Color.blue
-            } else if isFocusing {
-              return Color.primary
-            } else {
-              return Color.primary.opacity(0.3)
+            if let playingRange, playingRange.contains(cue) {
+              return Color.accentColor
             }
+
+            if controller.currentCue == cue {
+              return Color.primary
+            }
+
+            return Color.primary.opacity(0.3)
+
           }()
         )
         .frame(height: 4)
@@ -119,7 +138,54 @@ struct PlayerListHorizontalView: View, PlayerDisplay {
       }
     )
   }
+
 }
+
+//private struct Body: View {
+//
+//
+//
+//  init(controller: PlayerController) {
+//
+//  }
+//
+//  var body: some View {
+//    FlowLayout(alignment: .leading) {
+//      ForEach(cues) { cue in
+//        Self.chunk(
+//          text: cue.backed.text,
+//          identifier: cue.id,
+//          isFocusing: false,
+//          isInRange: playingRange?.contains(cue) ?? false,
+//          onSelect: {
+//            if isRepeating {
+//
+//              if var currentRange = playingRange {
+//
+//                currentRange.select(cue: cue)
+//
+//                controller.setRepeat(range: currentRange)
+//
+//              } else {
+//
+//              }
+//            } else {
+//              controller.move(to: cue)
+//            }
+//          }
+//        )
+//        .listRowSeparator(.hidden)
+//        .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
+//        .contextMenu {
+//          Button("Pin") {
+//            actionHandler(.onPin(cue))
+//
+//          }
+//        }
+//      }
+//    }
+//  }
+//}
 
 private struct FlowLayout: Layout {
   var alignment: Alignment = .center
@@ -135,7 +201,12 @@ private struct FlowLayout: Layout {
     return result.bounds
   }
 
-  func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) {
+  func placeSubviews(
+    in bounds: CGRect,
+    proposal: ProposedViewSize,
+    subviews: Subviews,
+    cache: inout Void
+  ) {
     let result = FlowResult(
       in: proposal.replacingUnspecifiedDimensions().width,
       subviews: subviews,
@@ -145,11 +216,17 @@ private struct FlowLayout: Layout {
     for row in result.rows {
       let rowXOffset = (bounds.width - row.frame.width) * alignment.horizontal.percent
       for index in row.range {
-        let xPos = rowXOffset + row.frame.minX + row.xOffsets[index - row.range.lowerBound] + bounds.minX
-        let rowYAlignment = (row.frame.height - subviews[index].sizeThatFits(.unspecified).height) *
-        alignment.vertical.percent
+        let xPos =
+          rowXOffset + row.frame.minX + row.xOffsets[index - row.range.lowerBound] + bounds.minX
+        let rowYAlignment =
+          (row.frame.height - subviews[index].sizeThatFits(.unspecified).height)
+          * alignment.vertical.percent
         let yPos = row.frame.minY + rowYAlignment + bounds.minY
-        subviews[index].place(at: CGPoint(x: xPos, y: yPos), anchor: .topLeading, proposal: .unspecified)
+        subviews[index].place(
+          at: CGPoint(x: xPos, y: yPos),
+          anchor: .topLeading,
+          proposal: .unspecified
+        )
       }
     }
   }
@@ -184,7 +261,8 @@ private struct FlowLayout: Layout {
 
       func spacingBefore(index: Int) -> Double {
         guard itemsInRow > 0 else { return 0 }
-        return spacing ?? subviews[index - 1].spacing.distance(to: subviews[index].spacing, along: .horizontal)
+        return spacing
+          ?? subviews[index - 1].spacing.distance(to: subviews[index].spacing, along: .horizontal)
       }
 
       func widthInRow(index: Int, idealWidth: Double) -> Double {
@@ -204,7 +282,7 @@ private struct FlowLayout: Layout {
         let rowWidth = maxPossibleWidth - remainingWidth
         rows.append(
           Row(
-            range: index - max(itemsInRow - 1, 0) ..< index + 1,
+            range: index - max(itemsInRow - 1, 0)..<index + 1,
             xOffsets: xOffsets,
             frame: CGRect(x: 0, y: rowMinY, width: rowWidth, height: rowHeight)
           )
@@ -222,8 +300,8 @@ private struct FlowLayout: Layout {
   }
 }
 
-private extension HorizontalAlignment {
-  var percent: Double {
+extension HorizontalAlignment {
+  fileprivate var percent: Double {
     switch self {
     case .leading: return 0
     case .trailing: return 1
@@ -232,8 +310,8 @@ private extension HorizontalAlignment {
   }
 }
 
-private extension VerticalAlignment {
-  var percent: Double {
+extension VerticalAlignment {
+  fileprivate var percent: Double {
     switch self {
     case .top: return 0
     case .bottom: return 1
