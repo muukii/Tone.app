@@ -3,9 +3,38 @@ import SwiftUI
 import SwiftUISupport
 import Verge
 
+private enum CellIsFocusing: CustomStateKey {
+  typealias Value = Bool
+
+  static var defaultValue: Bool { false }
+}
+
+private enum CellPlayingRange: CustomStateKey {
+  typealias Value = PlayerController.PlayingRange?
+
+  static var defaultValue: PlayerController.PlayingRange? {
+    nil
+  }
+}
+
+
+extension CellState {
+
+  var isFocusing: Bool {
+    get { self[CellIsFocusing.self] }
+    set { self[CellIsFocusing.self] = newValue }
+  }
+
+  var playingRange: PlayerController.PlayingRange? {
+    get { self[CellPlayingRange.self] }
+    set { self[CellPlayingRange.self] = newValue }
+  }
+
+}
+
 struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
-  private let controller: PlayerController
+  private unowned let controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) -> Void
 
   init(
@@ -16,40 +45,54 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     self.actionHandler = actionHandler
   }
 
+  private func makeCellState() -> [DisplayCue : CellState] {
+    var cellStates: [DisplayCue : CellState] = [:]
+    let focusing = controller.currentCue
+    if let focusing {
+      cellStates[focusing, default: .empty].isFocusing = true
+    }
+
+    if let playingRange = controller.playingRange {
+      for cue in controller.cues {
+        cellStates[cue, default: .empty].playingRange = playingRange
+      }
+    }
+
+    return cellStates
+  }
 
   var body: some View {
 
     let cues = controller.cues
-    let focusing = controller.currentCue
-    let playingRange = controller.playingRange
-    let isRepeating = controller.isRepeating
 
     DynamicList<String, DisplayCue>(
       snapshot: .init()&>.modify({ s in
         s.appendSections(["Main"])
         s.appendItems(cues, toSection: "Main")
       }),
+      cellStates: makeCellState(),
       layout: {
-        let layout = UICollectionViewFlowLayout()
+        let layout = AlignedCollectionViewFlowLayout(horizontalAlignment: .leading)
         layout.estimatedItemSize = .init(width: 50, height: 50)
         return layout
       },
       scrollDirection: .vertical,
-      cellProvider: { context in
+      cellProvider: { [weak controller] context in
 
         let cue = context.data
 
-        return context.cell { state in
+        return context.cell { state, customState in
           PlayerListFlowLayoutView.chunk(
             text: cue.backed.text,
             identifier: cue.id,
-            isFocusing: cue == focusing,
-            isInRange: playingRange?.contains(cue) ?? false,
+            isFocusing: customState.isFocusing,
+            isInRange: customState.playingRange?.contains(cue) ?? false,
             onSelect: {
-              if isRepeating {
+              guard let controller else { return }
+              if controller.isRepeating {
 
-                if var currentRange = playingRange {
-                  
+                if var currentRange = customState.playingRange {
+
                   currentRange.select(cue: cue)
 
                   controller.setRepeat(range: currentRange)
@@ -72,18 +115,9 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         }
       }
     )
-//    .selectionHandler { action in
-//      switch action {
-//      case .didSelect(let data, _):
-//        print(data)
-//        break
-//      case .didDeselect(_, _):
-//        break
-//      }
-//    }
 
   }
-  
+
   private nonisolated static func chunk(
     text: String,
     identifier: some Hashable,
@@ -91,7 +125,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     isInRange: Bool,
     onSelect: @escaping () -> Void
   )
-  -> some View
+    -> some View
   {
     VStack(spacing: 4) {
       Text(text).font(.system(size: 24, weight: .bold, design: .default))
@@ -108,12 +142,15 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         .fill(
           { () -> Color in
             if isInRange {
-              return Color.blue
-            } else if isFocusing {
-              return Color.primary
-            } else {
-              return Color.primary.opacity(0.3)
+              return Color.accentColor
             }
+
+            if isFocusing {
+              return Color.primary
+            }
+
+            return Color.primary.opacity(0.3)
+
           }()
         )
         .frame(height: 4)

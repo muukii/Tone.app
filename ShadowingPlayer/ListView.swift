@@ -5,8 +5,8 @@ import AppService
 struct ListView: View {
 
 //  typealias UsingDisplay = PlayerListDisplayView
-//  typealias UsingDisplay = PlayerListFlowLayoutView
-  typealias UsingDisplay = PlayerListHorizontalView
+  typealias UsingDisplay = PlayerListFlowLayoutView
+//  typealias UsingDisplay = PlayerListHorizontalView
 
   let items: [Item] = Item.globInBundle()
 
