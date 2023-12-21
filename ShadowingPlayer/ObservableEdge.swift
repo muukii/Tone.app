@@ -1,7 +1,7 @@
 import SwiftUI
 
 @propertyWrapper
-struct ObservableEdge<O: Observable> {
+struct ObservableEdge<O: Observable>: DynamicProperty {
 
   @State private var box: Box<O> = .init()
 

@@ -2,6 +2,7 @@ import DynamicList
 import SwiftUI
 import SwiftUISupport
 import Verge
+import AppService
 
 private enum CellIsFocusing: CustomStateKey {
   typealias Value = Bool
@@ -74,6 +75,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
       layout: {
         let layout = AlignedCollectionViewFlowLayout(horizontalAlignment: .leading)
         layout.estimatedItemSize = .init(width: 50, height: 50)
+        layout.sectionInset = .init(top: 0, left: 16, bottom: 0, right: 16)
         return layout
       },
       scrollDirection: .vertical,
@@ -107,11 +109,6 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
           )
           .listRowSeparator(.hidden)
           .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
-          .contextMenu {
-            Button("Pin") {
-              actionHandler(.onPin(cue))
-            }
-          }
         }
       }
     )

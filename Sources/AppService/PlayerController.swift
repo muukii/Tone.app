@@ -2,19 +2,18 @@ import AudioKit
 import MediaPlayer
 import SwiftSubtitles
 import Observation
-import AppService
 
-struct DisplayCue: Identifiable, Hashable {
+public struct DisplayCue: Identifiable, Hashable {
 
-  func hash(into hasher: inout Hasher) {
+  public func hash(into hasher: inout Hasher) {
     id.hash(into: &hasher)
   }
 
-  let id: String
+  public let id: String
 
-  let backed: Subtitles.Cue
+  public let backed: Subtitles.Cue
 
-  init(backed: Subtitles.Cue) {
+  public init(backed: Subtitles.Cue) {
     self.backed = backed
     let s = backed.startTime
     self.id = "\(s.hour),\(s.minute),\(s.second),\(s.millisecond)"
@@ -23,21 +22,25 @@ struct DisplayCue: Identifiable, Hashable {
 }
 
 @Observable
-final class PlayerController: NSObject {
+public final class PlayerController: NSObject {
 
-  struct PlayingRange: Equatable {
+  public struct PlayingRange: Equatable {
 
     private var whole: [DisplayCue]
 
-    var startTime: TimeInterval {
+    public var startTime: TimeInterval {
       cues.first?.backed.startTime.timeInSeconds ?? whole.first?.backed.startTime.timeInSeconds ?? 0
     }
-    var endTime: TimeInterval {
+    public var endTime: TimeInterval {
       cues.last?.backed.endTime.timeInSeconds ?? whole.last?.backed.endTime.timeInSeconds ?? 0
     }
 
-    var startCue: DisplayCue {
+    public var startCue: DisplayCue {
       cues.first!
+    }
+
+    public var endCue: DisplayCue {
+      cues.last!
     }
 
     private var cues: [DisplayCue] = []
@@ -48,11 +51,25 @@ final class PlayerController: NSObject {
       self.whole = whole
     }
 
-    func contains(_ cue: DisplayCue) -> Bool {
+    public func contains(_ cue: DisplayCue) -> Bool {
       cue.backed.startTime.timeInSeconds >= startTime && cue.backed.endTime.timeInSeconds <= endTime
     }
 
-    mutating func select(cue: DisplayCue) {
+    public mutating func select(startCueID: String, endCueID: String) {
+
+      let startCue = whole.first { $0.id == startCueID }!
+      let endCue = whole.first { $0.id == endCueID }!
+
+      let startTime = min(startCue.backed.startTime.timeInSeconds, endCue.backed.startTime.timeInSeconds)
+      let endTime = max(startCue.backed.endTime.timeInSeconds, endCue.backed.endTime.timeInSeconds)
+
+      cues = whole.filter {
+        $0.backed.startTime.timeInSeconds >= startTime && $0.backed.endTime.timeInSeconds <= endTime
+      }
+
+    }
+
+    public mutating func select(cue: DisplayCue) {
 
       if cues.isEmpty {
         cues = [cue]
@@ -94,16 +111,16 @@ final class PlayerController: NSObject {
 //    }
   }
 
-  private(set) var playingRange: PlayingRange?
+  public private(set) var playingRange: PlayingRange?
 
-  var isRepeating: Bool {
+  public var isRepeating: Bool {
     playingRange != nil
   }
 
-  var isPlaying: Bool = false
-  var currentCue: DisplayCue?
+  public var isPlaying: Bool = false
+  public var currentCue: DisplayCue?
 
-  let cues: [DisplayCue]
+  public let cues: [DisplayCue]
   private let subtitles: Subtitles
 
   private var currentTimeObservation: NSKeyValueObservation?
@@ -117,20 +134,20 @@ final class PlayerController: NSObject {
   let player: AudioPlayer
   let timePitch: TimePitch
 
-  convenience init(item: Item) throws {
+  public convenience init(item: Item) throws {
     try self.init(title: item.id, audioFileURL: item.audioFileURL, subtitleFileURL: item.subtitleFileURL)
   }
 
-  convenience init(item: ItemEntity) throws {
+  public convenience init(item: ItemEntity) throws {
 
     try self.init(
-      title: item.title!,
+      title: item.title,
       audioFileURL: item.audioFileRelativePath!.absolute(basedOn: AbsolutePath(url: URL.documentsDirectory)).url,
       subtitleFileURL: item.subtitleRelativePath!.absolute(basedOn: AbsolutePath(url: URL.documentsDirectory)).url
     )
   }
 
-  init(title: String, audioFileURL: URL, subtitleFileURL: URL) throws {
+  public init(title: String, audioFileURL: URL, subtitleFileURL: URL) throws {
 
     player = .init(url: audioFileURL, buffered: false)!
 
@@ -146,11 +163,19 @@ final class PlayerController: NSObject {
     super.init()
   }
 
-  func makeRepeatingRange() -> PlayingRange {
+  public func makeRepeatingRange() -> PlayingRange {
     .init(whole: cues)
   }
 
-  func setRepeating(identifier: String) {
+  @MainActor
+  public func setRepeating(from pin: PinEntity) {
+
+    var range = makeRepeatingRange()
+    range.select(startCueID: pin.startCueRawIdentifier, endCueID: pin.endCueRawIdentifier)
+    setRepeat(range: range)
+  }
+
+  public func setRepeating(identifier: String) {
     guard let cue = cues.first(where: { $0.id == identifier }) else { return }
 
     var range = makeRepeatingRange()
@@ -223,7 +248,7 @@ final class PlayerController: NSObject {
     MPRemoteCommandCenter.shared().previousTrackCommand.removeTarget(self)
   }
 
-  func play() {
+  public func play() {
 
     do {
 
@@ -253,14 +278,15 @@ final class PlayerController: NSObject {
 
       MainActor.assumeIsolated { [weak self] in
         guard let self else { return }
-        let c = self.findCurrentCue()
-        if self.currentCue != c {
-          self.currentCue = c
-        }
 
         if let playingRange, playingRange.endTime < player.currentTime {
           let diff = player.currentTime - playingRange.startTime
           player.seek(time: -diff)
+        } else {
+          let c = self.findCurrentCue()
+          if self.currentCue != c {
+            self.currentCue = c
+          }
         }
       }
 
@@ -291,7 +317,7 @@ final class PlayerController: NSObject {
 
   }
 
-  func pause() {
+  public func pause() {
 
     isPlaying = false
     player.pause()
@@ -306,7 +332,7 @@ final class PlayerController: NSObject {
 
   }
 
-  func move(to cue: DisplayCue) {
+  public func move(to cue: DisplayCue) {
 
     if isPlaying == false {
       play()
@@ -320,7 +346,7 @@ final class PlayerController: NSObject {
 
   }
 
-  func moveToNext() {
+  public func moveToNext() {
 
     guard let currentCue else {
       return
@@ -336,7 +362,7 @@ final class PlayerController: NSObject {
     }
   }
 
-  func moveToPrevious() {
+  public func moveToPrevious() {
 
     guard let currentCue else {
       return
@@ -352,7 +378,7 @@ final class PlayerController: NSObject {
     }
   }
 
-  func setRepeat(range: PlayingRange?) {
+  public func setRepeat(range: PlayingRange?) {
 
     if let range {
 
@@ -366,11 +392,11 @@ final class PlayerController: NSObject {
     }
   }
 
-  func setRate(_ rate: Float) {
+  public func setRate(_ rate: Float) {
     timePitch.rate = rate
   }
 
-  func findCurrentCue() -> DisplayCue? {
+  public func findCurrentCue() -> DisplayCue? {
 
     let currentTime = player.currentTime
 
@@ -386,14 +412,14 @@ final class PlayerController: NSObject {
 
 extension Array where Element: Equatable {
 
-  func nextElement(after: Element) -> Element? {
+  fileprivate func nextElement(after: Element) -> Element? {
     guard let index = self.firstIndex(of: after), self.indices.contains(index + 1) else {
       return nil
     }
     return self[index + 1]
   }
 
-  func previousElement(before: Element) -> Element? {
+  fileprivate func previousElement(before: Element) -> Element? {
     guard let index = self.firstIndex(of: before), self.indices.contains(index - 1) else {
       return nil
     }

@@ -1,5 +1,5 @@
 import AVFoundation
-import AudioKit
+import AppService
 import SwiftUI
 import SwiftUISupport
 
@@ -12,11 +12,11 @@ protocol PlayerDisplay: View {
 }
 
 enum PlayerAction {
-  case onPin(DisplayCue)
+  case onPin(range: PlayerController.PlayingRange)
 }
 
 struct PlayerView<Display: PlayerDisplay>: View {
-  
+
   struct Term: Identifiable {
     var id: String { value }
     var value: String
@@ -44,7 +44,18 @@ struct PlayerView<Display: PlayerDisplay>: View {
 
       Spacer(minLength: 20).fixedSize()
 
-      PlayerControlPanel(controller: controller)
+      PlayerControlPanel(
+        controller: controller,
+        onTapPin: {
+
+          guard let range = controller.playingRange else {
+            return
+          }
+
+          actionHandler(.onPin(range: range))
+
+        }
+      )
 
     }
     //    .sheet(
@@ -73,13 +84,17 @@ enum PlayerDisplayAction {
   case setRepeat(range: PlayerController.PlayingRange)
 }
 
-
 struct PlayerControlPanel: View {
 
   private let controller: PlayerController
+  private let onTapPin: @MainActor () -> Void
 
-  init(controller: PlayerController) {
+  init(
+    controller: PlayerController,
+    onTapPin: @escaping @MainActor () -> Void
+  ) {
     self.controller = controller
+    self.onTapPin = onTapPin
   }
 
   private static func fractionLabel(fraction: Double) -> String {
@@ -97,6 +112,7 @@ struct PlayerControlPanel: View {
     VStack {
       HStack {
 
+        // play or pause
         Button {
           MainActor.assumeIsolated {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -155,6 +171,13 @@ struct PlayerControlPanel: View {
           }
         }
 
+        // pin
+        Button {
+          onTapPin()
+        } label: {
+          Text("Pin")
+        }
+
       }
 
       Spacer(minLength: 20).fixedSize()
@@ -205,3 +228,17 @@ struct DefinitionView: UIViewControllerRepresentable {
   ) {
   }
 }
+
+#if DEBUG
+
+#Preview {
+  Group {
+    PlayerView<PlayerListFlowLayoutView>(
+      playerController: { try! .init(item: .social) },
+      actionHandler: { action in
+      }
+    )
+  }
+}
+
+#endif

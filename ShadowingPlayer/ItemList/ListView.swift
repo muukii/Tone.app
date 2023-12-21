@@ -8,6 +8,8 @@ struct ListView: View {
   typealias UsingDisplay = PlayerListFlowLayoutView
   //  typealias UsingDisplay = PlayerListHorizontalView
 
+  let service: Service
+
   let items: [Item] = Item.globInBundle()
 
   @Query(sort: \ItemEntity.createdAt, order: .reverse)
@@ -55,7 +57,7 @@ struct ListView: View {
           ForEach(pinEntities) { pin in
             NavigationLink(value: pin) {
               VStack {
-                Text(pin.subtitle)
+                Text(pin.item?.title ?? "null")
               }
             }
             .contextMenu(menuItems: {
@@ -75,45 +77,17 @@ struct ListView: View {
             PlayerView<UsingDisplay>(
               playerController: {
                 let controller = try! PlayerController(item: item)
-                let _ = controller.setRepeating(identifier: pin.identifier)
+                controller.setRepeating(from: pin)
                 return controller
               },
               actionHandler: { action in
                 switch action {
-                case .onPin(let cue):
+                case .onPin(let range):
 
-                  do {
-                    try modelContext.transaction {
-
-                      let new = PinEntity()
-                      new.createdAt = .init()
-                      new.subtitle = cue.backed.text
-                      new.startTime = cue.backed.startTime.timeInSeconds
-                      new.endTime = cue.backed.endTime.timeInSeconds
-                      new.identifier = cue.id
-
-                      let targetItem = try modelContext.fetch(
-                        .init(
-                          predicate: #Predicate<ItemEntity> { [id = item.persistentModelID] in
-                            $0.persistentModelID == id
-                          }
-                        )
-                      ).first
-
-                      guard let targetItem else {
-                        assertionFailure("not found item")
-                        return
-                      }
-
-                      new.item = targetItem
-
-                      modelContext.insert(new)
-                    }
-                  } catch {
-                    Log.error("Failed to make a pin entity. \(error)")
+                  Task {
+                    try await service.makePinned(range: range, for: item)
                   }
 
-                  break
                 }
               }
             )
@@ -133,40 +107,11 @@ struct ListView: View {
             },
             actionHandler: { action in
               switch action {
-              case .onPin(let cue):
+              case .onPin(let range):
 
-                do {
-                  try modelContext.transaction {
-
-                    let new = PinEntity()
-                    new.createdAt = .init()
-                    new.subtitle = cue.backed.text
-                    new.startTime = cue.backed.startTime.timeInSeconds
-                    new.endTime = cue.backed.endTime.timeInSeconds
-                    new.identifier = cue.id
-
-                    let targetItem = try modelContext.fetch(
-                      .init(
-                        predicate: #Predicate<ItemEntity> { [id = item.persistentModelID] in
-                          $0.persistentModelID == id
-                        }
-                      )
-                    ).first
-
-                    guard let targetItem else {
-                      assertionFailure("not found item")
-                      return
-                    }
-
-                    new.item = targetItem
-
-                    modelContext.insert(new)
-                  }
-                } catch {
-                  Log.error("Failed to make a pin entity. \(error)")
+                Task {
+                  try await service.makePinned(range: range, for: item)
                 }
-
-                break
               }
             }
           )
@@ -194,6 +139,6 @@ struct ListView: View {
 
 #Preview {
 
-  ListView()
+  ListView(service: .init())
 
 }

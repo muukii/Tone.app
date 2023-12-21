@@ -32,7 +32,7 @@ struct ShadowingPlayerApp: App {
 
   var body: some Scene {
     WindowGroup {
-      ContentView()
+      ContentView(service: service)
         .tint(Color(.displayP3, red: 0.5607843137254902, green: 0.0, blue: 1.0, opacity: 1))
     }
     .modelContainer(service.modelContainer)

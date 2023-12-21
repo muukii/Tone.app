@@ -6,16 +6,13 @@
 //
 
 import SwiftUI
+import AppService
 
 struct ContentView: View {
 
-  var body: some View {
-    ListView()
-  }
-}
+  unowned let service: Service
 
-struct ContentView_Previews: PreviewProvider {
-  static var previews: some View {
-    ContentView()
+  var body: some View {
+    ListView(service: service)
   }
 }

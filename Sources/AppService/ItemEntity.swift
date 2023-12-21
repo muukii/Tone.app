@@ -5,7 +5,9 @@ import Foundation
 public final class ItemEntity: Hashable {
 
   @Attribute(.unique)
-  public var title: String?
+  public var identifier: String?
+
+  public var title: String = ""
 
   public var createdAt: Date
 
