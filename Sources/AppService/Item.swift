@@ -1,34 +1,33 @@
 
 import Foundation
-import AppService
 
-struct Item_Hashable: Hashable {
+public struct Item_Hashable: Hashable {
 
-  var hashValue: Int {
+  public var hashValue: Int {
     body.id.hashValue
   }
 
-  func hash(into hasher: inout Hasher) {
+  public func hash(into hasher: inout Hasher) {
     body.id.hash(into: &hasher)
   }
 
-  let body: ItemEntity
+  public let body: ItemEntity
 
-  init(body: ItemEntity) {
+  public init(body: ItemEntity) {
     self.body = body
   }
 
 }
 
-struct Item: Equatable, Identifiable {
+public struct Item: Equatable, Identifiable {
 
-  let id: String
+  public let id: String
 
-  let name: String
-  let audioFileURL: URL
-  let subtitleFileURL: URL
+  public let name: String
+  public let audioFileURL: URL
+  public let subtitleFileURL: URL
 
-  init(
+  public init(
     identifier: String,
     name: String,
     audioFileURL: URL,
@@ -41,20 +40,20 @@ struct Item: Equatable, Identifiable {
   }
 
   #if DEBUG
-  static var example: Self {
+  public static var example: Self {
     make(name: "example")
   }
 
-  static var overwhelmed: Self {
+  public static var overwhelmed: Self {
     make(name: "overwhelmed - Peter Mckinnon")
   }
 
-  static var social: Self {
+  public static var social: Self {
     make(name: "Social Media Has Ruined Photography")
   }
   #endif
 
-  static func make(name: String) -> Self {
+  public static func make(name: String) -> Self {
 
     let audioFileURL = Bundle.main.path(forResource: name, ofType: "mp3").map {
       URL(fileURLWithPath: $0)
@@ -70,7 +69,7 @@ struct Item: Equatable, Identifiable {
     )
   }
 
-  static func globInBundle() -> [Self] {
+  public static func globInBundle() -> [Self] {
     let bundle = Bundle.main
 
     let audioFiles = bundle.paths(forResourcesOfType: "mp3", inDirectory: nil)
@@ -92,7 +91,7 @@ struct Item: Equatable, Identifiable {
     return items
   }
 
-  static func globInDocuments() -> [Self] {
+  public static func globInDocuments() -> [Self] {
 
     let target = URL.documentsDirectory.appendingPathComponent("audio", isDirectory: true)
 

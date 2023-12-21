@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftUISupport
+import AppService
 
 struct PlayerListDisplayView: View, PlayerDisplay {
 
@@ -49,12 +50,7 @@ struct PlayerListDisplayView: View, PlayerDisplay {
           )
           .animation(.bouncy, value: focusing)
           .listRowSeparator(.hidden)
-          .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
-          .contextMenu {
-            Button("Pin") {
-              actionHandler(.onPin(cue))
-            }
-          }
+          .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))     
         }
       }
       .listStyle(.plain)

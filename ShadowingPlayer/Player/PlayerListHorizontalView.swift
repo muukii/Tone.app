@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftUISupport
+import AppService
 
 struct PlayerListHorizontalView: View, PlayerDisplay {
 

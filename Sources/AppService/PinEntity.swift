@@ -9,10 +9,8 @@ public final class PinEntity {
 
   public var createdAt: Date
 
-  public var subtitle: String
-
-  public var startTime: TimeInterval
-  public var endTime: TimeInterval
+  public var startCueRawIdentifier: String
+  public var endCueRawIdentifier: String
 
   @Relationship
   public var item: ItemEntity?
@@ -21,8 +19,7 @@ public final class PinEntity {
 
     self.identifier = ""
     self.createdAt = .init()
-    self.subtitle = ""
-    self.startTime = 0
-    self.endTime = 0
+    self.startCueRawIdentifier = ""
+    self.endCueRawIdentifier = ""
   }
 }

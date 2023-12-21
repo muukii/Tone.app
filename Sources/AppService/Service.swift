@@ -24,9 +24,38 @@ public final class Service {
 
   }
 
-  public func makePinned() async throws {
+  public func makePinned(range: PlayerController.PlayingRange, for item: ItemEntity) async throws {
 
-    
+    try await withBackground { [self] in
+
+      let modelContext = ModelContext(modelContainer)
+
+      let targetItem = try modelContext.fetch(
+        .init(
+          predicate: #Predicate<ItemEntity> { [id = item.id] in
+            $0.persistentModelID == id
+          }
+        )
+      ).first
+
+      let new = PinEntity()
+      new.createdAt = .init()
+      new.startCueRawIdentifier = range.startCue.id
+      new.endCueRawIdentifier = range.endCue.id
+      new.identifier = "\(item.id)\(range.startCue.id)-\(range.endCue.id)"
+
+      guard let targetItem else {
+        assertionFailure("not found item")
+        return
+      }
+
+      new.item = targetItem
+
+      Log.debug("Create pin \(String(describing: new))")
+
+      modelContext.insert(new)
+      try modelContext.save()
+    }
 
   }
 
@@ -96,6 +125,7 @@ public final class Service {
         let new = ItemEntity()
 
         new.createdAt = .init()
+        new.identifier = title
         new.title = title
         new.subtitleFilePath =
           subtitleFileDestinationPath.relative(basedOn: .init(url: URL.documentsDirectory)).rawValue
