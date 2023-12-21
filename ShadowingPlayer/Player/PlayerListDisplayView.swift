@@ -125,7 +125,7 @@ struct PlayerListDisplayView: View, PlayerDisplay {
 #Preview {
   Group {
     PlayerView<PlayerListDisplayView>(
-      playerController: try! .init(item: .overwhelmed),
+      playerController: { try! .init(item: .overwhelmed) },
       actionHandler: { action in
       }
     )

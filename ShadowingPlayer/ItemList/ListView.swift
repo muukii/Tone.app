@@ -1,12 +1,12 @@
-import SwiftUI
-import SwiftData
 import AppService
+import SwiftData
+import SwiftUI
 
 struct ListView: View {
 
-//  typealias UsingDisplay = PlayerListDisplayView
+  //  typealias UsingDisplay = PlayerListDisplayView
   typealias UsingDisplay = PlayerListFlowLayoutView
-//  typealias UsingDisplay = PlayerListHorizontalView
+  //  typealias UsingDisplay = PlayerListHorizontalView
 
   let items: [Item] = Item.globInBundle()
 
@@ -67,16 +67,17 @@ struct ListView: View {
         }
 
       }
-      .navigationDestination(for: PinEntity.self, destination: { pin in
+      .navigationDestination(
+        for: PinEntity.self,
+        destination: { pin in
 
-        if let item = pin.item {
-          ObjectProvider(object: {
-            let controller = try! PlayerController(item: item)
-            let _ = controller.setRepeating(identifier: pin.identifier)
-            return controller
-          }()) { controller in
+          if let item = pin.item {
             PlayerView<UsingDisplay>(
-              playerController: controller,
+              playerController: {
+                let controller = try! PlayerController(item: item)
+                let _ = controller.setRepeating(identifier: pin.identifier)
+                return controller
+              },
               actionHandler: { action in
                 switch action {
                 case .onPin(let cue):
@@ -91,9 +92,13 @@ struct ListView: View {
                       new.endTime = cue.backed.endTime.timeInSeconds
                       new.identifier = cue.id
 
-                      let targetItem = try modelContext.fetch(.init(predicate: #Predicate<ItemEntity> { [id = item.persistentModelID] in
-                        $0.persistentModelID == id
-                      })).first
+                      let targetItem = try modelContext.fetch(
+                        .init(
+                          predicate: #Predicate<ItemEntity> { [id = item.persistentModelID] in
+                            $0.persistentModelID == id
+                          }
+                        )
+                      ).first
 
                       guard let targetItem else {
                         assertionFailure("not found item")
@@ -110,19 +115,22 @@ struct ListView: View {
 
                   break
                 }
-              })
+              }
+            )
+          } else {
+            EmptyView()
           }
-        } else {
-          EmptyView()
         }
-      })
-      .navigationDestination(for: ItemEntity.self, destination: { item in
-        ObjectProvider(object: {
-          let controller = try! PlayerController(item: item)
-          return controller
-        }()) { controller in
+      )
+      .navigationDestination(
+        for: ItemEntity.self,
+        destination: { item in
+
           PlayerView<UsingDisplay>(
-            playerController: controller,
+            playerController: {
+              let controller = try! PlayerController(item: item)
+              return controller
+            },
             actionHandler: { action in
               switch action {
               case .onPin(let cue):
@@ -137,9 +145,13 @@ struct ListView: View {
                     new.endTime = cue.backed.endTime.timeInSeconds
                     new.identifier = cue.id
 
-                    let targetItem = try modelContext.fetch(.init(predicate: #Predicate<ItemEntity> { [id = item.persistentModelID] in
-                      $0.persistentModelID == id
-                    })).first
+                    let targetItem = try modelContext.fetch(
+                      .init(
+                        predicate: #Predicate<ItemEntity> { [id = item.persistentModelID] in
+                          $0.persistentModelID == id
+                        }
+                      )
+                    ).first
 
                     guard let targetItem else {
                       assertionFailure("not found item")
@@ -156,20 +168,24 @@ struct ListView: View {
 
                 break
               }
-            })
+            }
+          )
         }
-      })
+      )
       .toolbar(content: {
         Button("Import") {
           isImporting = true
         }
       })
       .navigationTitle("Tone")
-      .sheet(isPresented: $isImporting, content: {
-        ImportView(onCompleted: {
-          isImporting = false        
-        })
-      })
+      .sheet(
+        isPresented: $isImporting,
+        content: {
+          ImportView(onCompleted: {
+            isImporting = false
+          })
+        }
+      )
 
     }
   }

@@ -325,7 +325,7 @@ extension VerticalAlignment {
 #Preview {
   Group {
     PlayerView<PlayerListHorizontalView>(
-      playerController: try! .init(item: .social),
+      playerController: { try! .init(item: .social) },
       actionHandler: { action in
       }
     )

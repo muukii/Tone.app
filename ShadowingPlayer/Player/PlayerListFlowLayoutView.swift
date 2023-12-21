@@ -184,7 +184,7 @@ private final class ViewModel: StoreDriverType {
 #Preview {
   Group {
     PlayerView<PlayerListFlowLayoutView>(
-      playerController: try! .init(item: .social),
+      playerController: { try! .init(item: .social) },
       actionHandler: { action in
       }
     )

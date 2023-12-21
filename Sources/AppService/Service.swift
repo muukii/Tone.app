@@ -24,6 +24,12 @@ public final class Service {
 
   }
 
+  public func makePinned() async throws {
+
+    
+
+  }
+
   public func importItem(title: String, audioFileURL: URL, subtitleFileURL: URL) async throws {
 
     let modelContext = ModelContext(modelContainer)

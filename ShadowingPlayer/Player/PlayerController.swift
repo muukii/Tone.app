@@ -211,6 +211,8 @@ final class PlayerController: NSObject {
 
   deinit {
 
+    Log.debug("deinit \(self)")
+
     currentTimeObservation?.invalidate()
     currentTimer?.invalidate()
     currentTimerForLoop?.invalidate()

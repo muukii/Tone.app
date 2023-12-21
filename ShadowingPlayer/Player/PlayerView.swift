@@ -22,14 +22,14 @@ struct PlayerView<Display: PlayerDisplay>: View {
     var value: String
   }
 
-  private let controller: PlayerController
+  @ObservableEdge var controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) -> Void
 
   init(
-    playerController: PlayerController,
+    playerController: @escaping () -> PlayerController,
     actionHandler: @escaping @MainActor (PlayerAction) -> Void
   ) {
-    self.controller = playerController
+    self._controller = .init(wrappedValue: playerController())
     self.actionHandler = actionHandler
   }
 
