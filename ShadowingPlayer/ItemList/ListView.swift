@@ -20,7 +20,8 @@ struct ListView: View {
 
   @Environment(\.modelContext) var modelContext
 
-  @State private var isImporting: Bool = false
+  @State private var isInImporting: Bool = false
+  @State private var isInSettings: Bool = false
 
   @State var path: NavigationPath = .init()
 
@@ -28,22 +29,10 @@ struct ListView: View {
     NavigationStack(path: $path) {
 
       List {
-
-        NavigationLink {
-          ObjectProvider(object: RecorderAndPlayer()) { controller in
-            VoiceRecorderView(controller: controller)
-          }
-        } label: {
-          Text("Recorder")
-        }
-
         Section {
           ForEach(itemEntities) { item in
             NavigationLink(value: item) {
-              VStack {
-                Text("\(item.title ?? "")")
-                Text("\(item.createdAt)")
-              }
+              ItemCell(item: item)
             }
             .contextMenu(menuItems: {
               Button("Delete", role: .destructive) {
@@ -118,23 +107,56 @@ struct ListView: View {
         }
       )
       .toolbar(content: {
-        Button("Import") {
-          isImporting = true
+        ToolbarItem(placement: .topBarLeading) {
+          Button {
+            isInSettings = true
+          } label: {
+            Image(systemName: "gearshape")
+          }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+          Button("Import") {
+            isInImporting = true
+          }
         }
       })
       .navigationTitle("Tone")
       .sheet(
-        isPresented: $isImporting,
+        isPresented: $isInImporting,
         content: {
           ImportView(onCompleted: {
-            isImporting = false
+            isInImporting = false
           })
+        }
+      )
+      .sheet(
+        isPresented: $isInSettings,
+        content: {
+          SettingsView()
         }
       )
 
     }
   }
 
+}
+
+struct ItemCell: View {
+
+  let title: String
+  let createdAt: Date
+
+  init(item: ItemEntity) {
+    self.title = item.title
+    self.createdAt = item.createdAt
+  }
+
+  var body: some View {
+    VStack {
+      Text("\(title)")
+      Text("\(createdAt)")
+    }
+  }
 }
 
 #Preview {

@@ -19,6 +19,15 @@
       }
     },
     {
+      "identity" : "mondrianlayout",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/MondrianLayout",
+      "state" : {
+        "branch" : "main",
+        "revision" : "b26edaa5a469bc5fd58f9afe37d257ca1b3771e0"
+      }
+    },
+    {
       "identity" : "rxswift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ReactiveX/RxSwift.git",

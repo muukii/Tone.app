@@ -34,16 +34,15 @@ struct PlayerView<Display: PlayerDisplay>: View {
   }
 
   var body: some View {
-
-    VStack {
+//
+    ZStack {
 
       Display(
         controller: controller,
         actionHandler: actionHandler
       )
-
-      Spacer(minLength: 20).fixedSize()
-
+    }
+    .safeAreaInset(edge: .bottom, content: {
       PlayerControlPanel(
         controller: controller,
         onTapPin: {
@@ -56,23 +55,14 @@ struct PlayerView<Display: PlayerDisplay>: View {
 
         }
       )
-
-    }
-    //    .sheet(
-    //      item: $term,
-    //      onDismiss: {
-    //        term = nil
-    //      },
-    //      content: { term in
-    //        DefinitionView(term: term.value)
-    //      }
-    //    )
+    })
     .onAppear {
       UIApplication.shared.isIdleTimerDisabled = true
     }
     .onDisappear {
       UIApplication.shared.isIdleTimerDisabled = false
     }
+    .navigationBarTitleDisplayMode(.inline)
 
   }
 
@@ -110,7 +100,10 @@ struct PlayerControlPanel: View {
   var body: some View {
 
     VStack {
-      HStack {
+
+      Spacer(minLength: 24).fixedSize()
+
+      HStack(alignment: .top) {
 
         // play or pause
         Button {
@@ -127,13 +120,13 @@ struct PlayerControlPanel: View {
             Image(systemName: "pause.fill")
               .resizable()
               .aspectRatio(contentMode: .fit)
-              .frame(square: 40)
+              .frame(square: 30)
               .foregroundColor(Color.primary)
           } else {
             Image(systemName: "play.fill")
               .resizable()
               .aspectRatio(contentMode: .fit)
-              .frame(square: 40)
+              .frame(square: 30)
               .foregroundColor(Color.primary)
           }
 
@@ -161,7 +154,7 @@ struct PlayerControlPanel: View {
             Image(systemName: "repeat")
               .resizable()
               .aspectRatio(contentMode: .fit)
-              .frame(width: 40)
+              .frame(width: 30)
               .foregroundColor(Color.primary)
 
             // indicator
@@ -171,16 +164,22 @@ struct PlayerControlPanel: View {
           }
         }
 
+        Spacer(minLength: 35).fixedSize()
+
         // pin
         Button {
           onTapPin()
         } label: {
-          Text("Pin")
+          Image(systemName: "pin.fill")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 20)
+            .foregroundColor(Color.primary)
         }
 
       }
 
-      Spacer(minLength: 20).fixedSize()
+      Spacer(minLength: 16).fixedSize()
 
       ScrollView(.horizontal) {
         HStack {
@@ -202,15 +201,18 @@ struct PlayerControlPanel: View {
             }
             .buttonStyle(.bordered)
             .buttonBorderShape(.circle)
-            .tint(Color.orange)
+            .tint(Color.accentColor)
           }
 
         }
         .buttonStyle(.borderedProminent)
       }
-      .contentMargins(20)
+      .contentMargins(.horizontal, 20)
+
+      Spacer(minLength: 10).fixedSize()
     }
     .scrollIndicators(.hidden)
+    .background(Material.thick)
   }
 
 }

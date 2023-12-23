@@ -5,7 +5,8 @@ import AppService
 
 struct VoiceRecorderView: View {
 
-  let controller: RecorderAndPlayer
+  @ObservableEdge var controller: RecorderAndPlayer = .init()
+
   let tmp_controller = AudioPlayerController(
     file: try! .init(forReading: Item.overwhelmed.audioFileURL)
   )
@@ -44,6 +45,7 @@ struct VoiceRecorderView: View {
   }
 }
 
+@Observable
 final class RecorderAndPlayer {
 
   private var playerController: AudioPlayerController?

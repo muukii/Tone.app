@@ -3,6 +3,7 @@ import SwiftUI
 import SwiftUISupport
 import Verge
 import AppService
+import MondrianLayout
 
 private enum CellIsFocusing: CustomStateKey {
   typealias Value = Bool
@@ -77,11 +78,25 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         layout.estimatedItemSize = .init(width: 50, height: 50)
         layout.sectionInset = .init(top: 0, left: 16, bottom: 0, right: 16)
         return layout
+
+//        let layout = UICollectionViewFlowLayout()
+//        layout.estimatedItemSize = .init(width: 50, height: 50)
+//        return layout
       },
       scrollDirection: .vertical,
+      contentInsetAdjustmentBehavior: .always,
       cellProvider: { [weak controller] context in
 
         let cue = context.data
+
+//        return context.cell { cell, state, cellState in
+//          return CueCellContentConfiguration(
+//            text: cue.backed.text,
+//            isFocusing: cellState.isFocusing,
+//            isInRange: cellState.playingRange?.contains(cue) ?? false,
+//            accentColor: .systemMint
+//          )
+//        }
 
         return context.cell { state, customState in
           PlayerListFlowLayoutView.chunk(
@@ -107,9 +122,8 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
               }
             }
           )
-          .listRowSeparator(.hidden)
-          .listRowInsets(.init(top: 10, leading: 20, bottom: 10, trailing: 20))
         }
+        
       }
     )
 
@@ -174,6 +188,65 @@ private final class ViewModel: StoreDriverType {
     self.store = .init(initialState: .init())
   }
 
+}
+
+private final class CueCellContentView: UIView, UIContentView {
+
+  private let textLabel: UILabel = .init()
+  private let underlineView: UIView = .init()
+
+  var configuration: UIContentConfiguration {
+    didSet {
+      update(with: configuration as! CueCellContentConfiguration)
+    }
+  }
+
+  init(configuration: CueCellContentConfiguration) {
+    self.configuration = configuration
+    super.init(frame: .zero)
+
+    underlineView.backgroundColor = .white
+
+    Mondrian.buildSubviews(on: self) {
+      VStackBlock {
+        textLabel
+
+        underlineView
+          .viewBlock
+          .height(2)
+      }
+    }
+
+    update(with: configuration)
+  }
+  
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  private func update(with configuration: CueCellContentConfiguration) {
+
+    textLabel.text = configuration.text
+
+  }
+
+}
+
+private struct CueCellContentConfiguration: UIContentConfiguration {
+
+  let text: String
+  let isFocusing: Bool
+  let isInRange: Bool
+
+  let accentColor: UIColor
+
+  func makeContentView() -> UIView & UIContentView {
+    CueCellContentView(configuration: self)
+  }
+  
+  func updated(for state: UIConfigurationState) -> CueCellContentConfiguration {
+    return self
+  }
 }
 
 #if DEBUG

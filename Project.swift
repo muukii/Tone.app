@@ -46,6 +46,7 @@ let project = Project(
         .external(name: "SwiftUISupport"),  
         .target(name: "AppService"),    
         .external(name: "Wrap"),    
+        .external(name: "MondrianLayout"),
       ],
       settings: .settings(base: [
         "DEVELOPMENT_ASSET_PATHS": #""ShadowingPlayer/Preview Content""#,

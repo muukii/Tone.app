@@ -112,7 +112,7 @@ fileprivate struct ImportContentView: View {
     let modifier = if isAudioSelectingFiles {
       ImporterModifier(
         isPresented: $isAudioSelectingFiles,
-        allowedContentTypes: [.mp3, .aiff],
+        allowedContentTypes: [.mp3, .aiff, .wav, .mpeg4Audio],
         onCompletion: { result in
           switch result {
           case .success(let success):

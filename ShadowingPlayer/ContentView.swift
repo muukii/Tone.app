@@ -13,6 +13,6 @@ struct ContentView: View {
   unowned let service: Service
 
   var body: some View {
-    ListView(service: service)
+    MainTabView(service: service)
   }
 }
