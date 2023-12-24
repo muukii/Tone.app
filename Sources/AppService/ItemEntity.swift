@@ -17,6 +17,9 @@ public final class ItemEntity: Hashable {
   /// a relative path from document directory
   public var subtitleFilePath: String?
 
+  @Relationship(deleteRule: .cascade, inverse: \PinEntity.item)
+  public var pinItems: [PinEntity] = []
+
   public var audioFileRelativePath: RelativePath? {
     audioFilePath.map { .init($0) }
   }

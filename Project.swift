@@ -18,7 +18,7 @@ let project = Project(
   targets: [
     Target(
       name: "Tone",
-      destinations: [.iPhone],
+      destinations: [.iPhone, .macWithiPadDesign],
       product: .app,
       bundleId: "app.muukii.Speaking",
       deploymentTargets: .iOS("17.0"),

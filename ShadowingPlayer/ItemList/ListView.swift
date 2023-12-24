@@ -36,6 +36,7 @@ struct ListView: View {
             }
             .contextMenu(menuItems: {
               Button("Delete", role: .destructive) {
+                // TODO: too direct
                 modelContext.delete(item)
               }
             })
@@ -51,6 +52,7 @@ struct ListView: View {
             }
             .contextMenu(menuItems: {
               Button("Delete", role: .destructive) {
+                // TODO: too direct
                 modelContext.delete(pin)
               }
             })
@@ -124,9 +126,15 @@ struct ListView: View {
       .sheet(
         isPresented: $isInImporting,
         content: {
-          ImportView(onCompleted: {
-            isInImporting = false
-          })
+          ImportView(
+            service: service,
+            onCompleted: {
+              isInImporting = false
+            },
+            onCancel: {
+              isInImporting = false
+            }
+          )
         }
       )
       .sheet(
@@ -141,21 +149,28 @@ struct ListView: View {
 
 }
 
-struct ItemCell: View {
+private struct ItemCell: View {
 
   let title: String
-  let createdAt: Date
 
   init(item: ItemEntity) {
     self.title = item.title
-    self.createdAt = item.createdAt
+  }
+
+  init(title: String) {
+    self.title = title
   }
 
   var body: some View {
-    VStack {
+    VStack(alignment: .leading) {
       Text("\(title)")
-      Text("\(createdAt)")
     }
+  }
+}
+
+#Preview {
+  Form {
+    ItemCell(title: "Hello, Tone.")
   }
 }
 

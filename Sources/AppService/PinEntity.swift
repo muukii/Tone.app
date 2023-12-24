@@ -12,7 +12,6 @@ public final class PinEntity {
   public var startCueRawIdentifier: String
   public var endCueRawIdentifier: String
 
-  @Relationship
   public var item: ItemEntity?
 
   public init() {

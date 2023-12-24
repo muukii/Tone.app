@@ -7,20 +7,11 @@ struct VoiceRecorderView: View {
 
   @ObservableEdge var controller: RecorderAndPlayer = .init()
 
-  let tmp_controller = AudioPlayerController(
-    file: try! .init(forReading: Item.overwhelmed.audioFileURL)
-  )
 
   var body: some View {
 
     VStack {
-
-      Button("play") {
-
-        try! tmp_controller.play()
-
-      }
-
+    
       Button("Record Start") {
         do {
           try controller.startRecording()

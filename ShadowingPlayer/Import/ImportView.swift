@@ -1,94 +1,126 @@
-
+import AppService
 import SwiftUI
 import UniformTypeIdentifiers
-import AppService
 
 struct ImportView: View {
 
+  private let audioUTTypes: Set<UTType> = [
+    .mp3, .aiff, .wav, .mpeg4Audio,
+  ]
+
+  private let srtUTType = UTType(filenameExtension: "srt")!
+
+  @State private var isSelectingFiles: Bool = false
+
+  @State private var isEditingMultipleDrafts: Bool = false
+  @State private var selectedMultipleDrafts: [Draft]? = nil
   @Environment(\.modelContext) var modelContext
 
+  let service: Service
+
   var onCompleted: () -> Void
+  var onCancel: () -> Void
 
   var body: some View {
-    ImportContentView(onImport: { draft in
 
-      guard draft.audioFileURL.startAccessingSecurityScopedResource() else {
-        Log.error("Failed to start accessing security scoped resource")
-        return
-      }
+    NavigationStack {
 
-      guard draft.subtitleFileURL.startAccessingSecurityScopedResource() else {
-        Log.error("Failed to start accessing security scoped resource")
-        return
-      }
+      ImportContentView(onImport: { draft in
 
-      defer {
-        draft.audioFileURL.stopAccessingSecurityScopedResource()
-        draft.subtitleFileURL.stopAccessingSecurityScopedResource()
-      }
-
-      let target = URL.documentsDirectory.appendingPathComponent("audio", isDirectory: true)
-
-      let fileManager = FileManager.default
-
-      do {
-
-        if fileManager.fileExists(atPath: target.absoluteString) == false {
-
-          try fileManager.createDirectory(
-            at: target,
-            withIntermediateDirectories: true,
-            attributes: nil
-          )
+        Task {
+          try await service.importItem(title: draft.title, audioFileURL: draft.audioFileURL, subtitleFileURL: draft.subtitleFileURL)
+          onCompleted()
         }
 
-        func overwrite(file: URL, to url: URL) throws {
+      })
+      .navigationBarTitle("Import")
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button("Cancel") {
+            onCancel()
+          }
+        }
 
-          if fileManager.fileExists(atPath: url.path(percentEncoded: false)) {
-            try fileManager.removeItem(at: url)
+        ToolbarItem(placement: .topBarTrailing) {
+          Button("Batch") {
+            isSelectingFiles = true
+          }
+        }
+      }
+      .navigationDestination(isPresented: $isEditingMultipleDrafts, destination: {
+        if let drafts = selectedMultipleDrafts {
+          MultipleImportEditView(
+            drafts: drafts,
+            onConfirm: {
+              Task {
+                for draft in drafts {
+                  try await service.importItem(title: draft.title, audioFileURL: draft.audioFileURL, subtitleFileURL: draft.subtitleFileURL)
+                }
+                onCompleted()
+              }
+            }
+          )
+        }
+      })
+
+    }
+    .fileImporter(
+      isPresented: $isSelectingFiles,
+      allowedContentTypes: Array(audioUTTypes) + CollectionOfOne(srtUTType),
+      allowsMultipleSelection: true,
+      onCompletion: { result in
+        switch result {
+        case .success(let success):
+
+          // find matching audio files and srt files using same file name
+
+          let audioFiles = Set(
+            success.filter {
+              for type in audioUTTypes {
+                if UTType(filenameExtension: $0.pathExtension)?.conforms(to: type) == true {
+                  return true
+                }
+              }
+              return false
+            }
+          )
+
+          let srtFiles = Set(
+            success.filter {
+              UTType(filenameExtension: $0.pathExtension)?.conforms(to: srtUTType) == true
+            }
+          )
+
+          let drafts = audioFiles.compactMap { url -> Draft? in
+
+            let name = url.deletingPathExtension().lastPathComponent
+
+            guard
+              let srtURL = srtFiles.first(where: {
+                $0.deletingPathExtension().lastPathComponent == name
+              })
+            else {
+              return nil
+            }
+
+            return Draft(title: name, audioFileURL: url, subtitleFileURL: srtURL)
           }
 
-          try fileManager.copyItem(
-            at: file,
-            to: url
-          )
+          selectedMultipleDrafts = drafts
+          isEditingMultipleDrafts = true
 
+        case .failure(let failure):
+          print(failure)
         }
-
-        let audioFileDestinationPath = AbsolutePath(url: target.appendingPathComponent(draft.title + "." + draft.audioFileURL.pathExtension))
-        let subtitleFileDestinationPath = AbsolutePath(url: target.appendingPathComponent(draft.title + ".srt"))
-        do {
-          try overwrite(file: draft.audioFileURL, to: audioFileDestinationPath.url)
-        }
-
-        do {
-          try overwrite(file: draft.subtitleFileURL, to: subtitleFileDestinationPath.url)
-        }
-
-        try modelContext.transaction {
-
-          let new = ItemEntity()
-
-          new.createdAt = .init()
-          new.title = draft.title
-          new.subtitleFilePath = subtitleFileDestinationPath.relative(basedOn: .init(url: URL.documentsDirectory)).rawValue
-          new.audioFilePath = audioFileDestinationPath.relative(basedOn: .init(url: URL.documentsDirectory)).rawValue
-
-          modelContext.insert(new)
-
-        }
-
-        onCompleted()
-
-      } catch {
-        Log.error("\(error)")
       }
+    )
 
-    })
   }
 }
 
-fileprivate struct Draft {
+private struct Draft: Identifiable {
+
+  var id: String { title }
 
   let title: String
   let audioFileURL: URL
@@ -96,7 +128,45 @@ fileprivate struct Draft {
 
 }
 
-fileprivate struct ImportContentView: View {
+private struct MultipleImportEditView: View {
+
+  let drafts: [Draft]
+
+  var onConfirm: @MainActor () -> Void
+
+  var body: some View {
+
+    List.init(drafts) { draft in
+
+      VStack(alignment: .leading) {
+
+        Text(draft.title)
+          .font(.headline)
+          .padding(.bottom, 4)
+
+        Text(draft.audioFileURL.path)
+          .font(.caption)
+          .foregroundColor(.secondary)
+
+        Text(draft.subtitleFileURL.path)
+          .font(.caption)
+          .foregroundColor(.secondary)
+
+      }
+    }
+    .toolbar(content: {
+      ToolbarItem(placement: .confirmationAction) {
+        Button("Import") {
+          onConfirm()
+        }
+      }
+    })
+
+  }
+
+}
+
+private struct ImportContentView: View {
 
   @State private var isAudioSelectingFiles: Bool = false
   @State private var isSubtitleSelectingFiles: Bool = false
@@ -109,54 +179,58 @@ fileprivate struct ImportContentView: View {
 
   var body: some View {
 
-    let modifier = if isAudioSelectingFiles {
-      ImporterModifier(
-        isPresented: $isAudioSelectingFiles,
-        allowedContentTypes: [.mp3, .aiff, .wav, .mpeg4Audio],
-        onCompletion: { result in
-          switch result {
-          case .success(let success):
-            guard let first = success.first else {
-              return
+    let modifier =
+      if isAudioSelectingFiles {
+        ImporterModifier(
+          isPresented: $isAudioSelectingFiles,
+          allowedContentTypes: [.mp3, .aiff, .wav, .mpeg4Audio],
+          onCompletion: { result in
+            switch result {
+            case .success(let success):
+              guard let first = success.first else {
+                return
+              }
+
+              audioFileURL = first
+
+              // Set title from filename as default
+              if title == "" {
+                title = first.deletingPathExtension().lastPathComponent
+              }
+
+            case .failure(let failure):
+              print(failure)
             }
-
-            audioFileURL = first
-
-            // Set title from filename as default
-            if title == "" {
-              title = first.deletingPathExtension().lastPathComponent
-            }
-
-          case .failure(let failure):
-            print(failure)
           }
-        })
-    } else if isSubtitleSelectingFiles {
-      ImporterModifier(
-        isPresented: $isSubtitleSelectingFiles,
-        allowedContentTypes: [
-          .init(filenameExtension: "srt")!,
-        ],
-        onCompletion: { result in
-          switch result {
-          case .success(let success):
-            guard let first = success.first else {
-              return
+        )
+      } else if isSubtitleSelectingFiles {
+        ImporterModifier(
+          isPresented: $isSubtitleSelectingFiles,
+          allowedContentTypes: [
+            .init(filenameExtension: "srt")!
+          ],
+          onCompletion: { result in
+            switch result {
+            case .success(let success):
+              guard let first = success.first else {
+                return
+              }
+
+              subtitleFileURL = first
+
+            case .failure(let failure):
+              print(failure)
             }
-
-            subtitleFileURL = first
-
-          case .failure(let failure):
-            print(failure)
           }
-      })
-    } else {
-      ImporterModifier(
-        isPresented: .constant(false),
-        allowedContentTypes: [],
-        onCompletion: { _ in
-        })
-    }
+        )
+      } else {
+        ImporterModifier(
+          isPresented: .constant(false),
+          allowedContentTypes: [],
+          onCompletion: { _ in
+          }
+        )
+      }
 
     VStack {
 
@@ -212,28 +286,35 @@ fileprivate struct ImportContentView: View {
 
   }
 
-  private struct ImporterModifier: ViewModifier {
+}
 
-    @Binding var isPresented: Bool
-    let allowedContentTypes: [UTType]
-    let onCompletion: (Result<[URL], Error>) -> Void
+private struct ImporterModifier: ViewModifier {
 
-    func body(content: Content) -> some View {
-      content.fileImporter(
-        isPresented: $isPresented,
-        allowedContentTypes: allowedContentTypes,
-        allowsMultipleSelection: false,
-        onCompletion: { result in
-          onCompletion(result)
-        }
-      )
-    }
+  @Binding var isPresented: Bool
+  let allowedContentTypes: [UTType]
+  let onCompletion: (Result<[URL], Error>) -> Void
 
+  func body(content: Content) -> some View {
+    content.fileImporter(
+      isPresented: $isPresented,
+      allowedContentTypes: allowedContentTypes,
+      allowsMultipleSelection: false,
+      onCompletion: { result in
+        onCompletion(result)
+      }
+    )
   }
+
 }
 
 #Preview {
-  ImportView(onCompleted: {
-    
-  })
+  ImportView(
+    service: .init(),
+    onCompleted: {
+
+    },
+    onCancel: {
+
+    }
+  )
 }
