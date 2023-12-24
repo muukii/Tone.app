@@ -126,6 +126,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         
       }
     )
+    .scrolling(to: controller.currentCue)
 
   }
 

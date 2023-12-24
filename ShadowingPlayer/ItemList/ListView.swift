@@ -10,8 +10,6 @@ struct ListView: View {
 
   let service: Service
 
-  let items: [Item] = Item.globInBundle()
-
   @Query(sort: \ItemEntity.createdAt, order: .reverse)
   var itemEntities: [ItemEntity]
 
