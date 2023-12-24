@@ -20,7 +20,7 @@ let project = Project(
       name: "Tone",
       destinations: [.iPhone, .macWithiPadDesign],
       product: .app,
-      bundleId: "app.muukii.Speaking",
+      bundleId: "app.muukii.tone",
       deploymentTargets: .iOS("17.0"),
       // infoPlist: "Supporting/Info.plist",
       infoPlist: .extendingDefault(with: [

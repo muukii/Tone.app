@@ -1,41 +1,74 @@
 // MARK: - Recorder
 import AVFAudio
-import SwiftUI
 import AppService
+import SwiftUI
 
 struct VoiceRecorderView: View {
 
   @ObservableEdge var controller: RecorderAndPlayer = .init()
 
-
   var body: some View {
 
     VStack {
-    
-      Button("Record Start") {
-        do {
-          try controller.startRecording()
-        } catch {
-          print(error)
-        }
-      }
 
-      Button("Record Stop") {
-        controller.stopRecording()
-      }
+      Rectangle()
+        .frame(square: 40)
+        ._onButtonGesture(
+          pressing: { isPressing in
 
-      Button("Audio Play") {
-        controller.playAudio()
-      }
+            if isPressing {
+
+              Task { @MainActor in
+                UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+
+                try? await Task.sleep(for: .milliseconds(40))
+
+                controller.stopAudio()
+                try controller.startRecording()
+              }
+            } else {
+              UINotificationFeedbackGenerator().notificationOccurred(.success)
+              controller.stopRecording()
+              controller.playAudio()
+            }
+            print(isPressing)
+          },
+          perform: {}
+        )
 
       Button("Audio Stop") {
         controller.stopAudio()
       }
     }
+    .onAppear {
+      do {
+        let instance = AVAudioSession.sharedInstance()
+        try instance.setCategory(
+          .playAndRecord,
+          mode: .spokenAudio,
+          options: [.allowBluetooth, .allowAirPlay, .mixWithOthers]
+        )
+      } catch {
+        print(error)
+      }
+    }
+    .onDisappear(perform: {
+      do {
+        let instance = AVAudioSession.sharedInstance()
+        try instance.setCategory(
+          .playback,
+          mode: .default,
+          options: [.allowBluetooth, .allowAirPlay, .mixWithOthers]
+        )
+      } catch {
+        print(error)
+      }
+    })
 
   }
 }
 
+@MainActor
 @Observable
 final class RecorderAndPlayer {
 
@@ -44,7 +77,7 @@ final class RecorderAndPlayer {
 
   private var currentFilePath: URL?
 
-  init() {
+  nonisolated init() {
 
   }
 
@@ -63,6 +96,8 @@ final class RecorderAndPlayer {
     self.recorderController?.stopRecording()
     self.recorderController = nil
     self.recorderController = .init(destination: filePath)
+
+    Log.debug("makeNewFile: \(filePath)")
   }
 
   func startRecording() throws {
@@ -87,8 +122,14 @@ final class RecorderAndPlayer {
     do {
 
       if playerController == nil {
-        playerController = .init(file: try .init(forReading: currentFilePath))
-        try playerController!.prepare()
+
+        if let newInstance = AudioPlayerController.init(file: try .init(forReading: currentFilePath)) {
+          playerController = newInstance
+          try playerController?.prepare()
+        } else {
+          // from some reason, can not play the audio file.
+          return
+        }
       }
 
       try playerController!.play()
@@ -106,15 +147,21 @@ final class RecorderAndPlayer {
 
 }
 
+@MainActor
 final class AudioPlayerController {
 
   private let engine = AVAudioEngine()
   private let player = AVAudioPlayerNode()
   private let file: AVAudioFile
+  private var currentTimerForLoop: Timer?
 
-  init(file: AVAudioFile) {
+  init?(file: AVAudioFile) {
 
     self.file = file
+
+    guard file.length > 0 else {
+      return nil
+    }
 
     engine.attach(player)
     let mainMixer = engine.mainMixerNode
@@ -132,11 +179,33 @@ final class AudioPlayerController {
     }
 
     player.stop()
-    player.scheduleSegment(file, startingFrame: .zero, frameCount: .init(file.length), at: nil)
+    player.scheduleSegment(
+      file,
+      startingFrame: .zero,
+      frameCount: .init(file.length),
+      at: nil
+    )
+
+    currentTimerForLoop = Timer.init(timeInterval: 0.005, repeats: true) { [weak self] _ in
+
+      MainActor.assumeIsolated { [weak self] in
+        guard let self else { return }
+
+        if self.currentTime == duration {
+          seek(position: 0)
+        }
+      }
+
+    }
+
+    RunLoop.main.add(currentTimerForLoop!, forMode: .common)
+
     player.play()
   }
 
   func pause() {
+    currentTimerForLoop?.invalidate()
+    currentTimerForLoop = nil
     player.pause()
   }
 
@@ -221,4 +290,8 @@ final class VoiceRecorderController {
     try engine.start()
   }
 
+}
+
+#Preview {
+  VoiceRecorderView()
 }
