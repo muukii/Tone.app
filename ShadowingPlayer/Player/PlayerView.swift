@@ -103,7 +103,7 @@ struct PlayerControlPanel: View {
 
       Spacer(minLength: 24).fixedSize()
 
-      HStack(alignment: .top) {
+      HStack(alignment: .center) {
 
         // play or pause
         Button {
@@ -150,19 +150,23 @@ struct PlayerControlPanel: View {
             }
           }
         } label: {
-          VStack {
+          ZStack {
             Image(systemName: "repeat")
               .resizable()
               .aspectRatio(contentMode: .fit)
               .frame(width: 30)
-              .foregroundColor(Color.primary)
-
-            // indicator
-            Circle()
-              .opacity(controller.isRepeating ? 1 : 0)
-              .frame(square: 5)
+              .foregroundStyle(Color.primary)
           }
+          .padding(8)
+          .background(
+            RoundedRectangle(cornerRadius: 8)
+              .fill(Color.accentColor.tertiary)
+              .aspectRatio(1, contentMode: .fill)
+              .opacity(controller.isRepeating ? 1 : 0)
+          )
         }
+        .frame(square: 50)
+        .tint(Color.accentColor)
 
         Spacer(minLength: 35).fixedSize()
 
@@ -176,6 +180,8 @@ struct PlayerControlPanel: View {
             .frame(width: 20)
             .foregroundColor(Color.primary)
         }
+        .buttonStyle(PlainButtonStyle())
+        .disabled(controller.isRepeating == false)
 
       }
 
@@ -240,7 +246,9 @@ struct DefinitionView: UIViewControllerRepresentable {
       actionHandler: { action in
       }
     )
+
   }
+  .tint(Color.pink)
 }
 
 #endif

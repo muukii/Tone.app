@@ -143,7 +143,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
       Text(text).font(.system(size: 24, weight: .bold, design: .default))
         .modifier(
           condition: isFocusing == false,
-          identity: StyleModifier(scale: .init(width: 1.05, height: 1.05)),
+          identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
           active: StyleModifier(opacity: 0.2)
         )
         .id(identifier)
@@ -166,7 +166,13 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
           }()
         )
         .frame(height: 4)
+        .padding(.horizontal, isFocusing ? 0 : 2)
     }
+    .animation(.bouncy, value: isFocusing)
+    .transaction(value: identifier, { t in
+      // prevent animation while reusing
+      t.disablesAnimations = true
+    })
     .padding(.horizontal, 2)
     ._onButtonGesture(
       pressing: { isPressing in },
