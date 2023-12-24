@@ -255,12 +255,12 @@ public final class PlayerController: NSObject {
       try engine.start()
 
       let instance = AVAudioSession.sharedInstance()
-      try instance.setActive(true, options: .notifyOthersOnDeactivation)
       try instance.setCategory(
         .playback,
         mode: .default,
-        options: [.allowBluetooth, .allowAirPlay]
+        options: [.allowBluetooth, .allowAirPlay, .mixWithOthers]
       )
+      try instance.setActive(true)
 
     } catch {
 
