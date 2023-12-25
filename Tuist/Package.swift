@@ -11,5 +11,6 @@ let package = Package(
     .package(url: "https://github.com/FluidGroup/swiftui-support", branch: "main"),
     .package(url: "https://github.com/VergeGroup/Wrap", from: "4.0.0"),
     .package(url: "https://github.com/FluidGroup/MondrianLayout", branch: "main"),
+    .package(url: "https://github.com/siteline/swiftui-introspect", from: "1.1.0"),
   ]
 )
