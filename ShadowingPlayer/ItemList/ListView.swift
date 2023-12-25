@@ -58,6 +58,17 @@ struct ListView: View {
         }
 
       }
+      .overlay {
+        ContentUnavailableView {
+          Text("Let's add your own contents")
+        } description: {
+          Text("You can add your own contents from the import button on the top right corner.")
+        } actions: {
+          Button("Import") {
+            isInImporting = true
+          }
+        }
+      }
       .navigationDestination(
         for: PinEntity.self,
         destination: { pin in

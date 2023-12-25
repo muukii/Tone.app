@@ -236,24 +236,32 @@ private struct ImportContentView: View {
 
       Form {
 
-        TextField("Title", text: $title)
+        Section {
+          TextField("Title", text: $title)
 
-        Button("Audio") {
-          isAudioSelectingFiles = true
+          Button("Audio") {
+            isAudioSelectingFiles = true
+          }
+
+          Text("\(audioFileURL?.lastPathComponent.description ?? "unselected")")
+
+          Button("Subtitle") {
+            isSubtitleSelectingFiles = true
+          }
+
+          Text("\(subtitleFileURL?.lastPathComponent.description ?? "unselected")")
+
+          Button("Import") {
+            importFiles()
+          }
+          .disabled(audioFileURL == nil || subtitleFileURL == nil)
+        } footer: {
+          Text("""
+          Choose audio and srt file from your files.
+          Audio file supports .mp3, .m4a.
+          Subtitle file supports .srt.
+          """)
         }
-
-        Text("\(audioFileURL?.lastPathComponent.description ?? "unselected")")
-
-        Button("Subtitle") {
-          isSubtitleSelectingFiles = true
-        }
-
-        Text("\(subtitleFileURL?.lastPathComponent.description ?? "unselected")")
-
-        Button("Import") {
-          importFiles()
-        }
-        .disabled(audioFileURL == nil || subtitleFileURL == nil)
 
       }
 
