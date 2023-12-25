@@ -16,6 +16,8 @@ struct ListView: View {
   @Query(sort: \PinEntity.createdAt, order: .reverse)
   var pinEntities: [PinEntity]
 
+  let isSettinsEnabled = false
+
   @Environment(\.modelContext) var modelContext
 
   @State private var isInImporting: Bool = false
@@ -118,11 +120,13 @@ struct ListView: View {
         }
       )
       .toolbar(content: {
-        ToolbarItem(placement: .topBarLeading) {
-          Button {
-            isInSettings = true
-          } label: {
-            Image(systemName: "gearshape")
+        if isSettinsEnabled {
+          ToolbarItem(placement: .topBarLeading) {
+            Button {
+              isInSettings = true
+            } label: {
+              Image(systemName: "gearshape")
+            }
           }
         }
         ToolbarItem(placement: .topBarTrailing) {

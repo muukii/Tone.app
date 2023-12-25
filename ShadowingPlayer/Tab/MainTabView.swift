@@ -18,6 +18,11 @@ struct MainTabView: View {
       .tabItem {
         Label("Recorder", systemImage: "mic")
       }
+
+      RingSlider(value: .constant(1))
+        .tabItem {
+          Label("Recorder", systemImage: "mic")
+        }
     }
   }
 }
