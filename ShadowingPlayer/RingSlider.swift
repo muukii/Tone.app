@@ -1,13 +1,20 @@
 import SwiftUI
-import SwiftUIIntrospect
+@_spi(Advanced) import SwiftUIIntrospect
 
 struct RingSlider: View {
 
   final class Proxy: ObservableObject {
-    @Published var value: Double = 0
+    var value: Double = 0 {
+      didSet {
+        print(value, oldValue)
+        let diff = value - oldValue
+        self.incrementValue = diff
+      }
+    }
+
+    @Published var incrementValue: Double = 0
 
     var contentOffsetObservation: NSKeyValueObservation?
-    var isTrackingObservation: NSKeyValueObservation?
 
     init() {}
 
@@ -16,110 +23,140 @@ struct RingSlider: View {
     }
   }
 
-  @State private var observation: NSKeyValueObservation?
+  private let stride: Double
   @Binding var value: Double
-  @State private var origin: Double?
+  @State private var page: Int = 0
 
-  @StateObject var uiProxy: Proxy = .init()
+  @StateObject private var uiProxy: Proxy = .init()
+  private let valueRange: ClosedRange<Double>
+
+  init(
+    value: Binding<Double>,
+    stride: Double = 1,
+    valueRange: ClosedRange<Double> = (-Double.greatestFiniteMagnitude...Double.greatestFiniteMagnitude)
+  ) {
+    self.stride = stride
+    self.valueRange = valueRange
+    self._value = value
+  }
 
   var body: some View {
 
-    GeometryReader(content: { geometry in
-      ScrollViewReader(content: { proxy in
-        ScrollView(.horizontal) {
-          HStack {
-            ForEach(0..<2) { _ in
-              HStack(spacing: 4) {
-                ForEach(0..<6) { i in
-                  Bar()
-                  Spacer(minLength: 0)
-                  RoundedRectangle(cornerRadius: 8)
-                    .frame(width: 3, height: 10)
-                    .foregroundColor(.red)
-                  Spacer(minLength: 0)
-                  ShortBar()
-                  Spacer(minLength: 0)
-                  ShortBar()
-                  Spacer(minLength: 0)
-                  ShortBar()
-                  Spacer(minLength: 0)
+    let content = HStack(spacing: 0) {
+      Bar()
+        .foregroundStyle(Color.accentColor)
+      Group {
+        Spacer(minLength: 0)
+        ShortBar()
+        Spacer(minLength: 0)
+        ShortBar()
+        Spacer(minLength: 0)
+        ShortBar()
+        Spacer(minLength: 0)
+        ShortBar()
+        Spacer(minLength: 0)
+      }
+      .foregroundStyle(Color.accentColor.secondary)
+    }
+    .padding(.vertical, 10)
+
+    // for sizing
+    content
+      .hidden()
+      .overlay(
+        GeometryReader(content: { geometry in
+          ScrollViewReader(content: { proxy in
+            ScrollView(.horizontal) {
+              HStack(spacing: 0) {
+                ForEach(0..<2) { _ in
+                  HStack(spacing: 0) {
+                    ForEach(0..<6) { i in
+                      content
+                    }
+                  }
+                  .frame(
+                    width: geometry.size.width,
+                    height: geometry.size.height,
+                    alignment: .center
+                  )
                 }
               }
-              .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+            }
+            .sensoryFeedback(.selection, trigger: value)
+            .scrollIndicators(.hidden)
+            .introspect(.scrollView, on: .iOS(.v17...)) { (view: UIScrollView) in
+
+              view.decelerationRate = .fast
+
+              uiProxy.contentOffsetObservation?.invalidate()
+
+              uiProxy.contentOffsetObservation = view.observe(\.contentOffset) { view, value in
+
+                let v = view.contentOffset.x + Double(page) * view.bounds.width
+
+                withTransaction(.init()) {
+                  let value = (v / 20).rounded()
+                  if uiProxy.value != value {
+                    uiProxy.value = value
+                  }
+                }
+
+                // for start
+                if view.contentOffset.x < 0 {
+                  page -= 1
+                  view.contentOffset.x = view.contentSize.width - view.bounds.width
+                  return
+                }
+
+                // for end
+                if view.contentOffset.x > view.contentSize.width - view.bounds.width {
+                  page += 1
+                  view.contentOffset.x = 0
+                  return
+                }
+              }
+            }
+          })
+          .mask {
+            HStack(spacing: 0) {
+              LinearGradient(
+                stops: [
+                  .init(color: .black, location: 0),
+                  .init(color: .clear, location: 1),
+                ],
+                startPoint: .init(x: 1, y: 0),
+                endPoint: .init(x: 0, y: 0)
+              )
+              Color.black.frame(width: 30)
+              LinearGradient(
+                stops: [
+                  .init(color: .black, location: 0),
+                  .init(color: .clear, location: 1),
+                ],
+                startPoint: .init(x: 0, y: 0),
+                endPoint: .init(x: 1, y: 0)
+              )
             }
           }
-        }
-//        .sensoryFeedback(.selection, trigger: value)
-        .scrollIndicators(.hidden)
-        .introspect(.scrollView, on: .iOS(.v17)) { (view: UIScrollView) in
+          .onReceive(
+            uiProxy.$incrementValue,
+            perform: { value in
+              let newValue = self.value + (value * stride)
 
-          uiProxy.contentOffsetObservation?.invalidate()
+              self.value = newValue
 
-          uiProxy.isTrackingObservation = view.observe(\.isTracking) { view, _ in
-            print("👽",view.isTracking)
-          }
+              if newValue > valueRange.upperBound {
+                self.value = valueRange.upperBound
+              }
 
-          uiProxy.contentOffsetObservation = view.observe(\.contentOffset) { view, value in
+              if newValue < valueRange.lowerBound {
+                self.value = valueRange.lowerBound
+              }
 
-            print(view.panGestureRecognizer.state.rawValue)
-
-            self.value += view.panGestureRecognizer.translation(in: view).x / view.bounds.width
-
-            print("isTracking", view.isTracking, "isDragging", view.isDragging, "isDecelarating", view.isDecelerating)
-
-            if view.isTracking, origin == nil {
-              origin = view.contentOffset.x
             }
-
-            if view.isTracking == false {
-              origin = nil
-            }
-
-            print(origin)
-
-            view.isDecelerating
-
-            print(view.contentOffset.x)
-
-            // for start
-            if view.contentOffset.x < 0 {
-              print("jump to end")
-              view.contentOffset.x = view.contentSize.width - view.bounds.width
-              return
-            }
-
-            // for end
-            if view.contentOffset.x >= view.contentSize.width - view.bounds.width {
-              print("back to start")
-              view.contentOffset.x = 0
-              return
-            }
-          }
-        }
-      })
-      .mask {
-        HStack(spacing: 0) {
-          LinearGradient(
-            stops: [
-              .init(color: .black, location: 0),
-              .init(color: .clear, location: 1),
-            ],
-            startPoint: .init(x: 1, y: 0),
-            endPoint: .init(x: 0, y: 0)
           )
-          Color.black.frame(width: 30)
-          LinearGradient(
-            stops: [
-              .init(color: .black, location: 0),
-              .init(color: .clear, location: 1),
-            ],
-            startPoint: .init(x: 0, y: 0),
-            endPoint: .init(x: 1, y: 0)
-          )
-        }
-      }
-    })
-
+        })
+      )
   }
 
   // MARK: - nested types
@@ -128,7 +165,6 @@ struct RingSlider: View {
     var body: some View {
       RoundedRectangle(cornerRadius: 8)
         .frame(width: 3, height: 30)
-        .foregroundColor(.gray)
     }
   }
 
@@ -136,16 +172,15 @@ struct RingSlider: View {
     var body: some View {
       RoundedRectangle(cornerRadius: 8)
         .frame(width: 3, height: 10)
-        .foregroundColor(.gray)
     }
   }
 }
 
 #if DEBUG
 
-fileprivate struct Demo: View {
+private struct Demo: View {
 
-  @State var value: Double = 0
+  @State var value: Double = 20
 
   var body: some View {
 
@@ -159,5 +194,28 @@ fileprivate struct Demo: View {
 
 #Preview {
   Demo()
+}
+
+#Preview {
+  HStack(spacing: 0) {
+    ForEach(0..<6) { i in
+      HStack(spacing: 0) {
+        //                    Spacer(minLength: 0)
+
+        RingSlider.Bar()
+          .foregroundColor(.red)
+        Spacer(minLength: 0)
+        RingSlider.ShortBar()
+        Spacer(minLength: 0)
+        RingSlider.ShortBar()
+        Spacer(minLength: 0)
+        RingSlider.ShortBar()
+        Spacer(minLength: 0)
+        RingSlider.ShortBar()
+        Spacer(minLength: 0)
+      }
+    }
+  }
+  .background(Color.blue)
 }
 #endif
