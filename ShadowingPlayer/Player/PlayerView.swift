@@ -34,7 +34,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
   }
 
   var body: some View {
-//
+    //
     ZStack {
 
       Display(
@@ -42,20 +42,23 @@ struct PlayerView<Display: PlayerDisplay>: View {
         actionHandler: actionHandler
       )
     }
-    .safeAreaInset(edge: .bottom, content: {
-      PlayerControlPanel(
-        controller: controller,
-        onTapPin: {
+    .safeAreaInset(
+      edge: .bottom,
+      content: {
+        PlayerControlPanel(
+          controller: controller,
+          onTapPin: {
 
-          guard let range = controller.playingRange else {
-            return
+            guard let range = controller.playingRange else {
+              return
+            }
+
+            actionHandler(.onPin(range: range))
+
           }
-
-          actionHandler(.onPin(range: range))
-
-        }
-      )
-    })
+        )
+      }
+    )
     .onAppear {
       UIApplication.shared.isIdleTimerDisabled = true
     }
@@ -78,6 +81,8 @@ struct PlayerControlPanel: View {
 
   private let controller: PlayerController
   private let onTapPin: @MainActor () -> Void
+
+  @State var speed: Double = 1
 
   init(
     controller: PlayerController,
@@ -116,19 +121,12 @@ struct PlayerControlPanel: View {
             controller.play()
           }
         } label: {
-          if controller.isPlaying {
-            Image(systemName: "pause.fill")
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(square: 30)
-              .foregroundColor(Color.primary)
-          } else {
-            Image(systemName: "play.fill")
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(square: 30)
-              .foregroundColor(Color.primary)
-          }
+          Image(systemName: controller.isPlaying ? "pause.fill" : "play.fill")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(square: 30)
+            .foregroundColor(Color.primary)
+            .contentTransition(.symbolEffect(.replace, options: .speed(2)))
 
         }
 
@@ -187,36 +185,30 @@ struct PlayerControlPanel: View {
 
       Spacer(minLength: 16).fixedSize()
 
-      ScrollView(.horizontal) {
-        HStack {
-
-          ForEach([1.0, 0.85, 0.8, 0.75, 0.65, 0.5, 0.4] as [Double], id: \.self) {
-            value in
-            Button {
-              MainActor.assumeIsolated {
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-              }
-              controller.setRate(Float(value))
-            } label: {
-              HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("\(Self.fractionLabel(fraction: value))")
-                  .font(.system(size: 16, weight: .bold, design: .default))
-              }
-              .aspectRatio(1, contentMode: .fill)
-              .frame(square: 30)
-            }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.circle)
-            .tint(Color.accentColor)
-          }
-
+      VStack {
+        Button {
+          speed = 1.0
+        } label: {
+          Text("\(String(format: "%.2f", speed))")
+            .font(.title3.monospacedDigit().bold())
+            .contentTransition(.interpolate)
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.roundedRectangle(radius: 8))
+        .tint(Color.accentColor)
+
+        RingSlider(value: $speed, stride: 0.025, valueRange: 0.3...1)
       }
-      .contentMargins(.horizontal, 20)
 
       Spacer(minLength: 10).fixedSize()
     }
+    .onChange(
+      of: speed,
+      initial: true,
+      { _, value in
+        controller.setRate(Float(value))
+      }
+    )
     .scrollIndicators(.hidden)
     .background(Material.thick)
   }
@@ -248,6 +240,7 @@ struct DefinitionView: UIViewControllerRepresentable {
     )
 
   }
+  .accentColor(Color.pink)
   .tint(Color.pink)
 }
 
