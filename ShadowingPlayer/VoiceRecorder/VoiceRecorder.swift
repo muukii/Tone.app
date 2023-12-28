@@ -3,6 +3,7 @@ import AVFAudio
 import AppService
 import SwiftUI
 
+@MainActor
 struct VoiceRecorderView: View {
 
   @ObservableEdge var controller: RecorderAndPlayer = .init()
@@ -11,74 +12,171 @@ struct VoiceRecorderView: View {
 
     VStack {
 
-      Rectangle()
-        .frame(square: 40)
-        ._onButtonGesture(
-          pressing: { isPressing in
+      ScrollView(.horizontal) {
 
-            if isPressing {
+        LazyHStack {
+          ForEach(controller.recordedItems) { item in
+            Text.init(item.duration, format: .time(pattern: .minuteSecond))
+          }
+        }
 
-              Task { @MainActor in
-                UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+      }
 
-                try? await Task.sleep(for: .milliseconds(40))
+      Spacer()
 
-                controller.stopAudio()
-                try controller.startRecording()
-              }
-            } else {
-              UINotificationFeedbackGenerator().notificationOccurred(.success)
-              controller.stopRecording()
-              controller.playAudio()
-            }
-            print(isPressing)
-          },
-          perform: {}
-        )
+      RecordingButtonButton { isPressing in
+        if isPressing {
+          Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(100))
+
+            controller.stopAudio()
+            try controller.startRecording()
+          }
+        } else {
+          controller.stopRecording()
+          controller.playAudio()
+        }
+      }
 
       Button("Audio Stop") {
         controller.stopAudio()
       }
     }
     .onAppear {
-      do {
-        let instance = AVAudioSession.sharedInstance()
-        try instance.setCategory(
-          .playAndRecord,
-          mode: .spokenAudio,
-          options: [.allowBluetooth, .allowAirPlay, .mixWithOthers]
-        )
-      } catch {
-        print(error)
-      }
+      controller.activate()
     }
-    .onDisappear(perform: {
-      do {
-        let instance = AVAudioSession.sharedInstance()
-        try instance.setCategory(
-          .playback,
-          mode: .default,
-          options: [.allowBluetooth, .allowAirPlay, .mixWithOthers]
-        )
-      } catch {
-        print(error)
-      }
-    })
+    .onDisappear {
+      controller.deactivate()
+    }
 
   }
+}
+
+private struct RecordingButtonButton: View {
+
+  @State var isPressing: Bool = false
+
+  var onPressing: (Bool) -> Void
+
+  var body: some View {
+
+    Circle()
+      .frame(square: 80)
+      .foregroundStyle(.primary)
+      .animation(.snappy) { v in
+        v.opacity(isPressing ? 0.2 : 1)
+      }
+      .padding(7)
+      .overlay {
+        Circle()
+          .stroke(.secondary, lineWidth: 8)
+      }
+      .foregroundStyle(.red)
+      .sensoryFeedback(
+        trigger: isPressing,
+        { oldValue, newValue in
+          if oldValue == false, newValue == true {
+            return .impact(flexibility: .rigid, intensity: 1)
+          }
+
+          if oldValue == true, newValue == false {
+            return .impact(flexibility: .solid, intensity: 0.8)
+          }
+
+          return nil
+        }
+      )
+      ._onButtonGesture(
+        pressing: { isPressing in
+          self.isPressing = isPressing
+          onPressing(isPressing)
+        },
+        perform: {
+
+        }
+      )
+
+  }
+
+}
+
+#Preview {
+  RecordingButtonButton(onPressing: { _ in })
 }
 
 @MainActor
 @Observable
 final class RecorderAndPlayer {
 
+  struct Recorded: Equatable, Identifiable {
+
+    var id: URL {
+      filePath
+    }
+
+    let duration: Duration
+    let filePath: URL
+
+  }
+
+  private(set) var recordedItems: [Recorded] = []
+
   private var playerController: AudioPlayerController?
   private var recorderController: VoiceRecorderController?
 
   private var currentFilePath: URL?
 
-  nonisolated init() {
+  private var subscription: NSObjectProtocol?
 
+  init() {
+
+  }
+
+  deinit {
+    MainActor.assumeIsolated {
+      deactivate()
+    }
+  }
+
+  func activate() {
+    do {
+      let instance = AVAudioSession.sharedInstance()
+      try instance.setActive(true)
+
+      //      instance.currentRoute.outputs.contains {
+      //        $0.portType == .headphones
+      //      }
+
+      print(instance.currentRoute)
+      //        try instance.overrideOutputAudioPort(.speaker)
+      try instance.setCategory(
+        .playAndRecord,
+        mode: .spokenAudio,
+        options: [.allowBluetooth, .allowAirPlay, .mixWithOthers, .defaultToSpeaker]
+      )
+    } catch {
+      print(error)
+    }
+
+    subscription = NotificationCenter.default.addObserver(
+      forName: AVAudioSession.routeChangeNotification,
+      object: nil,
+      queue: .main
+    ) { n in
+      // TODO:
+    }
+  }
+
+  func deactivate() {
+
+    NotificationCenter.default.removeObserver(subscription as Any)
+
+    do {
+      let instance = AVAudioSession.sharedInstance()
+      try instance.setActive(false)
+    } catch {
+      print(error)
+    }
   }
 
   func makeNewFile() {
@@ -95,7 +193,12 @@ final class RecorderAndPlayer {
 
     self.recorderController?.stopRecording()
     self.recorderController = nil
-    self.recorderController = .init(destination: filePath)
+
+    do {
+      self.recorderController = try .init(destination: filePath)
+    } catch {
+      Log.error("\(error.localizedDescription)")
+    }
 
     Log.debug("makeNewFile: \(filePath)")
   }
@@ -110,7 +213,20 @@ final class RecorderAndPlayer {
   }
 
   func stopRecording() {
-    recorderController?.stopRecording()
+
+    guard let recorderController = recorderController else {
+      return
+    }
+
+    recorderController.stopRecording()
+
+    let file = recorderController.writingFile
+
+    let duration = Double(file.length) / file.fileFormat.sampleRate
+
+    recordedItems.append(
+      Recorded(duration: .seconds(duration), filePath: file.url)
+    )
   }
 
   func playAudio() {
@@ -123,7 +239,9 @@ final class RecorderAndPlayer {
 
       if playerController == nil {
 
-        if let newInstance = AudioPlayerController.init(file: try .init(forReading: currentFilePath)) {
+        if let newInstance = AudioPlayerController.init(
+          file: try .init(forReading: currentFilePath)
+        ) {
           playerController = newInstance
           try playerController?.prepare()
         } else {
@@ -255,10 +373,16 @@ final class VoiceRecorderController {
 
   private let recordingEngine = AVAudioEngine()
 
-  private let destination: URL
+  let writingFile: AVAudioFile
 
-  init(destination: URL) {
-    self.destination = destination
+  init(destination: URL) throws {
+
+    let inputFormat = recordingEngine.inputNode.outputFormat(forBus: 0)
+
+    self.writingFile = try AVAudioFile(
+      forWriting: destination,
+      settings: inputFormat.settings
+    )
   }
 
   func stopRecording() {
@@ -267,18 +391,8 @@ final class VoiceRecorderController {
 
   func startRecording() throws {
 
-    let engine = recordingEngine
-
-    let inputNode = engine.inputNode
-
-    let inputFormat = inputNode.outputFormat(forBus: 0)
-
-    let writingFile = try! AVAudioFile(
-      forWriting: destination,
-      settings: inputFormat.settings
-    )
-
-    inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) { [writingFile] (buffer, when) in
+    recordingEngine.inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) {
+      [writingFile] (buffer, when) in
       do {
         // audioFileにバッファを書き込む
         try writingFile.write(from: buffer)
@@ -287,7 +401,7 @@ final class VoiceRecorderController {
       }
     }
 
-    try engine.start()
+    try recordingEngine.start()
   }
 
 }

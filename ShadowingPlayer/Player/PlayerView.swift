@@ -108,7 +108,7 @@ struct PlayerControlPanel: View {
 
       Spacer(minLength: 24).fixedSize()
 
-      HStack(alignment: .center) {
+      HStack(alignment: .center, spacing: 20) {
 
         // play or pause
         Button {
@@ -129,8 +129,7 @@ struct PlayerControlPanel: View {
             .contentTransition(.symbolEffect(.replace, options: .speed(2)))
 
         }
-
-        Spacer(minLength: 35).fixedSize()
+        .frame(square: 50)
 
         // repeat button
         Button {
@@ -166,8 +165,6 @@ struct PlayerControlPanel: View {
         .frame(square: 50)
         .tint(Color.accentColor)
 
-        Spacer(minLength: 35).fixedSize()
-
         // pin
         Button {
           onTapPin()
@@ -178,6 +175,7 @@ struct PlayerControlPanel: View {
             .frame(width: 20)
             .foregroundColor(Color.primary)
         }
+        .frame(square: 50)
         .buttonStyle(PlainButtonStyle())
         .disabled(controller.isRepeating == false)
 
@@ -191,7 +189,7 @@ struct PlayerControlPanel: View {
         } label: {
           Text("\(String(format: "%.2f", speed))")
             .font(.title3.monospacedDigit().bold())
-            .contentTransition(.interpolate)
+            .contentTransition(.numericText(value: 1))
         }
         .buttonStyle(.bordered)
         .buttonBorderShape(.roundedRectangle(radius: 8))

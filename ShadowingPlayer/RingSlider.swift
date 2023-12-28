@@ -43,7 +43,7 @@ struct RingSlider: View {
   var body: some View {
 
     let content = HStack(spacing: 0) {
-      Bar()
+      ShortBar()
         .foregroundStyle(Color.accentColor)
       Group {
         Spacer(minLength: 0)
@@ -171,7 +171,7 @@ struct RingSlider: View {
   struct ShortBar: View {
     var body: some View {
       RoundedRectangle(cornerRadius: 8)
-        .frame(width: 3, height: 10)
+        .frame(width: 3, height: 20)
     }
   }
 }
