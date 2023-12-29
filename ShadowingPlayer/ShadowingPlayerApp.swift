@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import AppService
+import TipKit
 
 @main
 struct ShadowingPlayerApp: App {
@@ -28,12 +29,13 @@ struct ShadowingPlayerApp: App {
     }
 
     #endif
+
+    try? Tips.configure()
   }
 
   var body: some Scene {
     WindowGroup {
       ContentView(service: service)
-        .tint(Color(.displayP3, red: 0.5607843137254902, green: 0.0, blue: 1.0, opacity: 1))
     }
     .modelContainer(service.modelContainer)
 

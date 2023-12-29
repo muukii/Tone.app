@@ -1,5 +1,6 @@
-import SwiftUI
 import AppService
+import HexColorMacro
+import SwiftUI
 
 struct MainTabView: View {
 
@@ -11,6 +12,7 @@ struct MainTabView: View {
         .tabItem {
           Label("List", systemImage: "list.bullet")
         }
+        .tint(#hexColor("5A31FF", colorSpace: .displayP3))
 
       VoiceRecorderView(
         controller: RecorderAndPlayer()
@@ -18,11 +20,13 @@ struct MainTabView: View {
       .tabItem {
         Label("Recorder", systemImage: "mic")
       }
+      .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
 
-      RingSlider(value: .constant(1))
-        .tabItem {
-          Label("Recorder", systemImage: "mic")
-        }
     }
+    .tint(.primary)
   }
+}
+
+#Preview {
+  MainTabView(service: .init())
 }
