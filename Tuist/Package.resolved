@@ -64,6 +64,15 @@
       }
     },
     {
+      "identity" : "swift-macro-hex-color",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/muukii/swift-macro-hex-color",
+      "state" : {
+        "revision" : "03eff8dfbf64410bb8a34a622ae9b956a9445309",
+        "version" : "0.1.1"
+      }
+    },
+    {
       "identity" : "swift-syntax",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-syntax.git",

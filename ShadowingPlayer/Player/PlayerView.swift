@@ -208,7 +208,7 @@ struct PlayerControlPanel: View {
       }
     )
     .scrollIndicators(.hidden)
-    .background(Material.thick)
+    .background(.quinary)
   }
 
 }

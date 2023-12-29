@@ -2,11 +2,31 @@
 import AVFAudio
 import AppService
 import SwiftUI
+import TipKit
+
+struct SampleTip: Tip {
+  var title: Text {
+    Text("Record and playback")
+  }
+
+
+  var message: Text? {
+    Text("Tap and hold to record")
+  }
+
+  var image: Image? {
+    nil
+  }
+
+}
 
 @MainActor
 struct VoiceRecorderView: View {
 
   @ObservableEdge var controller: RecorderAndPlayer = .init()
+
+  // TMP
+  @State var isPlaying: Bool = false
 
   var body: some View {
 
@@ -16,13 +36,29 @@ struct VoiceRecorderView: View {
 
         LazyHStack {
           ForEach(controller.recordedItems) { item in
-            Text.init(item.duration, format: .time(pattern: .minuteSecond))
+            Text(item.duration, format: .time(pattern: .minuteSecond))
+              .font(.headline.bold().monospacedDigit())
+              .foregroundStyle(.primary)
+              .padding(12)
+              .background {
+                RoundedRectangle(cornerRadius: 16)
+                  .foregroundStyle(.tertiary)
+              }
+
           }
+
         }
+        .backgroundStyle(.tint)
+        .foregroundStyle(.tint)
 
       }
+      .safeAreaPadding(.horizontal, 24)
 
       Spacer()
+
+      TipView(SampleTip(), arrowEdge: .bottom) { a in
+
+      }
 
       RecordingButtonButton { isPressing in
         if isPressing {
@@ -30,17 +66,40 @@ struct VoiceRecorderView: View {
             try? await Task.sleep(for: .milliseconds(100))
 
             controller.stopAudio()
+            isPlaying = false
             try controller.startRecording()
           }
         } else {
           controller.stopRecording()
           controller.playAudio()
+          isPlaying = true
         }
       }
 
-      Button("Audio Stop") {
-        controller.stopAudio()
+      // play or pause
+      Button {
+        MainActor.assumeIsolated {
+          UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }
+
+        if isPlaying {
+          controller.stopAudio()
+          isPlaying = false
+        } else {
+          controller.playAudio()
+          isPlaying = true
+        }
+      } label: {
+        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+          .resizable()
+          .aspectRatio(contentMode: .fit)
+          .frame(square: 30)
+          .foregroundStyle(.secondary)
+          .contentTransition(.symbolEffect(.replace, options: .speed(2)))
+
       }
+      .frame(square: 50)
+
     }
     .onAppear {
       controller.activate()
@@ -71,7 +130,7 @@ private struct RecordingButtonButton: View {
         Circle()
           .stroke(.secondary, lineWidth: 8)
       }
-      .foregroundStyle(.red)
+      .foregroundStyle(.tint)
       .sensoryFeedback(
         trigger: isPressing,
         { oldValue, newValue in
@@ -286,6 +345,10 @@ final class AudioPlayerController {
     engine.connect(player, to: mainMixer, format: file.processingFormat)
   }
 
+  deinit {
+    Log.debug("deinit \(String(describing: self))")
+  }
+
   func prepare() throws {
     try engine.start()
   }
@@ -309,7 +372,11 @@ final class AudioPlayerController {
       MainActor.assumeIsolated { [weak self] in
         guard let self else { return }
 
-        if self.currentTime == duration {
+        guard let currentTime = self.currentTime else {
+          return
+        }
+
+        if currentTime >= duration {
           seek(position: 0)
         }
       }
@@ -408,4 +475,12 @@ final class VoiceRecorderController {
 
 #Preview {
   VoiceRecorderView()
+    .tint(.yellow)
+    .onAppear(perform: {
+      try? Tips.resetDatastore()
+      try? Tips.configure([
+        .displayFrequency(.immediate),
+
+      ])
+    })
 }
