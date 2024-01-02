@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 import AppService
 import TipKit
+import AVFoundation
 
 @main
 struct ShadowingPlayerApp: App {
@@ -31,6 +32,18 @@ struct ShadowingPlayerApp: App {
     #endif
 
     try? Tips.configure()
+
+    do {
+      let instance = AVAudioSession.sharedInstance()
+      try instance.setCategory(
+        .ambient,
+        mode: .default,
+        options: [.allowBluetooth, .allowAirPlay, .mixWithOthers]
+      )
+      try instance.setActive(true)
+    } catch {
+
+    }
   }
 
   var body: some Scene {

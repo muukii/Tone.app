@@ -39,16 +39,19 @@ let project = Project(
         "ShadowingPlayer/Preview Content/**",
       ],
       dependencies: [
+        .target(name: "AppService"),
+
         .external(name: "AudioKit"),
         .external(name: "SwiftSubtitles"),
         .external(name: "Verge"),
         .external(name: "DynamicList"),
-        .external(name: "SwiftUISupport"),
-        .target(name: "AppService"),
+        .external(name: "SwiftUISupport"),        
         .external(name: "Wrap"),
         .external(name: "MondrianLayout"),
         .external(name: "SwiftUIIntrospect"),
         .external(name: "HexColorMacro"),
+
+        .external(name: "SwiftUIRingSlider"),
       ],
       settings: .settings(base: [
         "DEVELOPMENT_ASSET_PATHS": #""ShadowingPlayer/Preview Content""#,

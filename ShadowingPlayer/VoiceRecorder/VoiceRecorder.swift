@@ -36,14 +36,13 @@ struct VoiceRecorderView: View {
 
         LazyHStack {
           ForEach(controller.recordedItems) { item in
-            Text(item.duration, format: .time(pattern: .minuteSecond))
-              .font(.headline.bold().monospacedDigit())
-              .foregroundStyle(.primary)
-              .padding(12)
-              .background {
-                RoundedRectangle(cornerRadius: 16)
-                  .foregroundStyle(.tertiary)
-              }
+            Button {
+
+            } label: {
+              Text(item.duration, format: .time(pattern: .minuteSecond))
+                .font(.headline.bold().monospacedDigit())
+            }
+            .buttonStyle(.bordered)
 
           }
 
@@ -298,7 +297,7 @@ final class RecorderAndPlayer {
 
       if playerController == nil {
 
-        if let newInstance = AudioPlayerController.init(
+        if let newInstance = try? AudioPlayerController.init(
           file: try .init(forReading: currentFilePath)
         ) {
           playerController = newInstance
@@ -324,117 +323,6 @@ final class RecorderAndPlayer {
 
 }
 
-@MainActor
-final class AudioPlayerController {
-
-  private let engine = AVAudioEngine()
-  private let player = AVAudioPlayerNode()
-  private let file: AVAudioFile
-  private var currentTimerForLoop: Timer?
-
-  init?(file: AVAudioFile) {
-
-    self.file = file
-
-    guard file.length > 0 else {
-      return nil
-    }
-
-    engine.attach(player)
-    let mainMixer = engine.mainMixerNode
-    engine.connect(player, to: mainMixer, format: file.processingFormat)
-  }
-
-  deinit {
-    Log.debug("deinit \(String(describing: self))")
-  }
-
-  func prepare() throws {
-    try engine.start()
-  }
-
-  func play() throws {
-
-    if engine.isRunning == false {
-      try engine.start()
-    }
-
-    player.stop()
-    player.scheduleSegment(
-      file,
-      startingFrame: .zero,
-      frameCount: .init(file.length),
-      at: nil
-    )
-
-    currentTimerForLoop = Timer.init(timeInterval: 0.005, repeats: true) { [weak self] _ in
-
-      MainActor.assumeIsolated { [weak self] in
-        guard let self else { return }
-
-        guard let currentTime = self.currentTime else {
-          return
-        }
-
-        if currentTime >= duration {
-          seek(position: 0)
-        }
-      }
-
-    }
-
-    RunLoop.main.add(currentTimerForLoop!, forMode: .common)
-
-    player.play()
-  }
-
-  func pause() {
-    currentTimerForLoop?.invalidate()
-    currentTimerForLoop = nil
-    player.pause()
-  }
-
-  var duration: TimeInterval {
-    Double(file.length) / file.fileFormat.sampleRate
-  }
-
-  var currentTime: TimeInterval? {
-
-    guard let nodeTime = player.lastRenderTime else {
-      return nil
-    }
-
-    guard let playerTime = player.playerTime(forNodeTime: nodeTime) else {
-      return nil
-    }
-
-    let currentTime = (Double(playerTime.sampleTime) / file.fileFormat.sampleRate)
-
-    return currentTime
-  }
-
-  func seek(position: TimeInterval) {
-
-    let sampleRate = file.fileFormat.sampleRate
-
-    let startFrame = AVAudioFramePosition(sampleRate * position)
-    let endFrame = AVAudioFramePosition(duration * sampleRate)
-    let frameCount = AVAudioFrameCount(endFrame - startFrame)
-
-    guard frameCount > 0 else {
-      player.stop()
-      return
-    }
-
-    player.stop()
-
-    player.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
-
-    player.play()
-
-  }
-
-}
 
 final class VoiceRecorderController {
 

@@ -12,9 +12,9 @@ private enum CellIsFocusing: CustomStateKey {
 }
 
 private enum CellPlayingRange: CustomStateKey {
-  typealias Value = PlayerController.PlayingRange?
+  typealias Value = PlayingRange?
 
-  static var defaultValue: PlayerController.PlayingRange? {
+  static var defaultValue: PlayingRange? {
     nil
   }
 }
@@ -27,13 +27,14 @@ extension CellState {
     set { self[CellIsFocusing.self] = newValue }
   }
 
-  var playingRange: PlayerController.PlayingRange? {
+  var playingRange: PlayingRange? {
     get { self[CellPlayingRange.self] }
     set { self[CellPlayingRange.self] = newValue }
   }
 
 }
 
+@MainActor
 struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
   private unowned let controller: PlayerController
