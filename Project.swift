@@ -31,7 +31,7 @@ let project = Project(
         ],
         "UILaunchScreen" : ["UILaunchScreen": [:]],
         "UISupportedInterfaceOrientations" : ["UIInterfaceOrientationPortrait"],
-        "NSMicrophoneUsageDescription" : "For recording audio from microphone"
+        "NSMicrophoneUsageDescription" : "To record your voice and play it back for pronunciation practice.",
         ]),
       sources: ["ShadowingPlayer/**"],
       resources: [
