@@ -8,11 +8,11 @@ let package = Package(
     .package(path: "../../../submodules/FluidGroup/swiftui-ring-slider"),
     .package(url: "https://github.com/AudioKit/AudioKit", from: "5.6.2"),
     .package(url: "https://github.com/dagronf/SwiftSubtitles", from: "0.5.0"),
-    .package(url: "https://github.com/VergeGroup/Verge", branch: "main"),
+//    .package(url: "https://github.com/VergeGroup/Verge", branch: "main"),
     .package(url: "https://github.com/FluidGroup/swiftui-support", branch: "main"),
     .package(url: "https://github.com/VergeGroup/Wrap", from: "4.0.0"),
     .package(url: "https://github.com/FluidGroup/MondrianLayout", branch: "main"),
     .package(url: "https://github.com/siteline/swiftui-introspect", from: "1.1.0"),
-    .package(url: "https://github.com/muukii/swift-macro-hex-color", from: "0.1.1"),
+//    .package(url: "https://github.com/muukii/swift-macro-hex-color", from: "0.1.1"),
   ]
 )

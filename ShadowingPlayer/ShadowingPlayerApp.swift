@@ -10,6 +10,7 @@ import SwiftData
 import AppService
 import TipKit
 import AVFoundation
+import Atomics
 
 @main
 struct ShadowingPlayerApp: App {
@@ -19,14 +20,23 @@ struct ShadowingPlayerApp: App {
   init() {
     #if targetEnvironment(simulator)
 
-    let item = Item.social
-
     Task { [service] in
+      let item = Item.social
+
       try await service.importItem(
         title: "Example",
         audioFileURL: item.audioFileURL,
         subtitleFileURL: item.subtitleFileURL
       )
+
+      let a = Item.overwhelmed
+
+      try await service.importItem(
+        title: "overwhelmed",
+        audioFileURL: a.audioFileURL,
+        subtitleFileURL: a.subtitleFileURL
+      )
+
     }
 
     #endif

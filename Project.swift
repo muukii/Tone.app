@@ -15,6 +15,10 @@ let project = Project(
     ),
     xcodeProjectName: "Tone"
   ),
+  packages: [
+    .package(url: "https://github.com/muukii/swift-macro-hex-color", from: "0.1.1"),
+    .package(url: "https://github.com/VergeGroup/Verge", .branch("main")),
+  ],
   targets: [
     Target(
       name: "Tone",
@@ -39,17 +43,18 @@ let project = Project(
         "ShadowingPlayer/Preview Content/**",
       ],
       dependencies: [
+        .package(product: "Verge"),
+        .package(product: "HexColorMacro"),
+        
         .target(name: "AppService"),
 
         .external(name: "AudioKit"),
         .external(name: "SwiftSubtitles"),
-        .external(name: "Verge"),
         .external(name: "DynamicList"),
         .external(name: "SwiftUISupport"),        
         .external(name: "Wrap"),
         .external(name: "MondrianLayout"),
         .external(name: "SwiftUIIntrospect"),
-        .external(name: "HexColorMacro"),
 
         .external(name: "SwiftUIRingSlider"),
       ],
@@ -65,12 +70,12 @@ let project = Project(
     Target(
       name: "AppService",
       destinations: [.iPhone],
-      product: .framework,
+      product: .staticFramework,
       bundleId: "app.muukii.Speaking.AppService",
       deploymentTargets: .iOS("17.0"),
       sources: ["Sources/AppService/**"],
       dependencies: [
-        .external(name: "Verge"),
+        .package(product: "Verge"),
         .external(name: "Wrap"),
       ]
       // mergedBinaryType: .disabled,

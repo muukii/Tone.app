@@ -54,13 +54,20 @@ public struct PlayingRange: Equatable {
 
     if cues.contains(cue) {
 
-      let count = cues.count
-      let i = cues.firstIndex(of: cue)!
-
-      if count / 2 < i {
-        cues = Array(cues[...i])
+      if cues.last == cue {
+        cues.removeLast()
+      } else if cues.first == cue {
+        cues.removeFirst()
       } else {
-        cues = Array(cues[(i)...])
+        
+        let count = cues.count
+        let i = cues.firstIndex(of: cue)!
+        
+        if count / 2 < i {
+          cues = Array(cues[...i])
+        } else {
+          cues = Array(cues[(i)...])
+        }
       }
 
     } else {
