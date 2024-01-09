@@ -2,7 +2,9 @@ import AVFoundation
 import AppService
 import SwiftUI
 import SwiftUISupport
+import SwiftUIRingSlider
 
+@MainActor
 protocol PlayerDisplay: View {
 
   init(
@@ -12,7 +14,7 @@ protocol PlayerDisplay: View {
 }
 
 enum PlayerAction {
-  case onPin(range: PlayerController.PlayingRange)
+  case onPin(range: PlayingRange)
 }
 
 struct PlayerView<Display: PlayerDisplay>: View {
@@ -74,7 +76,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
 enum PlayerDisplayAction {
   case pin(DisplayCue)
   case move(to: DisplayCue)
-  case setRepeat(range: PlayerController.PlayingRange)
+  case setRepeat(range: PlayingRange)
 }
 
 struct PlayerControlPanel: View {
@@ -204,7 +206,7 @@ struct PlayerControlPanel: View {
       of: speed,
       initial: true,
       { _, value in
-        controller.setRate(Float(value))
+        controller.setRate(value)
       }
     )
     .scrollIndicators(.hidden)

@@ -1,3 +1,6 @@
 [submodule "submodules/FluidGroup/swift-dynamic-list"]
 	path = submodules/FluidGroup/swift-dynamic-list
 	url = https://github.com/FluidGroup/swift-dynamic-list
+[submodule "submodules/FluidGroup/swiftui-ring-slider"]
+	path = submodules/FluidGroup/swiftui-ring-slider
+	url = https://github.com/FluidGroup/swiftui-ring-slider.git

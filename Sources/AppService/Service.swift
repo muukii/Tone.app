@@ -24,7 +24,7 @@ public final class Service {
 
   }
 
-  public func makePinned(range: PlayerController.PlayingRange, for item: ItemEntity) async throws {
+  public func makePinned(range: PlayingRange, for item: ItemEntity) async throws {
 
     try await withBackground { [self] in
 

@@ -9,6 +9,8 @@ import SwiftUI
 import SwiftData
 import AppService
 import TipKit
+import AVFoundation
+import Atomics
 
 @main
 struct ShadowingPlayerApp: App {
@@ -18,19 +20,40 @@ struct ShadowingPlayerApp: App {
   init() {
     #if targetEnvironment(simulator)
 
-    let item = Item.social
-
     Task { [service] in
+      let item = Item.social
+
       try await service.importItem(
         title: "Example",
         audioFileURL: item.audioFileURL,
         subtitleFileURL: item.subtitleFileURL
       )
+
+      let a = Item.overwhelmed
+
+      try await service.importItem(
+        title: "overwhelmed",
+        audioFileURL: a.audioFileURL,
+        subtitleFileURL: a.subtitleFileURL
+      )
+
     }
 
     #endif
 
     try? Tips.configure()
+
+    do {
+      let instance = AVAudioSession.sharedInstance()
+      try instance.setCategory(
+        .ambient,
+        mode: .default,
+        options: [.allowBluetooth, .allowAirPlay, .mixWithOthers]
+      )
+      try instance.setActive(true)
+    } catch {
+
+    }
   }
 
   var body: some Scene {
