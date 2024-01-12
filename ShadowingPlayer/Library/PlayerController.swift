@@ -1,5 +1,4 @@
 import AppService
-import AudioKit
 import MediaPlayer
 import SwiftSubtitles
 import Verge
@@ -156,20 +155,38 @@ public final class PlayerController: NSObject {
     MPRemoteCommandCenter.shared().previousTrackCommand.removeTarget(self)
   }
 
-  public func play() {
-
+  func activate() {
     do {
-
       let instance = AVAudioSession.sharedInstance()
+      try instance.setActive(true)
       try instance.setCategory(
         .playback,
         mode: .default,
-        options: [.allowBluetooth, .allowAirPlay, .duckOthers]
+        options: [.allowBluetooth, .allowAirPlay, .mixWithOthers]
       )
-      try instance.setActive(true)
+    } catch {
+      print(error)
+    }
 
+  }
+
+  func deactivate() {
+
+    do {
+      let instance = AVAudioSession.sharedInstance()
+      try instance.setActive(false)
+    } catch {
+      print(error)
+    }
+  }
+
+  public func play() {
+
+    do {
       try controller.play()
     } catch {
+
+      Log.error("\(error.localizedDescription)")
 
     }
 

@@ -200,12 +200,6 @@ final class RecorderAndPlayer {
     do {
       let instance = AVAudioSession.sharedInstance()
       try instance.setActive(true)
-
-      //      instance.currentRoute.outputs.contains {
-      //        $0.portType == .headphones
-      //      }
-
-      print(instance.currentRoute)
       //        try instance.overrideOutputAudioPort(.speaker)
       try instance.setCategory(
         .playAndRecord,

@@ -28,6 +28,7 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       // infoPlist: "Supporting/Info.plist",
       infoPlist: .extendingDefault(with: [
+        "CFBundleShortVersionString" : "2.0.0",
         "UIBackgroundModes" : ["audio"],
         "UIApplicationSceneManifest" : [
           "UIApplicationSupportsMultipleScenes" : "YES",
@@ -45,13 +46,12 @@ let project = Project(
       dependencies: [
         .package(product: "Verge"),
         .package(product: "HexColorMacro"),
-        
+
         .target(name: "AppService"),
 
-        .external(name: "AudioKit"),
         .external(name: "SwiftSubtitles"),
         .external(name: "DynamicList"),
-        .external(name: "SwiftUISupport"),        
+        .external(name: "SwiftUISupport"),
         .external(name: "Wrap"),
         .external(name: "MondrianLayout"),
         .external(name: "SwiftUIIntrospect"),
