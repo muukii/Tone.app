@@ -69,17 +69,19 @@ final class AudioPlayerController: StoreDriverType {
     }
 
     audioPlayer.stop()
-    audioPlayer.scheduleSegment(
-      file,
-      startingFrame: .zero,
-      frameCount: .init(file.length),
-      at: nil
-    )
+
+    _seek(frame: offset)
 
     currentTimerForLoop = Timer.init(timeInterval: 0.005, repeats: true) { [weak self] _ in
 
       MainActor.assumeIsolated { [weak self] in
         guard let self else { return }
+
+        guard let currentFrame else {
+          return
+        }
+
+        print(currentFrame)
 
         guard let currentTime = self.currentTime else {
           return
@@ -87,7 +89,7 @@ final class AudioPlayerController: StoreDriverType {
 
         switch repeating {
         case .atEnd:
-          if currentTime >= duration {
+          if currentFrame >= file.length {
             seek(position: 0)
           }
         case .range(let start, let end):
@@ -98,7 +100,7 @@ final class AudioPlayerController: StoreDriverType {
 
         case nil:
 
-          if currentTime >= duration {
+          if currentTime >= file.duration {
             pause()
           }
 
@@ -116,15 +118,11 @@ final class AudioPlayerController: StoreDriverType {
   func pause() {
     currentTimerForLoop?.invalidate()
     currentTimerForLoop = nil
-    audioPlayer.pause()
+    offset = (currentFrame ?? 0) + offset
+    audioPlayer.stop()
   }
 
-  var duration: TimeInterval {
-    Double(file.length) / file.fileFormat.sampleRate
-  }
-
-  var currentTime: TimeInterval? {
-
+  var currentFrame: AVAudioFramePosition? {
     guard let nodeTime = audioPlayer.lastRenderTime else {
       return nil
     }
@@ -133,7 +131,16 @@ final class AudioPlayerController: StoreDriverType {
       return nil
     }
 
-    let currentTime = (Double(playerTime.sampleTime + offset) / file.fileFormat.sampleRate)
+    return playerTime.sampleTime
+  }
+
+  var currentTime: TimeInterval? {
+
+    guard let currentFrame = currentFrame else {
+      return nil
+    }
+
+    let currentTime = (Double(currentFrame + offset) / file.fileFormat.sampleRate)
 
     return currentTime
   }
@@ -142,26 +149,54 @@ final class AudioPlayerController: StoreDriverType {
 
   func seek(position: TimeInterval) {
 
-    let sampleRate = file.fileFormat.sampleRate
-
-    let startFrame = AVAudioFramePosition(sampleRate * position)
-    let endFrame = AVAudioFramePosition(duration * sampleRate)
-    let frameCount = AVAudioFrameCount(endFrame - startFrame)
-
-    guard frameCount > 0 else {
-      audioPlayer.stop()
-      return
-    }
-
-    offset = startFrame
+    offset = file.frame(at: position)
 
     audioPlayer.stop()
 
-    audioPlayer.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
+    _seek(position: position)
 
     audioPlayer.play()
 
   }
 
+  private func _seek(frame: AVAudioFramePosition) {
+
+    print("seek to: \(frame)")
+
+    let startFrame = frame
+    let frameCount = AVAudioFrameCount(file.length - frame)
+
+    audioPlayer.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
+
+  }
+
+  private func _seek(position: TimeInterval) {
+
+    _seek(frame: file.frame(at: position))
+
+  }
+
 }
 
+extension AVAudioFile {
+
+  fileprivate var duration: TimeInterval {
+    Double(length) / fileFormat.sampleRate  
+  }
+
+  fileprivate func frame(at position: TimeInterval) -> AVAudioFramePosition {
+    let sampleRate = fileFormat.sampleRate
+    return AVAudioFramePosition(sampleRate * position)
+  }
+
+  fileprivate func frames(from position: TimeInterval) -> AVAudioFrameCount {
+    let sampleRate = fileFormat.sampleRate
+
+    let startFrame = AVAudioFramePosition(sampleRate * position)
+    let endFrame = AVAudioFramePosition(length)
+    let frameCount = AVAudioFrameCount(endFrame - startFrame)
+
+    return frameCount
+  }
+
+}
