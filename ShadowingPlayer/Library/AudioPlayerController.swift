@@ -81,8 +81,6 @@ final class AudioPlayerController: StoreDriverType {
           return
         }
 
-        print(currentFrame)
-
         guard let currentTime = self.currentTime else {
           return
         }
