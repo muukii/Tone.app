@@ -159,8 +159,6 @@ final class AudioPlayerController: StoreDriverType {
 
   private func _seek(frame: AVAudioFramePosition) {
 
-    print("seek to: \(frame)")
-
     let startFrame = frame
     let frameCount = AVAudioFrameCount(file.length - frame)
 
