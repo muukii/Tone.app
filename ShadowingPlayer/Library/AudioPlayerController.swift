@@ -149,11 +149,17 @@ final class AudioPlayerController: StoreDriverType {
 
     offset = file.frame(at: position)
 
-    audioPlayer.stop()
+    let isPlaying = audioPlayer.isPlaying
+
+    if isPlaying {
+      audioPlayer.stop()
+    }
 
     _seek(position: position)
 
-    audioPlayer.play()
+    if isPlaying {
+      audioPlayer.play()
+    }
 
   }
 

@@ -257,11 +257,7 @@ public final class PlayerController: NSObject {
   }
 
   public func move(to cue: DisplayCue) {
-
-    if isPlaying == false {
-      play()
-    }
-
+    
     controller.seek(position: cue.backed.startTime.timeInSeconds)
 
     self.currentCue = cue

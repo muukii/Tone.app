@@ -28,16 +28,17 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       // infoPlist: "Supporting/Info.plist",
       infoPlist: .extendingDefault(with: [
-        "CFBundleShortVersionString" : "2.0.0",
-        "UIBackgroundModes" : ["audio"],
-        "UIApplicationSceneManifest" : [
-          "UIApplicationSupportsMultipleScenes" : "YES",
-          "UISceneConfigurations" : [:]
+        "CFBundleShortVersionString": "2.0.0",
+        "UIBackgroundModes": ["audio"],
+        "UIApplicationSceneManifest": [
+          "UIApplicationSupportsMultipleScenes": "YES",
+          "UISceneConfigurations": [:],
         ],
-        "UILaunchScreen" : ["UILaunchScreen": [:]],
-        "UISupportedInterfaceOrientations" : ["UIInterfaceOrientationPortrait"],
-        "NSMicrophoneUsageDescription" : "To record your voice and play it back for pronunciation practice.",
-        ]),
+        "UILaunchScreen": ["UILaunchScreen": [:]],
+        "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
+        "NSMicrophoneUsageDescription":
+          "To record your voice and play it back for pronunciation practice.",
+      ]),
       sources: ["ShadowingPlayer/**"],
       resources: [
         "ShadowingPlayer/Assets.xcassets",
@@ -61,7 +62,7 @@ let project = Project(
       settings: .settings(base: [
         "DEVELOPMENT_ASSET_PATHS": #""ShadowingPlayer/Preview Content""#,
         "TARGETED_DEVICE_FAMILY": "1",
-        "DEVELOPMENT_TEAM" : "KU2QEJ9K3Z"
+        "DEVELOPMENT_TEAM": "KU2QEJ9K3Z",
       ])
       // mergedBinaryType: .manual(mergeableDependencies: ["AppService"]),
       // mergeable: false
@@ -80,6 +81,19 @@ let project = Project(
       ]
       // mergedBinaryType: .disabled,
       // mergeable: true
+    ),
+  ],
+  schemes: [
+    .init(
+      name: "Tone",
+      shared: true,
+      hidden: false,
+      buildAction: .init(targets: ["Tone"]),
+      testAction: nil,
+      runAction: .runAction(configuration: "Debug", attachDebugger: true),
+      archiveAction: .archiveAction(configuration: "Release"),
+      profileAction: .profileAction(configuration: "Debug"),
+      analyzeAction: nil
     )
   ]
 )
