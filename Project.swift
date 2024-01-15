@@ -15,6 +15,9 @@ let project = Project(
     ),
     xcodeProjectName: "Tone"
   ),
+  packages: [
+    .package(url: "https://github.com/ggerganov/whisper.cpp", .branch("master")),
+  ],
   targets: [
     Target(
       name: "Tone",
@@ -41,9 +44,11 @@ let project = Project(
         "ShadowingPlayer/Preview Content/**",
       ],
       dependencies: [
+
+        .package(product: "whisper"),
+
         .external(name: "Verge"),
         .external(name: "HexColorMacro"),
-
         .target(name: "AppService"),
 
         .external(name: "SwiftSubtitles"),
