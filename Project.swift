@@ -15,10 +15,6 @@ let project = Project(
     ),
     xcodeProjectName: "Tone"
   ),
-  packages: [
-    .package(url: "https://github.com/muukii/swift-macro-hex-color", from: "0.1.1"),
-    .package(url: "https://github.com/VergeGroup/Verge", .branch("main")),
-  ],
   targets: [
     Target(
       name: "Tone",
@@ -45,8 +41,8 @@ let project = Project(
         "ShadowingPlayer/Preview Content/**",
       ],
       dependencies: [
-        .package(product: "Verge"),
-        .package(product: "HexColorMacro"),
+        .external(name: "Verge"),
+        .external(name: "HexColorMacro"),
 
         .target(name: "AppService"),
 
@@ -76,7 +72,7 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       sources: ["Sources/AppService/**"],
       dependencies: [
-        .package(product: "Verge"),
+        .external(name: "Verge"),
         .external(name: "Wrap"),
       ]
       // mergedBinaryType: .disabled,
