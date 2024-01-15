@@ -294,6 +294,7 @@ final class RecorderAndPlayer {
         if let newInstance = try? AudioPlayerController.init(
           file: try .init(forReading: currentFilePath)
         ) {
+          newInstance.repeating = .atEnd
           playerController = newInstance
           try playerController?.prepare()
         } else {
