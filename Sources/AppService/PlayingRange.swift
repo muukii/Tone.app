@@ -19,7 +19,7 @@ public struct PlayingRange: Equatable {
     cues.last!
   }
 
-  private var cues: [DisplayCue] = []
+  public private(set) var cues: [DisplayCue] = []
 
   public init(
     whole: [DisplayCue]

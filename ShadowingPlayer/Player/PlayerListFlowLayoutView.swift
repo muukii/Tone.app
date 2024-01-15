@@ -100,7 +100,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 //        }
 
         return context.cell { state, customState in
-          PlayerListFlowLayoutView.chunk(
+          makeChunk(
             text: cue.backed.text,
             identifier: cue.id,
             isFocusing: customState.isFocusing,
@@ -131,57 +131,58 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
   }
 
-  private nonisolated static func chunk(
-    text: String,
-    identifier: some Hashable,
-    isFocusing: Bool,
-    isInRange: Bool,
-    onSelect: @escaping () -> Void
-  )
-    -> some View
-  {
-    VStack(spacing: 4) {
-      Text(text).font(.system(size: 24, weight: .bold, design: .default))
-        .modifier(
-          condition: isFocusing == false,
-          identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
-          active: StyleModifier(opacity: 0.2)
-        )
-        .id(identifier)
-        .textSelection(.enabled)
+}
 
-      // Indicator
-      RoundedRectangle(cornerRadius: 8, style: .continuous)
-        .fill(
-          { () -> Color in
-            if isInRange {
-              return Color.accentColor
-            }
+nonisolated func makeChunk(
+  text: String,
+  identifier: some Hashable,
+  isFocusing: Bool,
+  isInRange: Bool,
+  onSelect: @escaping () -> Void
+)
+-> some View
+{
+  VStack(spacing: 4) {
+    Text(text).font(.system(size: 24, weight: .bold, design: .default))
+      .modifier(
+        condition: isFocusing == false,
+        identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
+        active: StyleModifier(opacity: 0.2)
+      )
+      .id(identifier)
+      .textSelection(.enabled)
 
-            if isFocusing {
-              return Color.primary
-            }
+    // Indicator
+    RoundedRectangle(cornerRadius: 8, style: .continuous)
+      .fill(
+        { () -> Color in
+          if isInRange {
+            return Color.accentColor
+          }
 
-            return Color.primary.opacity(0.3)
+          if isFocusing {
+            return Color.primary
+          }
 
-          }()
-        )
-        .frame(height: 4)
-        .padding(.horizontal, isFocusing ? 0 : 2)
-    }
-    .animation(.bouncy, value: isFocusing)
-    .transaction(value: identifier, { t in
-      // prevent animation while reusing
-      t.disablesAnimations = true
-    })
-    .padding(.horizontal, 2)
-    ._onButtonGesture(
-      pressing: { isPressing in },
-      perform: {
-        onSelect()
-      }
-    )
+          return Color.primary.opacity(0.3)
+
+        }()
+      )
+      .frame(height: 4)
+      .padding(.horizontal, isFocusing ? 0 : 2)
   }
+  .animation(.bouncy, value: isFocusing)
+  .transaction(value: identifier, { t in
+    // prevent animation while reusing
+    t.disablesAnimations = true
+  })
+  .padding(.horizontal, 2)
+  ._onButtonGesture(
+    pressing: { isPressing in },
+    perform: {
+      onSelect()
+    }
+  )
 }
 
 private final class ViewModel: StoreDriverType {
