@@ -13,6 +13,7 @@ let package = Package(
     .package(url: "https://github.com/FluidGroup/MondrianLayout", branch: "main"),
     .package(url: "https://github.com/siteline/swiftui-introspect", from: "1.1.0"),
     .package(url: "https://github.com/muukii/swift-macro-hex-color", from: "0.1.1"),
+    .package(url: "https://github.com/dmrschmidt/DSWaveformImage", from: "14.2.2"),
 //    .package(url: "https://github.com/ggerganov/whisper.cpp", branch: "master"),
   ]
 )

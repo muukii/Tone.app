@@ -16,7 +16,7 @@ let project = Project(
     xcodeProjectName: "Tone"
   ),
   packages: [
-    .package(url: "https://github.com/ggerganov/whisper.cpp", .branch("master")),
+    .package(url: "https://github.com/exPHAT/SwiftWhisper", .branch("master")),
   ],
   targets: [
     Target(
@@ -45,12 +45,13 @@ let project = Project(
       ],
       dependencies: [
 
-        .package(product: "whisper"),
+        .package(product: "SwiftWhisper"),
 
         .external(name: "Verge"),
         .external(name: "HexColorMacro"),
         .target(name: "AppService"),
 
+        .external(name: "DSWaveformImageViews"),
         .external(name: "SwiftSubtitles"),
         .external(name: "DynamicList"),
         .external(name: "SwiftUISupport"),
