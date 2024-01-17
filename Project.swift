@@ -84,6 +84,7 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       sources: ["Sources/AppService/**"],
       dependencies: [
+        .package(product: "SwiftWhisper"),
         .external(name: "Verge"),
         .external(name: "Wrap"),
       ]

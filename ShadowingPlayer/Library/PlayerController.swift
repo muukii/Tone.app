@@ -205,7 +205,7 @@ public final class PlayerController: NSObject {
           
           let currentCue = cues.first { cue in
             
-            (cue.backed.startTime.timeInSeconds..<cue.backed.endTime.timeInSeconds).contains(currentTime)
+            (cue.backed.startTime..<cue.backed.endTime).contains(currentTime)
             
           }
           
@@ -258,7 +258,7 @@ public final class PlayerController: NSObject {
 
   public func move(to cue: DisplayCue) {
     
-    controller.seek(position: cue.backed.startTime.timeInSeconds)
+    controller.seek(position: cue.backed.startTime)
 
     self.currentCue = cue
 
