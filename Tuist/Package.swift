@@ -14,6 +14,8 @@ let package = Package(
     .package(url: "https://github.com/siteline/swiftui-introspect", from: "1.1.0"),
     .package(url: "https://github.com/muukii/swift-macro-hex-color", from: "0.1.1"),
     .package(url: "https://github.com/dmrschmidt/DSWaveformImage", from: "14.2.2"),
+    .package(url: "https://github.com/AudioKit/AudioKit", from: "5.6.2"),
+//    .package(url: "https://github.com/ZipArchive/ZipArchive.git", from: "2.5.5"),
 //    .package(url: "https://github.com/ggerganov/whisper.cpp", branch: "master"),
   ]
 )

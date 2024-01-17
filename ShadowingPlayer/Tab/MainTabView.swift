@@ -22,6 +22,11 @@ struct MainTabView: View {
       }
       .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
 
+      WhisperView()
+        .tabItem {
+          Label("Whisper", systemImage: "mic")
+        }
+        .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
     }
     .tint(.primary)
   }

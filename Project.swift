@@ -16,7 +16,11 @@ let project = Project(
     xcodeProjectName: "Tone"
   ),
   packages: [
-    .package(url: "https://github.com/exPHAT/SwiftWhisper", .branch("master")),
+//    .package(url: "https://github.com/exPHAT/SwiftWhisper", .branch("master")),
+//    .package(url: "https://github.com/Priva28/SwiftWhisper", .branch("master")),
+    .package(path: "./SwiftWhisper"),
+//    .package(url: "https://github.com/muukii/SwiftWhisper", .branch("muukii/follow-upstream")),
+    .package(url: "https://github.com/ZipArchive/ZipArchive.git", from: "2.5.5"),
   ],
   targets: [
     Target(
@@ -47,8 +51,10 @@ let project = Project(
 
         .package(product: "SwiftWhisper"),
 
+        .external(name: "AudioKit"),
         .external(name: "Verge"),
         .external(name: "HexColorMacro"),
+        .package(product: "ZipArchive"),
         .target(name: "AppService"),
 
         .external(name: "DSWaveformImageViews"),
