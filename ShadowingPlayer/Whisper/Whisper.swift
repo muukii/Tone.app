@@ -27,45 +27,49 @@ struct WhisperView: View {
 
   @State var result: Result?
 
+  let usingModel: WhisperModelRef = .enMedium
+
   var body: some View {
     NavigationStack {
       VStack {
-        WhisperModelDownloadView()
+        WhisperModelDownloadView(modelRef: usingModel)
         Button("Transcribe") {
 
           let input = Item.overwhelmed.audioFileURL
           let destination = URL.temporaryDirectory.appending(path: "audio\(UUID().uuidString).wav")
 
-          Task.detached {
-            try await FormatConverter(
-              inputURL: input,
-              outputURL: destination,
-              options: .init(pcmFormat: .wav, sampleRate: 16000, bitDepth: 16, channels: 1)
-            ).start()
+          Task {
 
-            let params = WhisperParams.default
+            try await withBackground {
+              try await FormatConverter(
+                inputURL: input,
+                outputURL: destination,
+                options: .init(pcmFormat: .wav, sampleRate: 16000, bitDepth: 16, channels: 1)
+              ).start()
 
-            params.token_timestamps = true
-            params.max_len = 2
-            params.split_on_word = true
+              let params = WhisperParams.default
 
-            let whisper = Whisper(
-              fromFileURL: WhisperModelRef.enTiny.storedModelURL,
-              withParams: params
-            )
+              params.token_timestamps = true
+              params.max_len = 2
+              params.split_on_word = true
 
-            let file = try AVAudioFile(forReading: destination)
-            let buffer = AVAudioPCMBuffer(
-              pcmFormat: file.processingFormat,
-              frameCapacity: .init(file.length)
-            )!
-            try file.read(into: buffer)
+              let whisper = Whisper(
+                fromFileURL: usingModel.storedModelURL,
+                withParams: params
+              )
 
-            let segments = try await whisper.transcribe(audioFrames: buffer.toFloatChannelData()![0])
-            print(segments)
+              let file = try AVAudioFile(forReading: destination)
+              let buffer = AVAudioPCMBuffer(
+                pcmFormat: file.processingFormat,
+                frameCapacity: .init(file.length)
+              )!
+              try file.read(into: buffer)
 
-            Task { @MainActor in
-              self.result = .init(segments: segments, audioFileURL: input)
+              let segments = try await whisper.transcribe(audioFrames: buffer.toFloatChannelData()![0])
+
+              await MainActor.run {
+                self.result = .init(segments: segments, audioFileURL: input)
+              }
             }
 
           }
@@ -113,6 +117,28 @@ struct WhisperModelRef {
     )!
   )
 
+  static let enMedium: Self = .init(
+    name: "EnMedium",
+    modelURL: URL(
+      string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.en.bin"
+    )!,
+    coremlModelZipURL: URL(
+      string:
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.en-encoder.mlmodelc.zip"
+    )!
+  )
+
+  static let enLarge: Self = .init(
+    name: "EnLarge",
+    modelURL: URL(
+      string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3.bin"
+    )!,
+    coremlModelZipURL: URL(
+      string:
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-encoder.mlmodelc.zip"
+    )!
+  )
+
   var storedModelURL: URL {
     URL.temporaryDirectory.appending(path: "whisper_model_\(name).bin")
   }
@@ -122,9 +148,9 @@ struct WhisperModelRef {
   }
 }
 
-private let modelURL = URL.temporaryDirectory.appending(path: "whisper_model_tiny.bin")
-
 struct WhisperModelDownloadView: View {
+
+  let modelRef: WhisperModelRef
 
   var body: some View {
 
@@ -133,7 +159,6 @@ struct WhisperModelDownloadView: View {
       Task {
 
         do {
-          let modelRef = WhisperModelRef.enTiny
 
           async let (modelFileURL, _) = URLSession.shared.download(
             from: modelRef.modelURL,
@@ -214,5 +239,5 @@ extension FormatConverter {
 }
 
 #Preview {
-  WhisperModelDownloadView()
+  WhisperModelDownloadView(modelRef: .enTiny)
 }
