@@ -15,64 +15,78 @@ import ZipArchive
 
 struct WhisperView: View {
 
-  struct DisplaySegment: Identifiable {
-    var id: String {
-      return "\(backed.startTime),\(backed.endTime)"
+  struct Result: Hashable {
+
+    func hash(into hasher: inout Hasher) {
+      audioFileURL.hash(into: &hasher)
     }
 
-    let backed: Segment
-
+    var segments: [Segment]
+    var audioFileURL: URL
   }
 
-  @State var segments: [DisplaySegment] = []
+  @State var result: Result?
 
   var body: some View {
-    VStack {
-      WhisperModelDownloadView()
-      Button("Transcribe") {
+    NavigationStack {
+      VStack {
+        WhisperModelDownloadView()
+        Button("Transcribe") {
 
-        let destination = URL.temporaryDirectory.appending(path: "audio\(UUID().uuidString).wav")
+          let input = Item.overwhelmed.audioFileURL
+          let destination = URL.temporaryDirectory.appending(path: "audio\(UUID().uuidString).wav")
 
-        Task.detached {
-          try await FormatConverter(
-            inputURL: Item.overwhelmed.audioFileURL,
-            outputURL: destination,
-            options: .init(pcmFormat: .wav, sampleRate: 16000, bitDepth: 16, channels: 1)
-          ).start()
+          Task.detached {
+            try await FormatConverter(
+              inputURL: input,
+              outputURL: destination,
+              options: .init(pcmFormat: .wav, sampleRate: 16000, bitDepth: 16, channels: 1)
+            ).start()
 
-          let params = WhisperParams.default
+            let params = WhisperParams.default
 
-          params.token_timestamps = true
-          params.max_len = 2
-          params.split_on_word = true
+            params.token_timestamps = true
+            params.max_len = 2
+            params.split_on_word = true
 
-          let whisper = Whisper(
-            fromFileURL: WhisperModelRef.enTiny.storedModelURL,
-            withParams: params
-          )
+            let whisper = Whisper(
+              fromFileURL: WhisperModelRef.enTiny.storedModelURL,
+              withParams: params
+            )
 
-          let file = try AVAudioFile(forReading: destination)
-          let buffer = AVAudioPCMBuffer(
-            pcmFormat: file.processingFormat,
-            frameCapacity: .init(file.length)
-          )!
-          try file.read(into: buffer)
+            let file = try AVAudioFile(forReading: destination)
+            let buffer = AVAudioPCMBuffer(
+              pcmFormat: file.processingFormat,
+              frameCapacity: .init(file.length)
+            )!
+            try file.read(into: buffer)
 
-          let segments = try await whisper.transcribe(audioFrames: buffer.toFloatChannelData()![0])
-          print(segments)
+            let segments = try await whisper.transcribe(audioFrames: buffer.toFloatChannelData()![0])
+            print(segments)
 
-          self.segments = segments.map { .init(backed: $0) }
+            Task { @MainActor in
+              self.result = .init(segments: segments, audioFileURL: input)
+            }
+
+          }
 
         }
 
       }
-
-      List(segments) { segment in
-        Text(segment.backed.text)
+      .navigationTitle("Transcribe")
+      .navigationDestination(item: $result) { result in
+        PlayerView<PlayerListFlowLayoutView>(
+          playerController: {
+            try! .init(
+              title: "hello",
+              audioFileURL: result.audioFileURL,
+              segments: result.segments.map { AbstractSegment.init(segment: $0) }
+            )
+          },
+          actionHandler: { _ in }
+        )
       }
-
     }
-
   }
 }
 
