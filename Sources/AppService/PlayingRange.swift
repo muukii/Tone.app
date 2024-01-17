@@ -5,10 +5,10 @@ public struct PlayingRange: Equatable {
   private var whole: [DisplayCue]
 
   public var startTime: TimeInterval {
-    cues.first?.backed.startTime.timeInSeconds ?? whole.first?.backed.startTime.timeInSeconds ?? 0
+    cues.first?.backed.startTime ?? whole.first?.backed.startTime ?? 0
   }
   public var endTime: TimeInterval {
-    cues.last?.backed.endTime.timeInSeconds ?? whole.last?.backed.endTime.timeInSeconds ?? 0
+    cues.last?.backed.endTime ?? whole.last?.backed.endTime ?? 0
   }
 
   public var startCue: DisplayCue {
@@ -19,7 +19,7 @@ public struct PlayingRange: Equatable {
     cues.last!
   }
 
-  private var cues: [DisplayCue] = []
+  public private(set) var cues: [DisplayCue] = []
 
   public init(
     whole: [DisplayCue]
@@ -28,7 +28,7 @@ public struct PlayingRange: Equatable {
   }
 
   public func contains(_ cue: DisplayCue) -> Bool {
-    cue.backed.startTime.timeInSeconds >= startTime && cue.backed.endTime.timeInSeconds <= endTime
+    cue.backed.startTime >= startTime && cue.backed.endTime <= endTime
   }
 
   public mutating func select(startCueID: String, endCueID: String) {
@@ -36,11 +36,11 @@ public struct PlayingRange: Equatable {
     let startCue = whole.first { $0.id == startCueID }!
     let endCue = whole.first { $0.id == endCueID }!
 
-    let startTime = min(startCue.backed.startTime.timeInSeconds, endCue.backed.startTime.timeInSeconds)
-    let endTime = max(startCue.backed.endTime.timeInSeconds, endCue.backed.endTime.timeInSeconds)
+    let startTime = min(startCue.backed.startTime, endCue.backed.startTime)
+    let endTime = max(startCue.backed.endTime, endCue.backed.endTime)
 
     cues = whole.filter {
-      $0.backed.startTime.timeInSeconds >= startTime && $0.backed.endTime.timeInSeconds <= endTime
+      $0.backed.startTime >= startTime && $0.backed.endTime <= endTime
     }
 
   }
@@ -72,11 +72,11 @@ public struct PlayingRange: Equatable {
 
     } else {
 
-      let startTime = min(self.startTime, cue.backed.startTime.timeInSeconds)
-      let endTime = max(self.endTime, cue.backed.endTime.timeInSeconds)
+      let startTime = min(self.startTime, cue.backed.startTime)
+      let endTime = max(self.endTime, cue.backed.endTime)
 
       cues = whole.filter {
-        $0.backed.startTime.timeInSeconds >= startTime && $0.backed.endTime.timeInSeconds <= endTime
+        $0.backed.startTime >= startTime && $0.backed.endTime <= endTime
       }
 
     }

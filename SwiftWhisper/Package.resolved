@@ -18,15 +18,6 @@
           "revision": "f6614155e40198bad739fed9400d0de8de9cc311",
           "version": null
         }
-      },
-      {
-        "package": "ZipArchive",
-        "repositoryURL": "https://github.com/ZipArchive/ZipArchive.git",
-        "state": {
-          "branch": null,
-          "revision": "79d4dc9729096c6ad83dd3cee2b9f354d1b4ab7b",
-          "version": "2.5.5"
-        }
       }
     ]
   },

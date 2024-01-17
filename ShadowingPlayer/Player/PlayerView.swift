@@ -26,6 +26,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
 
   @ObservableEdge var controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) -> Void
+  @State private var controllerForDetail: PlayerController?
 
   init(
     playerController: @escaping () -> PlayerController,
@@ -57,10 +58,16 @@ struct PlayerView<Display: PlayerDisplay>: View {
 
             actionHandler(.onPin(range: range))
 
+          },
+          onTapDetail: {
+            controllerForDetail = controller
           }
         )
       }
     )
+    .navigationDestination(item: $controllerForDetail, destination: { controller in
+      RepeatingView(controller: controller)
+    })
     .onAppear {
       controller.activate()
       UIApplication.shared.isIdleTimerDisabled = true
@@ -85,15 +92,18 @@ struct PlayerControlPanel: View {
 
   private let controller: PlayerController
   private let onTapPin: @MainActor () -> Void
+  private let onTapDetail: @MainActor () -> Void
 
   @State var speed: Double = 1
 
   init(
     controller: PlayerController,
-    onTapPin: @escaping @MainActor () -> Void
+    onTapPin: @escaping @MainActor () -> Void,
+    onTapDetail: @escaping @MainActor () -> Void
   ) {
     self.controller = controller
     self.onTapPin = onTapPin
+    self.onTapDetail = onTapDetail
   }
 
   private static func fractionLabel(fraction: Double) -> String {
@@ -183,6 +193,20 @@ struct PlayerControlPanel: View {
         .buttonStyle(PlainButtonStyle())
         .disabled(controller.isRepeating == false)
 
+        // detail
+        Button {
+          onTapDetail()
+        } label: {
+          Image(systemName: "rectangle.portrait.and.arrow.forward")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 30)
+            .foregroundColor(Color.primary)
+        }
+        .frame(square: 50)
+        .buttonStyle(PlainButtonStyle())
+        .disabled(controller.isRepeating == false)
+
       }
 
       Spacer(minLength: 16).fixedSize()
@@ -235,11 +259,13 @@ struct DefinitionView: UIViewControllerRepresentable {
 
 #Preview {
   Group {
-    PlayerView<PlayerListFlowLayoutView>(
-      playerController: { try! .init(item: .social) },
-      actionHandler: { action in
-      }
-    )
+    NavigationStack {
+      PlayerView<PlayerListFlowLayoutView>(
+        playerController: { try! .init(item: .social) },
+        actionHandler: { action in
+        }
+      )
+    }
 
   }
   .accentColor(Color.pink)

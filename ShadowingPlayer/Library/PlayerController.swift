@@ -17,7 +17,6 @@ public final class PlayerController: NSObject {
   public var currentCue: DisplayCue?
 
   public let cues: [DisplayCue]
-  private let subtitles: Subtitles
 
   @ObservationIgnored
   private var currentTimeObservation: NSKeyValueObservation?
@@ -59,13 +58,22 @@ public final class PlayerController: NSObject {
 
   public init(title: String, audioFileURL: URL, subtitleFileURL: URL) throws {
 
-    self.subtitles = try Subtitles(fileURL: subtitleFileURL, encoding: .utf8)
+    let subtitles = try Subtitles(fileURL: subtitleFileURL, encoding: .utf8)
     self.cues = subtitles.cues.map { .init(backed: $0) }
     self.title = title
 
     self.controller = try .init(file: .init(forReading: audioFileURL))
     super.init()
 
+  }
+
+  public init(title: String, audioFileURL: URL, segments: [AbstractSegment]) throws {
+
+    self.cues = segments.map { .init(segment: $0) }
+    self.title = title
+
+    self.controller = try .init(file: .init(forReading: audioFileURL))
+    super.init()
   }
 
   public func makeRepeatingRange() -> PlayingRange {
@@ -205,7 +213,7 @@ public final class PlayerController: NSObject {
           
           let currentCue = cues.first { cue in
             
-            (cue.backed.startTime.timeInSeconds..<cue.backed.endTime.timeInSeconds).contains(currentTime)
+            (cue.backed.startTime..<cue.backed.endTime).contains(currentTime)
             
           }
           
@@ -258,7 +266,7 @@ public final class PlayerController: NSObject {
 
   public func move(to cue: DisplayCue) {
     
-    controller.seek(position: cue.backed.startTime.timeInSeconds)
+    controller.seek(position: cue.backed.startTime)
 
     self.currentCue = cue
 

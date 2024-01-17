@@ -16,7 +16,11 @@ let project = Project(
     xcodeProjectName: "Tone"
   ),
   packages: [
-    .package(url: "https://github.com/ggerganov/whisper.cpp", .branch("master")),
+//    .package(url: "https://github.com/exPHAT/SwiftWhisper", .branch("master")),
+//    .package(url: "https://github.com/Priva28/SwiftWhisper", .branch("master")),
+    .package(path: "./SwiftWhisper"),
+//    .package(url: "https://github.com/muukii/SwiftWhisper", .branch("muukii/follow-upstream")),
+    .package(url: "https://github.com/ZipArchive/ZipArchive.git", from: "2.5.5"),
   ],
   targets: [
     Target(
@@ -45,12 +49,15 @@ let project = Project(
       ],
       dependencies: [
 
-        .package(product: "whisper"),
+        .package(product: "SwiftWhisper"),
 
+        .external(name: "AudioKit"),
         .external(name: "Verge"),
         .external(name: "HexColorMacro"),
+        .package(product: "ZipArchive"),
         .target(name: "AppService"),
 
+        .external(name: "DSWaveformImageViews"),
         .external(name: "SwiftSubtitles"),
         .external(name: "DynamicList"),
         .external(name: "SwiftUISupport"),
@@ -77,6 +84,7 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       sources: ["Sources/AppService/**"],
       dependencies: [
+        .package(product: "SwiftWhisper"),
         .external(name: "Verge"),
         .external(name: "Wrap"),
       ]

@@ -1,6 +1,7 @@
 // MARK: - Recorder
 import AVFAudio
 import AppService
+import DSWaveformImageViews
 import SwiftUI
 import TipKit
 
@@ -8,7 +9,6 @@ struct SampleTip: Tip {
   var title: Text {
     Text("Record and playback")
   }
-
 
   var message: Text? {
     Text("Tap and hold to record")
@@ -32,21 +32,38 @@ struct VoiceRecorderView: View {
 
     VStack {
 
-      ScrollView(.horizontal) {
+      ScrollView(.vertical) {
 
-        LazyHStack {
-          ForEach(controller.recordedItems) { item in
+        LazyVStack {
+
+          ForEach(controller.recordedItems.reversed()) { item in
             Button {
 
             } label: {
-              Text(item.duration, format: .time(pattern: .minuteSecond))
-                .font(.headline.bold().monospacedDigit())
+              VStack {
+                Text(item.duration, format: .time(pattern: .minuteSecond))
+                  .font(.headline.bold().monospacedDigit())
+                if item.duration > .zero {
+                  WaveformView(
+                    audioURL: item.filePath,
+                    configuration: .init(
+                      size: .zero,
+                      backgroundColor: .clear,
+                      style: .striped(.init(color: .red, width: 2, spacing: 2, lineCap: .round)),
+                      damping: .init(percentage: 0.125, sides: .both),
+                      verticalScalingFactor: 0.95,
+                      shouldAntialias: true
+                    )
+                  )
+                }
+              }
+
             }
             .buttonStyle(.bordered)
 
           }
-
         }
+
         .backgroundStyle(.tint)
         .foregroundStyle(.tint)
 
@@ -318,7 +335,6 @@ final class RecorderAndPlayer {
 
 }
 
-
 final class VoiceRecorderController {
 
   private let recordingEngine = AVAudioEngine()
@@ -362,7 +378,7 @@ final class VoiceRecorderController {
     .onAppear(perform: {
       try? Tips.resetDatastore()
       try? Tips.configure([
-        .displayFrequency(.immediate),
+        .displayFrequency(.immediate)
 
       ])
     })
