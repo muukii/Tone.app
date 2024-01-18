@@ -143,6 +143,15 @@
         "revision" : "0d13a5b579d3f74d1f3a2bc50ccb4f9f86a711c3",
         "version" : "4.0.0"
       }
+    },
+    {
+      "identity" : "youtubekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/alexeichhorn/YouTubeKit",
+      "state" : {
+        "revision" : "f67f4c3dd53b85a5ce94d16a246613d4dd7faa32",
+        "version" : "0.2.0"
+      }
     }
   ],
   "version" : 2
