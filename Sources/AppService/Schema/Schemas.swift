@@ -5,8 +5,8 @@ public enum Schemas {}
 
 public typealias ActiveSchema = Schemas.V2
 
-public typealias ItemEntity = ActiveSchema.ItemEntity
-public typealias PinEntity = ActiveSchema.PinEntity
+public typealias ItemEntity = ActiveSchema.Item
+public typealias PinEntity = ActiveSchema.Pin
 
 let currentSchema: Schema = .init(versionedSchema: ActiveSchema.self)
 

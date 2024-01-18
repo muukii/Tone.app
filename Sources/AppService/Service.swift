@@ -66,13 +66,12 @@ public final class Service {
 
     let modelContext = ModelContext(modelContainer)
 
-    guard audioFileURL.startAccessingSecurityScopedResource() else {
-      Log.error("Failed to start accessing security scoped resource")
-      return
-    }
+    let hasSecurityScope = audioFileURL.startAccessingSecurityScopedResource()
 
     defer {
-      audioFileURL.stopAccessingSecurityScopedResource()
+      if hasSecurityScope {
+        audioFileURL.stopAccessingSecurityScopedResource()
+      }
     }
 
     let target = URL.documentsDirectory.appendingPathComponent("audio", isDirectory: true)

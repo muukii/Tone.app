@@ -113,6 +113,7 @@ enum WhisperTranscriber {
     params.token_timestamps = true
     params.max_len = 2
     params.split_on_word = true
+    params.language = .english
 
     let whisper = Whisper(
       fromFileURL: usingModel.storedModelURL,
@@ -225,6 +226,17 @@ struct WhisperModelRef {
     coremlModelZipURL: URL(
       string:
         "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en-encoder.mlmodelc.zip"
+    )!
+  )
+
+  static let enSmall: Self = .init(
+    name: "EnSmall",
+    modelURL: URL(
+      string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en.bin"
+    )!,
+    coremlModelZipURL: URL(
+      string:
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en-encoder.mlmodelc.zip"
     )!
   )
 
