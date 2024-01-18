@@ -13,7 +13,7 @@ import AVFoundation
 import Atomics
 
 @main
-struct ShadowingPlayerApp: App {
+struct AppRoot: App {
 
   private let service = Service()
 
