@@ -1,5 +1,7 @@
 import ProjectDescription
 
+let version: Plist.Value = "3.0.0"
+
 let project = Project(
   name: "Tone",
   organizationName: "MuukLab",
@@ -31,7 +33,7 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       // infoPlist: "Supporting/Info.plist",
       infoPlist: .extendingDefault(with: [
-        "CFBundleShortVersionString": "2.0.0",
+        "CFBundleShortVersionString": version,
         "UIBackgroundModes": ["audio"],
         "UIApplicationSceneManifest": [
           "UIApplicationSupportsMultipleScenes": "YES",
