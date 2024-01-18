@@ -27,6 +27,12 @@ struct MainTabView: View {
           Label("Whisper", systemImage: "mic")
         }
         .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
+
+      YouTubeDownloadView()
+        .tabItem {
+          Label("YouTube", systemImage: "mic")
+        }
+        .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
     }
     .tint(.primary)
   }

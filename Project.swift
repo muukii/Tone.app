@@ -51,6 +51,7 @@ let project = Project(
 
         .package(product: "SwiftWhisper"),
 
+        .external(name: "YouTubeKit"),
         .external(name: "AudioKit"),
         .external(name: "Verge"),
         .external(name: "HexColorMacro"),

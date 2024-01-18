@@ -52,3 +52,17 @@ public struct RelativePath: Hashable {
 
 }
 
+extension URL {
+
+  public func renameLastPathComponent(_ newName: String) -> Self {
+    let pathExtension = self.pathExtension
+    let new = self.deletingLastPathComponent()
+    return new.appending(path: newName)
+      .appendingPathExtension(pathExtension)
+  }
+
+  public func updatingPathExtension(_ pathExtension: String) -> Self {
+    self.deletingPathExtension().appendingPathExtension(pathExtension)
+  }
+
+}
