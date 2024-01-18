@@ -34,7 +34,7 @@ struct YouTubeImportView: View {
             let title = try await YouTube(url: url).metadata?.title
 
             let audio = try await YouTubeDownloader.run(url: url)
-            let modelRef = WhisperModelRef.enBase
+            let modelRef = WhisperModelRef.enSmall
 
             if await modelRef.isDownloaded() == false {
               try await WhisperModelDownloader.run(modelRef: modelRef)

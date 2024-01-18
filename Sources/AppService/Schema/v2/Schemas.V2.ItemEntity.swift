@@ -3,7 +3,7 @@ import Foundation
 
 extension Schemas.V2 {
   @Model
-  public final class ItemEntity: Hashable {
+  public final class Item: Hashable {
     
     @Attribute(.unique)
     public var identifier: String?
@@ -15,8 +15,8 @@ extension Schemas.V2 {
     /// a relative path from document directory
     public var audioFilePath: String?
         
-    @Relationship(deleteRule: .cascade, inverse: \PinEntity.item)
-    public var pinItems: [PinEntity] = []
+    @Relationship(deleteRule: .cascade, inverse: \Pin.item)
+    public var pinItems: [Pin] = []
     
     public var audioFileRelativePath: RelativePath? {
       audioFilePath.map { .init($0) }

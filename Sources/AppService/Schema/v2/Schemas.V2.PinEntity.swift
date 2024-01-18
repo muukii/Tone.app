@@ -3,7 +3,7 @@ import SwiftData
 
 extension Schemas.V2 {
   @Model
-  public final class PinEntity {
+  public final class Pin {
 
     @Attribute(.unique)
     public var identifier: String
@@ -13,7 +13,7 @@ extension Schemas.V2 {
     public var startCueRawIdentifier: String
     public var endCueRawIdentifier: String
 
-    public var item: ItemEntity?
+    public var item: Item?
 
     public init() {
 
