@@ -1,10 +1,15 @@
 import SwiftUI
+import AppService
+import YouTubeKit
 
 struct YouTubeImportView: View {
 
+  let service: Service
   @State private var urlString: String = ""
   @State private var url: URL? = nil
   @State private var isProcessing: Bool = false
+
+  var onComplete: @MainActor () -> Void
 
   var body: some View {
 
@@ -25,6 +30,9 @@ struct YouTubeImportView: View {
             isProcessing = false
           }
           do {
+
+            let title = try await YouTube(url: url).metadata?.title
+
             let audio = try await YouTubeDownloader.run(url: url)
             let modelRef = WhisperModelRef.enBase
 
@@ -34,7 +42,9 @@ struct YouTubeImportView: View {
 
             let segments = try await WhisperTranscriber.run(url: audio, using: modelRef)
 
-            print(segments)
+            try await service.importItem(title: title ?? "(Not fetched)", audioFileURL: audio, segments: segments.map { .init(segment: $0) })
+
+            onComplete()
 
           } catch {
             Log.error("\(error.localizedDescription)")
@@ -55,8 +65,4 @@ struct YouTubeImportView: View {
     }
 
   }
-}
-
-#Preview {
-  YouTubeImportView()
 }

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import SwiftSubtitles
 
 @MainActor
 public final class Service {
@@ -11,7 +12,7 @@ public final class Service {
     let databasePath = URL.documentsDirectory.appending(path: "database")
     do {
       let container = try ModelContainer(
-        for: currentSchema, 
+        for: currentSchema,
         migrationPlan: ServiceSchemaMigrationPlan.self,
         configurations: .init(url: databasePath)
       )
@@ -59,7 +60,9 @@ public final class Service {
 
   }
 
-  public func importItem(title: String, audioFileURL: URL, subtitleFileURL: URL) async throws {
+  public func importItem(title: String, audioFileURL: URL, segments: [AbstractSegment]) async throws {
+
+    let storedSubtitle = StoredSubtitle(items: segments)
 
     let modelContext = ModelContext(modelContainer)
 
@@ -68,14 +71,8 @@ public final class Service {
       return
     }
 
-    guard subtitleFileURL.startAccessingSecurityScopedResource() else {
-      Log.error("Failed to start accessing security scoped resource")
-      return
-    }
-
     defer {
       audioFileURL.stopAccessingSecurityScopedResource()
-      subtitleFileURL.stopAccessingSecurityScopedResource()
     }
 
     let target = URL.documentsDirectory.appendingPathComponent("audio", isDirectory: true)
@@ -109,15 +106,9 @@ public final class Service {
       let audioFileDestinationPath = AbsolutePath(
         url: target.appendingPathComponent(title + "." + audioFileURL.pathExtension)
       )
-      let subtitleFileDestinationPath = AbsolutePath(
-        url: target.appendingPathComponent(title + ".srt")
-      )
-      do {
-        try overwrite(file: audioFileURL, to: audioFileDestinationPath.url)
-      }
 
       do {
-        try overwrite(file: subtitleFileURL, to: subtitleFileDestinationPath.url)
+        try overwrite(file: audioFileURL, to: audioFileDestinationPath.url)
       }
 
       try modelContext.transaction {
@@ -127,15 +118,32 @@ public final class Service {
         new.createdAt = .init()
         new.identifier = title
         new.title = title
-        new.subtitleFilePath =
-          subtitleFileDestinationPath.relative(basedOn: .init(url: URL.documentsDirectory)).rawValue
         new.audioFilePath =
           audioFileDestinationPath.relative(basedOn: .init(url: URL.documentsDirectory)).rawValue
+        try new.setSegmentData(storedSubtitle)
 
         modelContext.insert(new)
 
       }
-
     }
+  }
+
+  public func importItem(title: String, audioFileURL: URL, subtitleFileURL: URL) async throws {
+
+    guard subtitleFileURL.startAccessingSecurityScopedResource() else {
+      Log.error("Failed to start accessing security scoped resource")
+      return
+    }
+
+    let subtitle = try Subtitles(fileURL: subtitleFileURL, encoding: .utf8)
+
+    subtitleFileURL.stopAccessingSecurityScopedResource()
+
+    try await self.importItem(
+      title: title,
+      audioFileURL: audioFileURL,
+      segments: subtitle.cues.map { .init(cue: $0) }
+    )
+
   }
 }

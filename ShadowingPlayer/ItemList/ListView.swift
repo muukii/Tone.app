@@ -190,7 +190,9 @@ private struct ImportMenuView: View {
       )
     })
     .sheet(isPresented: $isImportingYouTube, content: {
-      YouTubeImportView()
+      YouTubeImportView(service: service, onComplete: {
+        dismiss()
+      })
     })
 
   }

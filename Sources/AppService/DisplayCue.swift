@@ -1,4 +1,6 @@
+import Foundation
 import SwiftSubtitles
+import SwiftWhisper
 
 public struct DisplayCue: Identifiable, Hashable {
 
@@ -19,10 +21,7 @@ public struct DisplayCue: Identifiable, Hashable {
   }
 }
 
-import Foundation
-import SwiftWhisper
-
-public struct AbstractSegment: Equatable, Identifiable {
+public struct AbstractSegment: Equatable, Identifiable, Codable, Sendable {
 
   public var id: String {
     "\(startTime),\(endTime)"
@@ -32,7 +31,7 @@ public struct AbstractSegment: Equatable, Identifiable {
   public let endTime: TimeInterval
   public let text: String
 
-  init(cue: Subtitles.Cue) {
+  public init(cue: Subtitles.Cue) {
     self.startTime = cue.startTime.timeInSeconds
     self.endTime = cue.endTime.timeInSeconds
     self.text = cue.text
@@ -42,5 +41,28 @@ public struct AbstractSegment: Equatable, Identifiable {
     self.startTime = Double(segment.startTime) * 0.001
     self.endTime = Double(segment.endTime) * 0.001
     self.text = segment.text
+  }
+}
+
+public struct StoredSubtitle: Codable, Sendable {
+
+  public let items: [AbstractSegment]
+
+  public init(items: [AbstractSegment]) {
+    self.items = items
+  }
+
+  init(data: Data) throws {
+    let decoder = JSONDecoder()
+    self = try decoder.decode(Self.self, from: data)
+  }
+
+  @Sendable
+  func encode() throws -> Data {
+
+    let encoder = JSONEncoder()
+    let data = try encoder.encode(self)
+    return data
+
   }
 }

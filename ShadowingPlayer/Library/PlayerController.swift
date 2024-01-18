@@ -45,26 +45,20 @@ public final class PlayerController: NSObject {
 
   public convenience init(item: ItemEntity) throws {
 
+    let segment = try item.segment()
+
     try self.init(
       title: item.title,
-      audioFileURL: item.audioFileRelativePath!.absolute(
-        basedOn: AbsolutePath(url: URL.documentsDirectory)
-      ).url,
-      subtitleFileURL: item.subtitleRelativePath!.absolute(
-        basedOn: AbsolutePath(url: URL.documentsDirectory)
-      ).url
+      audioFileURL: item.audioFileAbsoluteURL,
+      segments: segment.items
     )
   }
 
-  public init(title: String, audioFileURL: URL, subtitleFileURL: URL) throws {
+  public convenience init(title: String, audioFileURL: URL, subtitleFileURL: URL) throws {
 
     let subtitles = try Subtitles(fileURL: subtitleFileURL, encoding: .utf8)
-    self.cues = subtitles.cues.map { .init(backed: $0) }
-    self.title = title
 
-    self.controller = try .init(file: .init(forReading: audioFileURL))
-    super.init()
-
+    try self.init(title: title, audioFileURL: audioFileURL, segments: subtitles.cues.map { AbstractSegment(cue: $0) })
   }
 
   public init(title: String, audioFileURL: URL, segments: [AbstractSegment]) throws {
