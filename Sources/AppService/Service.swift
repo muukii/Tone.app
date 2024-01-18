@@ -11,8 +11,8 @@ public final class Service {
     let databasePath = URL.documentsDirectory.appending(path: "database")
     do {
       let container = try ModelContainer(
-        for: ItemEntity.self,
-        PinEntity.self,
+        for: currentSchema, 
+        migrationPlan: ServiceSchemaMigrationPlan.self,
         configurations: .init(url: databasePath)
       )
       self.modelContainer = container
