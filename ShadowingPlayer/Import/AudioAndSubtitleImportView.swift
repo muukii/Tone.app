@@ -2,7 +2,7 @@ import AppService
 import SwiftUI
 import UniformTypeIdentifiers
 
-struct ImportView: View {
+struct AudioAndSubtitleImportView: View {
 
   private let audioUTTypes: Set<UTType> = [
     .mp3, .aiff, .wav, .mpeg4Audio,
@@ -316,7 +316,7 @@ private struct ImporterModifier: ViewModifier {
 }
 
 #Preview {
-  ImportView(
+  AudioAndSubtitleImportView(
     service: .init(),
     onCompleted: {
 

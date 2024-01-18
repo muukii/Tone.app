@@ -141,17 +141,11 @@ struct ListView: View {
       .sheet(
         isPresented: $isInImporting,
         content: {
-          ImportView(
-            service: service,
-            onCompleted: {
-              isInImporting = false
-            },
-            onCancel: {
-              isInImporting = false
-            }
-          )
+          ImportMenuView(service: service)
+
         }
       )
+
       .sheet(
         isPresented: $isInSettings,
         content: {
@@ -162,6 +156,44 @@ struct ListView: View {
     }
   }
 
+}
+
+private struct ImportMenuView: View {
+
+  let service: Service
+
+  @Environment(\.dismiss) var dismiss: DismissAction
+
+  @State private var isImportingAudioAndSRT: Bool = false
+  @State private var isImportingYouTube: Bool = false
+
+  var body: some View {
+
+    VStack {
+      Button("Audio and SRT") {
+        isImportingAudioAndSRT = true
+      }
+
+      Button("YouTube") {
+        isImportingYouTube = true
+      }
+    }
+    .sheet(isPresented: $isImportingAudioAndSRT, content: {
+      AudioAndSubtitleImportView(
+        service: service,
+        onCompleted: {
+          dismiss()
+        },
+        onCancel: {
+          dismiss()
+        }
+      )
+    })
+    .sheet(isPresented: $isImportingYouTube, content: {
+      YouTubeImportView()
+    })
+
+  }
 }
 
 private struct ItemCell: View {
