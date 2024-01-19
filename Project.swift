@@ -74,15 +74,16 @@ let project = Project(
         "DEVELOPMENT_ASSET_PATHS": #""ShadowingPlayer/Preview Content""#,
         "TARGETED_DEVICE_FAMILY": "1",
         "DEVELOPMENT_TEAM": "KU2QEJ9K3Z",
-      ])
-      // mergedBinaryType: .manual(mergeableDependencies: ["AppService"]),
-      // mergeable: false
+        "OTHER_LDFLAGS": "$(inherited) -all_load",
+      ]),
+      mergedBinaryType: .manual(mergeableDependencies: ["AppService"]),
+      mergeable: false
     ),
 
     Target(
       name: "AppService",
       destinations: [.iPhone],
-      product: .staticFramework,
+      product: .framework,
       bundleId: "app.muukii.Speaking.AppService",
       deploymentTargets: .iOS("17.0"),
       sources: ["Sources/AppService/**"],
@@ -90,9 +91,9 @@ let project = Project(
         .package(product: "SwiftWhisper"),
         .external(name: "Verge"),
         .external(name: "Wrap"),
-      ]
-      // mergedBinaryType: .disabled,
-      // mergeable: true
+      ],
+      mergedBinaryType: .disabled,
+      mergeable: true
     ),
   ],
   schemes: [
