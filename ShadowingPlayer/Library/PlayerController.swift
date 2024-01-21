@@ -216,9 +216,13 @@ public final class PlayerController: NSObject {
         if let currentTime = controller.currentTime {
           
           let currentCue = cues.first { cue in
-            
-            (cue.backed.startTime..<cue.backed.endTime).contains(currentTime)
-            
+
+            if cue.backed.startTime <= currentTime, cue.backed.endTime >= currentTime {
+              return true
+            } else {
+              return false
+            }
+
           }
           
           if self.currentCue != currentCue {
