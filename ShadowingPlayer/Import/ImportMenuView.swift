@@ -20,21 +20,31 @@ struct ImportMenuView<AudioView: View, YouTubeView: View>: View {
 
   var body: some View {
 
-    VStack {
-      Button("Audio and SRT") {
-        isImportingAudioAndSRT = true
+    List {
+      Section(footer: Text("Imports an audio file and subtitle file(.srt)")) {
+        Button("From Audio and SRT file") {
+          isImportingAudioAndSRT = true
+        }
       }
 
-      Button("YouTube") {
-        isImportingYouTube = true
+      Section(footer: Text("Imports the audio file from YouTube and transcribes on-device.")) {
+        Button("From YouTube") {
+          isImportingYouTube = true
+        }
       }
     }
-    .sheet(isPresented: $isImportingAudioAndSRT, content: {
-      audioAndSubtitleImportView()
-    })
-    .sheet(isPresented: $isImportingYouTube, content: {
-      youTubeImportView()
-    })
+    .sheet(
+      isPresented: $isImportingAudioAndSRT,
+      content: {
+        audioAndSubtitleImportView()
+      }
+    )
+    .sheet(
+      isPresented: $isImportingYouTube,
+      content: {
+        youTubeImportView()
+      }
+    )
 
   }
 }
@@ -43,8 +53,9 @@ struct ImportMenuView<AudioView: View, YouTubeView: View>: View {
   ImportMenuView(
     audioAndSubtitleImportView: {
       Text("Audio")
-  },
+    },
     youTubeImportView: {
       Text("YouTube")
-    })
+    }
+  )
 }
