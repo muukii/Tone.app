@@ -129,11 +129,7 @@ struct PlayerControlPanel: View {
           MainActor.assumeIsolated {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
           }
-          if controller.isPlaying {
-            controller.pause()
-          } else {
-            controller.play()
-          }
+          togglePlaying()
         } label: {
           Image(systemName: controller.isPlaying ? "pause.fill" : "play.fill")
             .resizable()
@@ -237,6 +233,19 @@ struct PlayerControlPanel: View {
     )
     .scrollIndicators(.hidden)
     .background(.quinary)
+    .onKeyPress(.space) {
+      togglePlaying()
+      return .handled
+    }
+  }
+
+  @MainActor
+  private func togglePlaying() {
+    if controller.isPlaying {
+      controller.pause()
+    } else {
+      controller.play()
+    }
   }
 
 }
