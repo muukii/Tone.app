@@ -1,6 +1,6 @@
 import ProjectDescription
 
-let version: Plist.Value = "3.0.0"
+let version: Plist.Value = "4.0.0"
 
 let project = Project(
   name: "Tone",

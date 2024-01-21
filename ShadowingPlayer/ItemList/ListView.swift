@@ -62,15 +62,9 @@ struct ListView: View {
       }
       .overlay {
         if itemEntities.isEmpty {
-          ContentUnavailableView {
-            Text("Let's add your own contents")
-          } description: {
-            Text("You can add your own contents from the import button on the top right corner.")
-          } actions: {
-            Button("Import") {
-              isInImporting = true
-            }
-          }
+          emptyView(onImport: {
+            isInImporting = true
+          })
         }
       }
       .navigationDestination(
@@ -177,6 +171,20 @@ struct ListView: View {
 
 }
 
+private func emptyView(onImport: @escaping @MainActor () -> Void) -> some View {
+  ContentUnavailableView {
+    Text("Let's add your own contents")
+  } description: {
+    Text("You can add your own contents from the import button on the top right corner.")
+  } actions: {
+    Button("Import") {
+      MainActor.assumeIsolated {
+        onImport()
+      }
+    }
+  }
+}
+
 private struct ItemCell: View {
 
   let title: String
@@ -195,6 +203,10 @@ private struct ItemCell: View {
     }
   }
 }
+
+#Preview("Empty", body: {
+  emptyView(onImport: {})
+})
 
 #Preview {
   Form {
