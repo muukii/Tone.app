@@ -14,6 +14,7 @@ final class AudioPlayerController: StoreDriverType {
   }
 
   struct State: StateType {
+    var isPlaying: Bool = false
   }
 
   private let engine = AVAudioEngine()
@@ -64,6 +65,10 @@ final class AudioPlayerController: StoreDriverType {
 
   func play() throws {
 
+    commit {
+      $0.isPlaying = true
+    }
+
     if engine.isRunning == false {
       try engine.start()
     }
@@ -99,6 +104,8 @@ final class AudioPlayerController: StoreDriverType {
         case nil:
 
           if currentTime >= file.duration {
+            // reset cursor to beginning
+            offset = 0
             pause()
           }
 
@@ -114,6 +121,11 @@ final class AudioPlayerController: StoreDriverType {
   }
 
   func pause() {
+
+    commit {
+      $0.isPlaying = false
+    }
+
     currentTimerForLoop?.invalidate()
     currentTimerForLoop = nil
     offset = (currentFrame ?? 0) + offset
@@ -166,7 +178,14 @@ final class AudioPlayerController: StoreDriverType {
   private func _seek(frame: AVAudioFramePosition) {
 
     let startFrame = frame
-    let frameCount = AVAudioFrameCount(file.length - frame)
+    let rawFrameCount = file.length - frame
+
+    guard rawFrameCount >= 0 else {
+      Log.error("Frame count must be greater than 0 or equal.")
+      return
+    }
+
+    let frameCount = AVAudioFrameCount(rawFrameCount)
 
     audioPlayer.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
 

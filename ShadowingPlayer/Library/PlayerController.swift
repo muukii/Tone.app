@@ -13,7 +13,7 @@ public final class PlayerController: NSObject {
     playingRange != nil
   }
 
-  public var isPlaying: Bool = false
+  public private(set) var isPlaying: Bool = false
   public var currentCue: DisplayCue?
 
   public let cues: [DisplayCue]
@@ -68,6 +68,18 @@ public final class PlayerController: NSObject {
 
     self.controller = try .init(file: .init(forReading: audioFileURL))
     super.init()
+
+    controller.sinkState { [weak self] state in
+
+      guard let self else { return }
+
+      state.ifChanged(\.isPlaying).do {
+        self.isPlaying = $0
+      }
+
+    }
+    .store(in: &cancellables)
+
   }
 
   public func makeRepeatingRange() -> PlayingRange {
@@ -194,8 +206,6 @@ public final class PlayerController: NSObject {
 
     resetCommandCenter()
 
-    isPlaying = true
-
     MPNowPlayingInfoCenter.default().playbackState = .playing
 
     currentTimerForLoop = Timer.init(timeInterval: 0.005, repeats: true) { [weak self] _ in
@@ -247,7 +257,6 @@ public final class PlayerController: NSObject {
 
   public func pause() {
 
-    isPlaying = false
     controller.pause()
 
     currentTimerForLoop?.invalidate()
