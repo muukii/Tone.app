@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# mise description="Build the CLI"
+
+arg=$1
+
+if [[ -z $arg ]]; then
+echo "Error: Put version"
+exit;
+fi
+
+BODY=$(cat << EOS
+APP_SHORT_VERSION = $arg
+EOS
+)
+
+echo $BODY > ./xcconfigs/ShortVersion.xcconfig

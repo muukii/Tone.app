@@ -24,6 +24,16 @@ let project = Project(
 //    .package(url: "https://github.com/muukii/SwiftWhisper", .branch("muukii/follow-upstream")),
     .package(url: "https://github.com/ZipArchive/ZipArchive.git", from: "2.5.5"),
   ],
+  settings: .settings(
+    base: [
+      "CURRENT_PROJECT_VERSION": "1",
+      "MARKETING_VERSION": "$(APP_SHORT_VERSION)",
+    ],
+    configurations: [
+      .debug(name: "Debug", settings: [:], xcconfig: "./xcconfigs/Project.xcconfig"),
+      .release(name: "Release", settings: [:], xcconfig: "./xcconfigs/Project.xcconfig"),
+    ]
+  ),
   targets: [
     Target(
       name: "Tone",
@@ -33,7 +43,7 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       // infoPlist: "Supporting/Info.plist",
       infoPlist: .extendingDefault(with: [
-        "CFBundleShortVersionString": version,
+        "CFBundleShortVersionString": "$(APP_SHORT_VERSION)",
         "UIBackgroundModes": ["audio"],
         "UIApplicationSceneManifest": [
           "UIApplicationSupportsMultipleScenes": "YES",
