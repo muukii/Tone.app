@@ -49,6 +49,7 @@ let project = Project(
         "ShadowingPlayer/Assets.xcassets",
         "ShadowingPlayer/Preview Content/**",
       ],
+      entitlements: .dictionary([:]),
       dependencies: [
 
         .package(product: "SwiftWhisper"),
