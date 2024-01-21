@@ -141,8 +141,27 @@ struct ListView: View {
       .sheet(
         isPresented: $isInImporting,
         content: {
-          ImportMenuView(service: service)
-
+          ImportMenuView(
+            audioAndSubtitleImportView: {
+              AudioAndSubtitleImportView(
+                service: service,
+                onComplete: {
+                  isInImporting = false
+                },
+                onCancel: {
+                  isInImporting = false
+                }
+              )
+            },
+            youTubeImportView: {
+              YouTubeImportView(
+                service: service,
+                onComplete: {
+                  isInImporting = false
+                }
+              )
+            }
+          )
         }
       )
 
@@ -156,46 +175,6 @@ struct ListView: View {
     }
   }
 
-}
-
-private struct ImportMenuView: View {
-
-  let service: Service
-
-  @Environment(\.dismiss) var dismiss: DismissAction
-
-  @State private var isImportingAudioAndSRT: Bool = false
-  @State private var isImportingYouTube: Bool = false
-
-  var body: some View {
-
-    VStack {
-      Button("Audio and SRT") {
-        isImportingAudioAndSRT = true
-      }
-
-      Button("YouTube") {
-        isImportingYouTube = true
-      }
-    }
-    .sheet(isPresented: $isImportingAudioAndSRT, content: {
-      AudioAndSubtitleImportView(
-        service: service,
-        onCompleted: {
-          dismiss()
-        },
-        onCancel: {
-          dismiss()
-        }
-      )
-    })
-    .sheet(isPresented: $isImportingYouTube, content: {
-      YouTubeImportView(service: service, onComplete: {
-        dismiss()
-      })
-    })
-
-  }
 }
 
 private struct ItemCell: View {
