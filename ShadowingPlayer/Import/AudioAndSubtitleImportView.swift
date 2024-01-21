@@ -16,10 +16,20 @@ struct AudioAndSubtitleImportView: View {
   @State private var selectedMultipleDrafts: [Draft]? = nil
   @Environment(\.modelContext) var modelContext
 
-  let service: Service
+  private let service: Service
 
-  var onCompleted: () -> Void
+  var onComplete: () -> Void
   var onCancel: () -> Void
+
+  init(
+    service: Service,
+    onComplete: @escaping () -> Void,
+    onCancel: @escaping () -> Void
+  ) {
+    self.service = service
+    self.onComplete = onComplete
+    self.onCancel = onCancel
+  }
 
   var body: some View {
 
@@ -28,8 +38,12 @@ struct AudioAndSubtitleImportView: View {
       ImportContentView(onImport: { draft in
 
         Task {
-          try await service.importItem(title: draft.title, audioFileURL: draft.audioFileURL, subtitleFileURL: draft.subtitleFileURL)
-          onCompleted()
+          try await service.importItem(
+            title: draft.title,
+            audioFileURL: draft.audioFileURL,
+            subtitleFileURL: draft.subtitleFileURL
+          )
+          onComplete()
         }
 
       })
@@ -47,21 +61,28 @@ struct AudioAndSubtitleImportView: View {
           }
         }
       }
-      .navigationDestination(isPresented: $isEditingMultipleDrafts, destination: {
-        if let drafts = selectedMultipleDrafts {
-          MultipleImportEditView(
-            drafts: drafts,
-            onConfirm: {
-              Task {
-                for draft in drafts {
-                  try await service.importItem(title: draft.title, audioFileURL: draft.audioFileURL, subtitleFileURL: draft.subtitleFileURL)
+      .navigationDestination(
+        isPresented: $isEditingMultipleDrafts,
+        destination: {
+          if let drafts = selectedMultipleDrafts {
+            MultipleImportEditView(
+              drafts: drafts,
+              onConfirm: {
+                Task {
+                  for draft in drafts {
+                    try await service.importItem(
+                      title: draft.title,
+                      audioFileURL: draft.audioFileURL,
+                      subtitleFileURL: draft.subtitleFileURL
+                    )
+                  }
+                  onComplete()
                 }
-                onCompleted()
               }
-            }
-          )
+            )
+          }
         }
-      })
+      )
 
     }
     .fileImporter(
@@ -256,11 +277,13 @@ private struct ImportContentView: View {
           }
           .disabled(audioFileURL == nil || subtitleFileURL == nil)
         } footer: {
-          Text("""
-          Choose audio and srt file from your files.
-          Audio file supports .mp3, .m4a.
-          Subtitle file supports .srt.
-          """)
+          Text(
+            """
+            Choose audio and srt file from your files.
+            Audio file supports .mp3, .m4a.
+            Subtitle file supports .srt.
+            """
+          )
         }
 
       }
@@ -318,7 +341,7 @@ private struct ImporterModifier: ViewModifier {
 #Preview {
   AudioAndSubtitleImportView(
     service: .init(),
-    onCompleted: {
+    onComplete: {
 
     },
     onCancel: {
