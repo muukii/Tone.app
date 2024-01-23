@@ -46,10 +46,22 @@ final class AudioPlayerController: StoreDriverType {
 
     engine.connect(pitchControl, to: mainMixer, format: nil)
 
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleInterruption),
+      name: AVAudioSession.interruptionNotification,
+      object: AVAudioSession.sharedInstance()
+    )
+
   }
 
   deinit {
+    NotificationCenter.default.removeObserver(self)
     Log.debug("deinit \(String(describing: self))")
+  }
+
+  @objc private func handleInterruption() {
+    pause()
   }
 
   func prepare() throws {
@@ -58,7 +70,7 @@ final class AudioPlayerController: StoreDriverType {
 
   func setSpeed(speed: Double) {
 
-    assert(speed >= (1/32) && speed <= 32)
+    assert(speed >= (1 / 32) && speed <= 32)
 
     pitchControl.rate = Float(speed)
   }
@@ -92,7 +104,7 @@ final class AudioPlayerController: StoreDriverType {
 
         switch repeating {
         case .atEnd:
-          if currentFrame >= file.length {
+          if currentFrame + offset >= file.length {
             seek(position: 0)
           }
         case .range(let start, let end):
@@ -202,7 +214,7 @@ final class AudioPlayerController: StoreDriverType {
 extension AVAudioFile {
 
   fileprivate var duration: TimeInterval {
-    Double(length) / fileFormat.sampleRate  
+    Double(length) / fileFormat.sampleRate
   }
 
   fileprivate func frame(at position: TimeInterval) -> AVAudioFramePosition {
