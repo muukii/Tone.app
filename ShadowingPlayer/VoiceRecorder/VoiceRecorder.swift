@@ -197,19 +197,55 @@ final class RecorderAndPlayer {
   private(set) var recordedItems: [Recorded] = []
 
   private var playerController: AudioPlayerController?
-  private var recorderController: VoiceRecorderController?
 
-  private var currentFilePath: URL?
+  private let recorderController: VoiceRecorderController = .init()
+
+  @ObservationIgnored
+  private var currentRecordingFile: AVAudioFile?
 
   private var subscription: NSObjectProtocol?
+  private var subscriptions: [NSObjectProtocol] = []
 
   init() {
+
+    subscriptions.append(
+      NotificationCenter.default.addObserver(
+        forName: UIApplication.willResignActiveNotification,
+        object: nil,
+        queue: .main
+      ) { [weak self] _ in
+        guard let self else { return }
+
+        recorderController.deactivate()
+
+      }
+    )
+
+    subscriptions.append(
+      NotificationCenter.default.addObserver(
+        forName: UIApplication.didBecomeActiveNotification,
+        object: nil,
+        queue: .main
+      ) { [weak self] _ in
+        guard let self else { return }
+
+        do {
+          try recorderController.activate()
+        } catch {
+          Log.error("\(error.localizedDescription)")
+        }
+
+      }
+    )
 
   }
 
   deinit {
     MainActor.assumeIsolated {
       deactivate()
+      for subscription in subscriptions {
+        NotificationCenter.default.removeObserver(subscription)
+      }
     }
   }
 
@@ -223,8 +259,11 @@ final class RecorderAndPlayer {
         mode: .spokenAudio,
         options: [.allowBluetooth, .allowAirPlay, .mixWithOthers, .defaultToSpeaker]
       )
+
+      try recorderController.activate()
+
     } catch {
-      print(error)
+      Log.error("\(error.localizedDescription)")
     }
 
     subscription = NotificationCenter.default.addObserver(
@@ -234,9 +273,12 @@ final class RecorderAndPlayer {
     ) { n in
       // TODO:
     }
+
   }
 
   func deactivate() {
+
+    recorderController.deactivate()
 
     NotificationCenter.default.removeObserver(subscription as Any)
 
@@ -244,52 +286,33 @@ final class RecorderAndPlayer {
       let instance = AVAudioSession.sharedInstance()
       try instance.setActive(false)
     } catch {
-      print(error)
-    }
-  }
-
-  func makeNewFile() {
-
-    let id = UUID().uuidString
-
-    let documentDir = URL.temporaryDirectory
-    let filePath = documentDir.appending(path: "recording_\(id).caf")
-
-    self.currentFilePath = filePath
-
-    self.playerController?.pause()
-    self.playerController = nil
-
-    self.recorderController?.stopRecording()
-    self.recorderController = nil
-
-    do {
-      self.recorderController = try .init(destination: filePath)
-    } catch {
       Log.error("\(error.localizedDescription)")
     }
-
-    Log.debug("makeNewFile: \(filePath)")
   }
 
   func startRecording() throws {
 
-    makeNewFile()
+    self.playerController?.pause()
+    self.playerController = nil
 
-    assert(recorderController != nil)
+    do {
+      let recordingFile = try self.recorderController.startRecording()
+      self.currentRecordingFile = recordingFile
+    } catch {
+      Log.error("\(error.localizedDescription)")
+    }
 
-    try recorderController?.startRecording()
   }
 
   func stopRecording() {
 
-    guard let recorderController = recorderController else {
+    guard let currentRecordingFile else {
       return
     }
 
-    recorderController.stopRecording()
+    recorderController.stopRecording(file: currentRecordingFile)
 
-    let file = recorderController.writingFile
+    let file = currentRecordingFile
 
     let duration = Double(file.length) / file.fileFormat.sampleRate
 
@@ -300,7 +323,7 @@ final class RecorderAndPlayer {
 
   func playAudio() {
 
-    guard let currentFilePath else {
+    guard let currentRecordingFile else {
       return
     }
 
@@ -309,7 +332,7 @@ final class RecorderAndPlayer {
       if playerController == nil {
 
         if let newInstance = try? AudioPlayerController.init(
-          file: try .init(forReading: currentFilePath)
+          file: try .init(forReading: currentRecordingFile.url)
         ) {
           newInstance.repeating = .atEnd
           playerController = newInstance
@@ -339,35 +362,51 @@ final class VoiceRecorderController {
 
   private let recordingEngine = AVAudioEngine()
 
-  let writingFile: AVAudioFile
+  private var writingFiles: [AVAudioFile] = []
 
-  init(destination: URL) throws {
+  init() {
 
-    let inputFormat = recordingEngine.inputNode.outputFormat(forBus: 0)
-
-    self.writingFile = try AVAudioFile(
-      forWriting: destination,
-      settings: inputFormat.settings
-    )
   }
 
-  func stopRecording() {
-    recordingEngine.stop()
-  }
-
-  func startRecording() throws {
-
+  func activate() throws {
     recordingEngine.inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) {
-      [writingFile] (buffer, when) in
+      [weak self] (buffer, when) in
+
+      guard let self else { return }
+
       do {
-        // audioFileにバッファを書き込む
-        try writingFile.write(from: buffer)
+        for file in writingFiles {
+          try file.write(from: buffer)
+        }
       } catch let error {
         print("audioFile.writeFromBuffer error:", error)
       }
     }
-
     try recordingEngine.start()
+  }
+
+  func deactivate() {
+    recordingEngine.inputNode.removeTap(onBus: 0)
+    recordingEngine.stop()
+  }
+
+  func stopRecording(file: AVAudioFile) {
+    writingFiles.removeAll(where: { $0 == file })
+  }
+
+  func startRecording() throws -> AVAudioFile {
+
+    let inputFormat = recordingEngine.inputNode.outputFormat(forBus: 0)
+    let destination = URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf")
+
+    let newFile = try AVAudioFile(
+      forWriting: destination,
+      settings: inputFormat.settings
+    )
+
+    writingFiles.append(newFile)
+
+    return newFile
   }
 
 }
