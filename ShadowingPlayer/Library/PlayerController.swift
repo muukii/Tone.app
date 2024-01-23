@@ -67,6 +67,7 @@ public final class PlayerController: NSObject {
     self.title = title
 
     self.controller = try .init(file: .init(forReading: audioFileURL))
+    self.controller.repeating = .atEnd
     super.init()
 
     controller.sinkState { [weak self] state in
@@ -321,7 +322,7 @@ public final class PlayerController: NSObject {
     } else {
 
       playingRange = nil
-      controller.repeating = nil
+      controller.repeating = .atEnd
 
     }
   }
