@@ -237,6 +237,19 @@ struct PlayerControlPanel: View {
       togglePlaying()
       return .handled
     }
+    .toolbar(content: {
+      ToolbarItem(placement: .topBarTrailing) {
+        Menu {
+          Menu("Update subtitle") {
+            Button("File") {
+              // TODO:
+            }
+          }
+        } label: {
+          Image(systemName: "ellipsis")
+        }
+      }
+    })
   }
 
   @MainActor
