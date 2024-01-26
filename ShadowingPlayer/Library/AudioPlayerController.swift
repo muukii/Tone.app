@@ -233,3 +233,35 @@ extension AVAudioFile {
   }
 
 }
+
+#if DEBUG && canImport(SwiftUI)
+
+import SwiftUI
+import AppService
+
+@MainActor
+private struct AudioPlayerControllerPreview: View {
+
+  let player: AudioPlayerController = try! .init(
+    file: .init(forReading: Item.social.audioFileURL)//,
+//    overlappingFile: .init(forReading: Item.overwhelmed.audioFileURL)
+  )
+
+  var body: some View {
+    VStack {
+      Button("Play") {
+        try? player.play()
+      }
+      Button("Stop") {
+        player.pause()
+      }
+    }
+  }
+
+}
+
+#Preview {
+  AudioPlayerControllerPreview()
+}
+
+#endif
