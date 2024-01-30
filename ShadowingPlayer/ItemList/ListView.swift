@@ -20,10 +20,12 @@ struct ListView: View {
 
   @Environment(\.modelContext) var modelContext
 
-  @State private var isInImporting: Bool = false
   @State private var isInSettings: Bool = false
 
   @State var path: NavigationPath = .init()
+
+  @State private var isImportingAudioAndSRT: Bool = false
+  @State private var isImportingYouTube: Bool = false
 
   var body: some View {
     NavigationStack(path: $path) {
@@ -62,9 +64,7 @@ struct ListView: View {
       }
       .overlay {
         if itemEntities.isEmpty {
-          emptyView(onImport: {
-            isInImporting = true
-          })
+          emptyView()
         }
       }
       .navigationDestination(
@@ -126,39 +126,46 @@ struct ListView: View {
           }
         }
         ToolbarItem(placement: .topBarTrailing) {
-          Button("Import") {
-            isInImporting = true
+
+          Menu {
+            Button("File") {
+              isImportingAudioAndSRT = true
+            }
+            Button("YouTube") {
+              isImportingYouTube = true
+            }
+          } label: {
+            Text("Import")
           }
+
         }
       })
       .navigationTitle("Tone")
       .sheet(
-        isPresented: $isInImporting,
+        isPresented: $isImportingAudioAndSRT,
         content: {
-          ImportMenuView(
-            audioAndSubtitleImportView: {
-              AudioAndSubtitleImportView(
-                service: service,
-                onComplete: {
-                  isInImporting = false
-                },
-                onCancel: {
-                  isInImporting = false
-                }
-              )
+          AudioAndSubtitleImportView(
+            service: service,
+            onComplete: {
+              isImportingAudioAndSRT = false
             },
-            youTubeImportView: {
-              YouTubeImportView(
-                service: service,
-                onComplete: {
-                  isInImporting = false
-                }
-              )
+            onCancel: {
+              isImportingAudioAndSRT = false
             }
           )
         }
       )
-
+      .sheet(
+        isPresented: $isImportingYouTube,
+        content: {
+          YouTubeImportView(
+            service: service,
+            onComplete: {
+              isImportingYouTube = false
+            }
+          )
+        }
+      )
       .sheet(
         isPresented: $isInSettings,
         content: {
@@ -171,17 +178,13 @@ struct ListView: View {
 
 }
 
-private func emptyView(onImport: @escaping @MainActor () -> Void) -> some View {
+private func emptyView() -> some View {
   ContentUnavailableView {
     Text("Let's add your own contents")
   } description: {
     Text("You can add your own contents from the import button on the top right corner.")
   } actions: {
-    Button("Import") {
-      MainActor.assumeIsolated {
-        onImport()
-      }
-    }
+    // No Actions for now
   }
 }
 
@@ -205,7 +208,7 @@ private struct ItemCell: View {
 }
 
 #Preview("Empty", body: {
-  emptyView(onImport: {})
+  emptyView()
 })
 
 #Preview {
