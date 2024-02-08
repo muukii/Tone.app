@@ -4,8 +4,8 @@ import PackageDescription
 let package = Package(
   name: "Tuist",
   dependencies: [
-    .package(path: "../../../submodules/FluidGroup/swift-dynamic-list"),
-    .package(path: "../../../submodules/FluidGroup/swiftui-ring-slider"),
+    .package(path: "submodules/FluidGroup/swift-dynamic-list"),
+    .package(path: "submodules/FluidGroup/swiftui-ring-slider"),
     .package(url: "https://github.com/dagronf/SwiftSubtitles", from: "0.5.0"),
     .package(url: "https://github.com/VergeGroup/Verge", branch: "main"),
     .package(url: "https://github.com/FluidGroup/swiftui-support", branch: "main"),

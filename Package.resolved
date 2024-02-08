@@ -1,0 +1,158 @@
+{
+  "pins" : [
+    {
+      "identity" : "audiokit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AudioKit/AudioKit",
+      "state" : {
+        "revision" : "b2dbaed8cd38077092b6b6e311699ddf5d94dbd7",
+        "version" : "5.6.3"
+      }
+    },
+    {
+      "identity" : "dsfregex",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dagronf/DSFRegex",
+      "state" : {
+        "revision" : "f1ce5c208384bb238b07905d140c2e60182e3601",
+        "version" : "3.3.1"
+      }
+    },
+    {
+      "identity" : "dswaveformimage",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dmrschmidt/DSWaveformImage",
+      "state" : {
+        "revision" : "4c56578ee10128ee2b2c04c9c5aa73812de722db",
+        "version" : "14.2.2"
+      }
+    },
+    {
+      "identity" : "mondrianlayout",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/MondrianLayout",
+      "state" : {
+        "branch" : "main",
+        "revision" : "b26edaa5a469bc5fd58f9afe37d257ca1b3771e0"
+      }
+    },
+    {
+      "identity" : "rxswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ReactiveX/RxSwift.git",
+      "state" : {
+        "revision" : "9dcaa4b333db437b0fbfaf453fad29069044a8b4",
+        "version" : "6.6.0"
+      }
+    },
+    {
+      "identity" : "swift-atomics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-atomics.git",
+      "state" : {
+        "revision" : "cd142fd2f64be2100422d658e7411e39489da985",
+        "version" : "1.2.0"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swift-collections",
+      "state" : {
+        "revision" : "939cfd25234472b4dc91c3caeab304d15bca9a73",
+        "version" : "1.1.0"
+      }
+    },
+    {
+      "identity" : "swift-concurrency-task-manager",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/swift-concurrency-task-manager",
+      "state" : {
+        "revision" : "ab2da927e968464ed3b3b9e01aa0f7357c68526c",
+        "version" : "1.3.2"
+      }
+    },
+    {
+      "identity" : "swift-macro-hex-color",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/muukii/swift-macro-hex-color",
+      "state" : {
+        "revision" : "03eff8dfbf64410bb8a34a622ae9b956a9445309",
+        "version" : "0.1.1"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-syntax.git",
+      "state" : {
+        "revision" : "64889f0c732f210a935a0ad7cda38f77f876262d",
+        "version" : "509.1.1"
+      }
+    },
+    {
+      "identity" : "swiftsubtitles",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dagronf/SwiftSubtitles",
+      "state" : {
+        "revision" : "9610acc4a62f0b274f4fc62c4d600da098fe5892",
+        "version" : "0.12.0"
+      }
+    },
+    {
+      "identity" : "swiftui-introspect",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/siteline/swiftui-introspect",
+      "state" : {
+        "revision" : "18e965f867e37a558ad13c12d330dbe047099180",
+        "version" : "1.1.2"
+      }
+    },
+    {
+      "identity" : "swiftui-support",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swiftui-support",
+      "state" : {
+        "branch" : "main",
+        "revision" : "c610c1e46c14c4660beb4ef7fe0241941dbecdc6"
+      }
+    },
+    {
+      "identity" : "tinycsv",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dagronf/TinyCSV",
+      "state" : {
+        "revision" : "63f30830cd986de84cd844d59926cf1aa2009f0b",
+        "version" : "0.5.3"
+      }
+    },
+    {
+      "identity" : "verge",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/Verge",
+      "state" : {
+        "branch" : "main",
+        "revision" : "32e44aad0db6a8e68c4b12b97707fb655aad83b0"
+      }
+    },
+    {
+      "identity" : "wrap",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/Wrap",
+      "state" : {
+        "revision" : "0d13a5b579d3f74d1f3a2bc50ccb4f9f86a711c3",
+        "version" : "4.0.0"
+      }
+    },
+    {
+      "identity" : "youtubekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/alexeichhorn/YouTubeKit",
+      "state" : {
+        "revision" : "f67f4c3dd53b85a5ce94d16a246613d4dd7faa32",
+        "version" : "0.2.0"
+      }
+    }
+  ],
+  "version" : 2
+}
