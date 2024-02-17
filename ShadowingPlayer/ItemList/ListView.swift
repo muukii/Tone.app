@@ -25,6 +25,7 @@ struct ListView: View {
   @State var path: NavigationPath = .init()
 
   @State private var isImportingAudioAndSRT: Bool = false
+  @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
 
   var body: some View {
@@ -128,10 +129,13 @@ struct ListView: View {
         ToolbarItem(placement: .topBarTrailing) {
 
           Menu {
-            Button("File") {
+            Button("File and SRT") {
               isImportingAudioAndSRT = true
             }
-            Button("YouTube") {
+            Button("File (on-device transcribing)") {
+              isImportingAudio = true
+            }
+            Button("YouTube (on-device transcribing)") {
               isImportingYouTube = true
             }
           } label: {
@@ -155,6 +159,11 @@ struct ListView: View {
           )
         }
       )
+      .sheet(isPresented: $isImportingAudio, content: {
+        AudioImportView(service: service) {
+          isImportingAudio = false
+        }
+      })
       .sheet(
         isPresented: $isImportingYouTube,
         content: {
