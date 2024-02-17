@@ -26,12 +26,12 @@ struct YouTubeImportView: View {
             try await WhisperModelDownloader.run(modelRef: modelRef)
           }
 
-          let segments = try await WhisperTranscriber.run(url: audio, using: modelRef)
+          let result = try await WhisperTranscriber.run(url: audio, using: modelRef)
 
           try await service.importItem(
             title: title ?? "(Not fetched)",
-            audioFileURL: audio,
-            segments: segments.map { .init(segment: $0) }
+            audioFileURL: result.audioFileURL,
+            segments: result.segments.map { .init(segment: $0) }
           )
 
           onComplete()

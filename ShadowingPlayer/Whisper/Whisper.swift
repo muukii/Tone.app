@@ -15,7 +15,12 @@ import ZipArchive
 
 enum WhisperTranscriber {
 
-  static func run(url input: URL, using usingModel: WhisperModelRef) async throws -> [Segment] {
+  struct Result {
+    let audioFileURL: URL
+    let segments: [Segment]
+  }
+
+  static func run(url input: URL, using usingModel: WhisperModelRef) async throws -> Result {
 
     let destination = URL.temporaryDirectory.appending(path: "audio\(UUID().uuidString).wav")
 
@@ -46,7 +51,7 @@ enum WhisperTranscriber {
 
     let segments = try await whisper.transcribe(audioFrames: buffer.toFloatChannelData()![0])
 
-    return segments
+    return .init(audioFileURL: input, segments: segments)
   }
 
 }
