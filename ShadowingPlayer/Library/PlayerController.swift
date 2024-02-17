@@ -318,6 +318,7 @@ public final class PlayerController: NSObject {
 
       playingRange = range
       controller.repeating = .range(start: range.startTime, end: range.endTime)
+      controller.seek(position: range.startTime)
 
     } else {
 

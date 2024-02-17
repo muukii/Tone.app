@@ -35,7 +35,7 @@ let project = Project(
     ]
   ),
   targets: [
-    Target(
+    .target(
       name: "Tone",
       destinations: [.iPhone, .macWithiPadDesign],
       product: .app,
@@ -91,7 +91,7 @@ let project = Project(
       mergeable: false
     ),
 
-    Target(
+    .target(
       name: "AppService",
       destinations: [.iPhone],
       product: .framework,
@@ -108,11 +108,11 @@ let project = Project(
     ),
   ],
   schemes: [
-    .init(
+    .scheme(
       name: "Tone",
       shared: true,
       hidden: false,
-      buildAction: .init(targets: ["Tone"]),
+      buildAction: .buildAction(targets: ["Tone"]),
       testAction: nil,
       runAction: .runAction(configuration: "Debug", attachDebugger: true),
       archiveAction: .archiveAction(configuration: "Release"),
