@@ -2,20 +2,11 @@
   "object": {
     "pins": [
       {
-        "package": "ggml",
-        "repositoryURL": "https://github.com/ggerganov/ggml.git",
-        "state": {
-          "branch": "release",
-          "revision": "bca51b528820d28f54ea092fd4deaafc812f39d9",
-          "version": null
-        }
-      },
-      {
         "package": "whisper",
         "repositoryURL": "https://github.com/ggerganov/whisper.cpp",
         "state": {
           "branch": "master",
-          "revision": "f6614155e40198bad739fed9400d0de8de9cc311",
+          "revision": "3d4246384525824b1dc6efc86f86003c8c615295",
           "version": null
         }
       },
