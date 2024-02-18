@@ -22,6 +22,14 @@ enum WhisperTranscriber {
 
   static func run(url input: URL, using usingModel: WhisperModelRef) async throws -> Result {
 
+    let hasSecurityScope = input.startAccessingSecurityScopedResource()
+
+    defer {
+      if hasSecurityScope {
+        input.stopAccessingSecurityScopedResource()
+      }
+    }
+
     let destination = URL.temporaryDirectory.appending(path: "audio\(UUID().uuidString).wav")
 
     try await FormatConverter(

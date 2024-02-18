@@ -86,19 +86,24 @@ private struct AudioImportContentView: View {
               processing = false
             }
 
-            let modelRef = WhisperModelRef.enSmall
+            do {
 
-            if await modelRef.isDownloaded() == false {
-              try await WhisperModelDownloader.run(modelRef: modelRef)
+              let modelRef = WhisperModelRef.enSmall
+
+              if await modelRef.isDownloaded() == false {
+                try await WhisperModelDownloader.run(modelRef: modelRef)
+              }
+
+              try Task.checkCancellation()
+
+              let result = try await WhisperTranscriber.run(url: targetFile, using: modelRef)
+
+              try Task.checkCancellation()
+
+              await onCompleteTranscribing(filename, result)
+            } catch {
+              print(error)
             }
-
-            try Task.checkCancellation()
-
-            let result = try await WhisperTranscriber.run(url: targetFile, using: modelRef)
-
-            try Task.checkCancellation()
-
-            await onCompleteTranscribing(filename, result)
 
           }
 
