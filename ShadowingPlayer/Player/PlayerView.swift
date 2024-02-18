@@ -3,12 +3,14 @@ import AppService
 import SwiftUI
 import SwiftUISupport
 import SwiftUIRingSlider
+import SwiftData
 
 @MainActor
 protocol PlayerDisplay: View {
 
   init(
     controller: PlayerController,
+    pins: [PinEntity],
     actionHandler: @escaping @MainActor (PlayerAction) -> Void
   )
 }
@@ -24,16 +26,20 @@ struct PlayerView<Display: PlayerDisplay>: View {
     var value: String
   }
 
-  @ObservableEdge var controller: PlayerController
+  @ObjectEdge var controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) -> Void
   @State private var controllerForDetail: PlayerController?
 
+  private let pins: [PinEntity]
+
   init(
     playerController: @escaping () -> PlayerController,
+    pins: [PinEntity],
     actionHandler: @escaping @MainActor (PlayerAction) -> Void
   ) {
     self._controller = .init(wrappedValue: playerController())
     self.actionHandler = actionHandler
+    self.pins = pins
   }
 
   var body: some View {
@@ -42,6 +48,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
 
       Display(
         controller: controller,
+        pins: pins,
         actionHandler: actionHandler
       )
     }
@@ -284,6 +291,7 @@ struct DefinitionView: UIViewControllerRepresentable {
     NavigationStack {
       PlayerView<PlayerListFlowLayoutView>(
         playerController: { try! .init(item: .social) },
+        pins: [],
         actionHandler: { action in
         }
       )

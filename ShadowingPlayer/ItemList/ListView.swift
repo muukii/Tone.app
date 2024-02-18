@@ -73,23 +73,27 @@ struct ListView: View {
         destination: { pin in
 
           if let item = pin.item {
-            PlayerView<UsingDisplay>(
-              playerController: {
-                let controller = try! PlayerController(item: item)
-                controller.setRepeating(from: pin)
-                return controller
-              },
-              actionHandler: { action in
-                switch action {
-                case .onPin(let range):
 
-                  Task {
-                    try await service.makePinned(range: range, for: item)
+            PinEntitiesProvider(targetItem: item) { pins in
+              PlayerView<UsingDisplay>(
+                playerController: {
+                  let controller = try! PlayerController(item: item)
+                  controller.setRepeating(from: pin)
+                  return controller
+                },
+                pins: pins,
+                actionHandler: { action in
+                  switch action {
+                  case .onPin(let range):
+
+                    Task {
+                      try await service.makePinned(range: range, for: item)
+                    }
+
                   }
-
                 }
-              }
-            )
+              )
+            }
           } else {
             EmptyView()
           }
@@ -99,21 +103,25 @@ struct ListView: View {
         for: ItemEntity.self,
         destination: { item in
 
-          PlayerView<UsingDisplay>(
-            playerController: {
-              let controller = try! PlayerController(item: item)
-              return controller
-            },
-            actionHandler: { action in
-              switch action {
-              case .onPin(let range):
+          PinEntitiesProvider(targetItem: item) { pins in
+            PlayerView<UsingDisplay>(
+              playerController: {
+                let controller = try! PlayerController(item: item)
+                return controller
+              },
+              pins: pins,
+              actionHandler: { action in
+                switch action {
+                case .onPin(let range):
 
-                Task {
-                  try await service.makePinned(range: range, for: item)
+                  Task {
+                    try await service.makePinned(range: range, for: item)
+                  }
                 }
               }
-            }
-          )
+            )
+          }
+
         }
       )
       .toolbar(content: {
@@ -214,6 +222,29 @@ private struct ItemCell: View {
       Text("\(title)")
     }
   }
+}
+
+struct PinEntitiesProvider<Content: View>: View {
+
+  @Query var pinEntities: [PinEntity]
+
+  private let content: ([PinEntity]) -> Content
+
+  init(targetItem: ItemEntity, @ViewBuilder content: @escaping ([PinEntity]) -> Content) {
+
+    self.content = content
+
+    let predicate = #Predicate<PinEntity> { [identifier = targetItem.persistentModelID] in
+      $0.item?.persistentModelID == identifier
+    }
+
+    self._pinEntities = Query.init(filter: predicate, sort: \.createdAt)
+  }
+
+  var body: some View {
+    content(pinEntities)
+  }
+
 }
 
 #Preview("Empty", body: {

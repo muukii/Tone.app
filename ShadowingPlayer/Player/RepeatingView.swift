@@ -21,7 +21,14 @@ struct RepeatingView: View {
         ScrollView(.horizontal) {
           HStack {
             ForEach(range.cues) { cue in
-              makeChunk(text: cue.backed.text, identifier: cue.id, isFocusing: controller.currentCue == cue, isInRange: true, onSelect: {})
+              makeChunk(
+                text: cue.backed.text,
+                hasMark: false,
+                identifier: cue.id,
+                isFocusing: controller.currentCue == cue,
+                isInRange: true,
+                onSelect: {
+                })
             }
           }
         }

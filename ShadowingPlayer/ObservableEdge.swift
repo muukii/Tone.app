@@ -1,7 +1,7 @@
 import SwiftUI
 
 @propertyWrapper
-struct ObservableEdge<O: Observable>: DynamicProperty {
+struct ObjectEdge<O>: DynamicProperty {
 
   @State private var box: Box<O> = .init()
 
@@ -25,3 +25,39 @@ struct ObservableEdge<O: Observable>: DynamicProperty {
   }
 
 }
+
+#if DEBUG
+
+@available(iOS 17, *)
+@Observable
+private final class Model {
+
+  var count: Int = 0
+
+  func up() {
+    count += 1
+  }
+}
+
+@available(iOS 17, *)
+private struct Demo: View {
+
+  @ObjectEdge var model: Model = .init()
+
+  var body: some View {
+
+    VStack {
+      Text("\(model.count)")
+      Button("Up") {
+        model.up()
+      }
+    }
+  }
+}
+
+@available(iOS 17, *)
+#Preview {
+  Demo()
+}
+
+#endif

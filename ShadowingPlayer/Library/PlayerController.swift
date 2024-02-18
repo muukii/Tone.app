@@ -18,6 +18,8 @@ public final class PlayerController: NSObject {
 
   public let cues: [DisplayCue]
 
+  public var pin: [PinEntity] = []
+
   @ObservationIgnored
   private var currentTimeObservation: NSKeyValueObservation?
 
