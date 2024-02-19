@@ -11,6 +11,12 @@ private enum CellIsFocusing: CustomStateKey {
   static var defaultValue: Bool { false }
 }
 
+private enum CellHasMark: CustomStateKey {
+  typealias Value = Bool
+
+  static var defaultValue: Bool { false }
+}
+
 private enum CellPlayingRange: CustomStateKey {
   typealias Value = PlayingRange?
 
@@ -21,6 +27,11 @@ private enum CellPlayingRange: CustomStateKey {
 
 
 extension CellState {
+
+  var hasMark: Bool {
+    get { self[CellHasMark.self] }
+    set { self[CellHasMark.self] = newValue }
+  }
 
   var isFocusing: Bool {
     get { self[CellIsFocusing.self] }
@@ -40,17 +51,24 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
   private unowned let controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) -> Void
 
+  private let pins: [PinEntity]
+
   init(
     controller: PlayerController,
+    pins: [PinEntity],
     actionHandler: @escaping @MainActor (PlayerAction) -> Void
   ) {
     self.controller = controller
+    self.pins = pins
     self.actionHandler = actionHandler
   }
 
   private func makeCellState() -> [DisplayCue : CellState] {
+
     var cellStates: [DisplayCue : CellState] = [:]
+
     let focusing = controller.currentCue
+
     if let focusing {
       cellStates[focusing, default: .empty].isFocusing = true
     }
@@ -59,6 +77,16 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
       for cue in controller.cues {
         cellStates[cue, default: .empty].playingRange = playingRange
       }
+    }
+
+    let pins = Set(pins.map(\.startCueRawIdentifier))
+
+    for cue in controller.cues {
+
+      if pins.contains(cue.id) {
+        cellStates[cue, default: .empty].hasMark = true
+      }
+
     }
 
     return cellStates
@@ -102,6 +130,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         return context.cell { state, customState in
           makeChunk(
             text: cue.backed.text,
+            hasMark: customState.hasMark,
             identifier: cue.id,
             isFocusing: customState.isFocusing,
             isInRange: customState.playingRange?.contains(cue) ?? false,
@@ -135,6 +164,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
 nonisolated func makeChunk(
   text: String,
+  hasMark: Bool,
   identifier: some Hashable,
   isFocusing: Bool,
   isInRange: Bool,
@@ -143,14 +173,27 @@ nonisolated func makeChunk(
 -> some View
 {
   VStack(spacing: 4) {
-    Text(text).font(.system(size: 24, weight: .bold, design: .default))
-      .modifier(
-        condition: isFocusing == false,
-        identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
-        active: StyleModifier(opacity: 0.2)
-      )
-      .id(identifier)
-      .textSelection(.enabled)
+
+    HStack {
+
+      if hasMark {
+        VStack {
+          Circle()
+            .frame(width: 6, height: 6)
+            .foregroundStyle(.secondary)
+          Spacer()
+        }
+      }
+
+      Text(text).font(.system(size: 24, weight: .bold, design: .default))
+        .modifier(
+          condition: isFocusing == false,
+          identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
+          active: StyleModifier(opacity: 0.2)
+        )
+        .id(identifier)
+        .textSelection(.enabled)
+    }
 
     // Indicator
     RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -164,7 +207,7 @@ nonisolated func makeChunk(
             return Color.primary
           }
 
-          return Color.primary.opacity(0.3)
+          return Color.secondary
 
         }()
       )
@@ -260,10 +303,28 @@ private struct CueCellContentConfiguration: UIContentConfiguration {
 
 #if DEBUG
 
+#Preview("Cell") {
+  HStack {
+    Spacer()
+    makeChunk(
+      text: "Hello",
+      hasMark: true,
+      identifier: "foo",
+      isFocusing: false,
+      isInRange: false,
+      onSelect: {
+
+      }
+    )
+    Spacer()
+  }
+}
+
 #Preview {
   Group {
     PlayerView<PlayerListFlowLayoutView>(
       playerController: { try! .init(item: .social) },
+      pins: [],
       actionHandler: { action in
       }
     )

@@ -23,7 +23,7 @@ struct SampleTip: Tip {
 @MainActor
 struct VoiceRecorderView: View {
 
-  @ObservableEdge var controller: RecorderAndPlayer = .init()
+  @ObjectEdge var controller: RecorderAndPlayer = .init()
 
   // TMP
   @State var isPlaying: Bool = false
