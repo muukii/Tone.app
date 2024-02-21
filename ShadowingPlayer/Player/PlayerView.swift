@@ -1,9 +1,9 @@
 import AVFoundation
 import AppService
-import SwiftUI
-import SwiftUISupport
-import SwiftUIRingSlider
 import SwiftData
+import SwiftUI
+import SwiftUIRingSlider
+import SwiftUISupport
 
 @MainActor
 protocol PlayerDisplay: View {
@@ -29,6 +29,8 @@ struct PlayerView<Display: PlayerDisplay>: View {
   @ObjectEdge var controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) -> Void
   @State private var controllerForDetail: PlayerController?
+
+  @State private var isDisplayingPinList: Bool = false
 
   private let pins: [PinEntity]
 
@@ -72,9 +74,12 @@ struct PlayerView<Display: PlayerDisplay>: View {
         )
       }
     )
-    .navigationDestination(item: $controllerForDetail, destination: { controller in
-      RepeatingView(controller: controller)
-    })
+    .navigationDestination(
+      item: $controllerForDetail,
+      destination: { controller in
+        RepeatingView(controller: controller)
+      }
+    )
     .onAppear {
       controller.activate()
       UIApplication.shared.isIdleTimerDisabled = true
@@ -83,10 +88,100 @@ struct PlayerView<Display: PlayerDisplay>: View {
       controller.deactivate()
       UIApplication.shared.isIdleTimerDisabled = false
     }
+    .sheet(
+      isPresented: $isDisplayingPinList,
+      content: {
+        PinListView(
+          pins: pins,
+          onSelect: { pin in
+            isDisplayingPinList = false
+            controller.setRepeating(from: pin)
+          }
+        )
+      }
+    )
+    .toolbar(content: {
+      ToolbarItem(placement: .topBarTrailing) {
+        Button {
+          isDisplayingPinList = true
+        } label: {
+          Image(systemName: "list.bullet")
+        }
+        .contextMenu(menuItems: {
+          Text("Display pinned items")
+        })
+      }
+      #if DEBUG
+      ToolbarItem(placement: .topBarTrailing) {
+        Menu {
+          Menu("Update subtitle") {
+            Button("File") {
+              // TODO:
+            }
+          }
+        } label: {
+          Image(systemName: "ellipsis")
+        }
+      }
+      #endif
+    })
     .navigationBarTitleDisplayMode(.inline)
 
   }
 
+}
+
+private struct PinListView: View {
+
+  let pins: [PinEntity]
+
+  let onSelect: @MainActor (PinEntity) -> Void
+
+  var body: some View {
+    List {
+      ForEach(pins) { pin in
+        Button {
+          onSelect(pin)
+        } label: {
+          // TODO: performance is so bad
+          Text("\(Self.makeDescription(pin: pin))")
+        }
+      }
+    }
+  }
+
+  private static func makeDescription(pin: PinEntity) -> String {
+
+    guard let item = pin.item else {
+      return ""
+    }
+
+    do {
+
+      let whole = try item.segment().items
+
+      let startCueID = pin.startCueRawIdentifier
+      let endCueID = pin.endCueRawIdentifier
+
+      let startCue = whole.first { $0.id == startCueID }!
+      let endCue = whole.first { $0.id == endCueID }!
+
+      let startTime = min(startCue.startTime, endCue.startTime)
+      let endTime = max(startCue.endTime, endCue.endTime)
+
+      let range = whole.filter {
+        $0.startTime >= startTime && $0.endTime <= endTime
+      }
+
+      let text = range.map { $0.text }.joined(separator: " ")
+
+      return text
+
+    } catch {
+
+      return ""
+    }
+  }
 }
 
 enum PlayerDisplayAction {
@@ -244,19 +339,6 @@ struct PlayerControlPanel: View {
       togglePlaying()
       return .handled
     }
-    .toolbar(content: {
-      ToolbarItem(placement: .topBarTrailing) {
-        Menu {
-          Menu("Update subtitle") {
-            Button("File") {
-              // TODO:
-            }
-          }
-        } label: {
-          Image(systemName: "ellipsis")
-        }
-      }
-    })
   }
 
   @MainActor
