@@ -65,7 +65,7 @@ public final class PlayerController: NSObject {
 
   public init(title: String, audioFileURL: URL, segments: [AbstractSegment]) throws {
 
-    self.cues = segments.map { .init(segment: $0) }
+    self.cues = segments.enumerated().map { i, e in .init(segment: e, index: i) }
     self.title = title
 
     self.controller = try .init(file: .init(forReading: audioFileURL))
