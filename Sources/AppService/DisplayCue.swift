@@ -10,15 +10,20 @@ public struct DisplayCue: Identifiable, Hashable {
 
   public var id: String { backed.id }
 
+  public var index: Int
+
   public let backed: AbstractSegment
 
-  public init(backed: Subtitles.Cue) {
+  public init(backed: Subtitles.Cue, index: Int) {
     self.backed = .init(cue: backed)
+    self.index = index
   }
 
-  public init(segment: AbstractSegment) {
+  public init(segment: AbstractSegment, index: Int) {
     self.backed = segment
+    self.index = index
   }
+
 }
 
 public struct AbstractSegment: Equatable, Identifiable, Codable, Sendable {
