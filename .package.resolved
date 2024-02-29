@@ -1,25 +1,23 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "whisper",
-        "repositoryURL": "https://github.com/ggerganov/whisper.cpp",
-        "state": {
-          "branch": "master",
-          "revision": "3d4246384525824b1dc6efc86f86003c8c615295",
-          "version": null
-        }
-      },
-      {
-        "package": "ZipArchive",
-        "repositoryURL": "https://github.com/ZipArchive/ZipArchive.git",
-        "state": {
-          "branch": null,
-          "revision": "79d4dc9729096c6ad83dd3cee2b9f354d1b4ab7b",
-          "version": "2.5.5"
-        }
+  "pins" : [
+    {
+      "identity" : "whisper.cpp",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ggerganov/whisper.cpp",
+      "state" : {
+        "branch" : "master",
+        "revision" : "3d4246384525824b1dc6efc86f86003c8c615295"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "ziparchive",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ZipArchive/ZipArchive.git",
+      "state" : {
+        "revision" : "79d4dc9729096c6ad83dd3cee2b9f354d1b4ab7b",
+        "version" : "2.5.5"
+      }
+    }
+  ],
+  "version" : 2
 }

@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.9
 import PackageDescription
 
 var exclude: [String] = []
@@ -20,40 +20,8 @@ let package = Package(
     targets: [
         .target(
             name: "SwiftWhisper",
-            dependencies: [.product(name: "whisper", package: "whisper.cpp"), "whisper_cpp_metal"]
+            dependencies: [.product(name: "whisper", package: "whisper.cpp")]
         ),
-        .target(
-            name: "whisper_cpp_metal",
-            path: "Sources/whisper_cpp_metal",
-            sources: ["ggml-metal.m"],
-            publicHeadersPath: "include",
-            cSettings: [
-                .unsafeFlags(["-fno-objc-arc"])
-            ]
-        ),
-//        .target(
-//            name: "whisper_cpp",
-//            dependencies: [.target(name: "whisper_cpp_metal")],
-//            path: "Sources/whisper_cpp",
-//            sources: [
-//                "ggml.c",
-//                "ggml-alloc.c",
-//                "coreml/whisper-encoder-impl.m",
-//                "coreml/whisper-encoder.mm",
-//                "whisper.cpp",
-//            ],
-//            publicHeadersPath: "include",
-//            cSettings: [
-//                .unsafeFlags(["-Wno-shorten-64-to-32"]),
-//                .define("GGML_USE_ACCELERATE", .when(platforms: [.macOS, .macCatalyst, .iOS])),
-//                .define("WHISPER_USE_COREML", .when(platforms: [.macOS, .macCatalyst, .iOS])),
-//                .define("WHISPER_COREML_ALLOW_FALLBACK", .when(platforms: [.macOS, .macCatalyst, .iOS])),
-//                .define("GGML_USE_METAL", .when(platforms: [.macOS, .macCatalyst, .iOS]))
-//            ],
-//            linkerSettings: [
-//                .linkedFramework("Accelerate"),
-//            ]
-//        ),
         .testTarget(
             name: "WhisperTests",
             dependencies: ["SwiftWhisper"],

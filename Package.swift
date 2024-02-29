@@ -16,6 +16,8 @@ let package = Package(
     .package(url: "https://github.com/dmrschmidt/DSWaveformImage", from: "14.2.2"),
     .package(url: "https://github.com/AudioKit/AudioKit", from: "5.6.2"),
     .package(url: "https://github.com/alexeichhorn/YouTubeKit", from: "0.2.0"),
+    .package(url: "https://github.com/argmaxinc/whisperkit", from: "0.2.1"),
+
 //    .package(url: "https://github.com/ZipArchive/ZipArchive.git", from: "2.5.5"),
 //    .package(url: "https://github.com/ggerganov/whisper.cpp", branch: "master"),
   ]

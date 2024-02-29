@@ -64,6 +64,7 @@ let project = Project(
 
         .package(product: "SwiftWhisper"),
 
+        .external(name: "WhisperKit"),
         .external(name: "YouTubeKit"),
         .external(name: "AudioKit"),
         .external(name: "Verge"),
@@ -99,6 +100,7 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       sources: ["Sources/AppService/**"],
       dependencies: [
+        .external(name: "WhisperKit"),
         .package(product: "SwiftWhisper"),
         .external(name: "Verge"),
         .external(name: "Wrap"),
