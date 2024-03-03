@@ -14,7 +14,7 @@ public final class PlayerController: NSObject {
   }
 
   public private(set) var isPlaying: Bool = false
-  public var currentCue: DisplayCue?
+  public private(set) var currentCue: DisplayCue?
 
   public let cues: [DisplayCue]
 
@@ -37,8 +37,10 @@ public final class PlayerController: NSObject {
 
   let title: String
 
+  @ObservationIgnored
   private var isActivated: Bool = false
 
+  @ObservationIgnored
   private var cancellables: Set<AnyCancellable> = .init()
 
   public convenience init(item: Item) throws {

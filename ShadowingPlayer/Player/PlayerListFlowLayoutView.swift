@@ -53,6 +53,8 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
   private let pins: [PinEntity]
 
+  private let snapshot: NSDiffableDataSourceSnapshot<String, DisplayCue>
+
   init(
     controller: PlayerController,
     pins: [PinEntity],
@@ -61,6 +63,12 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     self.controller = controller
     self.pins = pins
     self.actionHandler = actionHandler
+
+    self.snapshot = NSDiffableDataSourceSnapshot<String, DisplayCue>.init()&>.modify({ s in
+      s.appendSections(["Main"])
+      s.appendItems(controller.cues, toSection: "Main")
+    })
+
   }
 
   private func makeCellState() -> [DisplayCue : CellState] {
@@ -94,13 +102,8 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
   var body: some View {
 
-    let cues = controller.cues
-
     DynamicList<String, DisplayCue>(
-      snapshot: .init()&>.modify({ s in
-        s.appendSections(["Main"])
-        s.appendItems(cues, toSection: "Main")
-      }),
+      snapshot: snapshot,
       cellStates: makeCellState(),
       layout: {
         let layout = AlignedCollectionViewFlowLayout(horizontalAlignment: .leading)
