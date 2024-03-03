@@ -9,13 +9,14 @@ struct AudioImportView: View {
   let onComplete: @MainActor () -> Void
 
   var body: some View {
-    AudioImportContentView(onCompleteTranscribing: { name, result in
+    AudioImportContentView(onTranscribe: { name, url in
       do {
-        try await service.importItem(
+
+        try await service.transcribe(
           title: name,
-          audioFileURL: result.audioFileURL,
-          segments: result.segments.map { .init(segment: $0) }
+          audioFileURL: url
         )
+        
       } catch {
         print(error)
       }
@@ -35,7 +36,7 @@ private struct AudioImportContentView: View {
 
   @State private var processing: Bool = false
 
-  let onCompleteTranscribing: @MainActor (String, WhisperTranscriber.Result) async -> Void
+  let onTranscribe: @MainActor (String, URL) async throws -> Void
 
   var body: some View {
 
@@ -86,24 +87,7 @@ private struct AudioImportContentView: View {
               processing = false
             }
 
-            do {
-
-              let modelRef = WhisperModelRef.enSmall
-
-              if await modelRef.isDownloaded() == false {
-                try await WhisperModelDownloader.run(modelRef: modelRef)
-              }
-
-              try Task.checkCancellation()
-
-              let result = try await WhisperTranscriber.run(url: targetFile, using: modelRef)
-
-              try Task.checkCancellation()
-
-              await onCompleteTranscribing(filename, result)
-            } catch {
-              print(error)
-            }
+            try await onTranscribe(filename, targetFile)
 
           }
 
@@ -129,5 +113,5 @@ private extension VerticalAlignment {
 
 
 #Preview {
-  AudioImportContentView(onCompleteTranscribing: { name, result in })
+  AudioImportContentView(onTranscribe: { name, result in })
 }

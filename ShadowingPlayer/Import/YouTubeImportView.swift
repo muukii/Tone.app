@@ -14,24 +14,17 @@ struct YouTubeImportView: View {
 
   var body: some View {
     YouTubeImportContentView(
-      onTranscribe: { url in
+      onTranscribe: {
+        url in
         do {
-
+          
           let title = try await YouTube(url: url).metadata?.title
-
+          
           let audio = try await YouTubeDownloader.run(url: url)
-          let modelRef = WhisperModelRef.enSmall
-
-          if await modelRef.isDownloaded() == false {
-            try await WhisperModelDownloader.run(modelRef: modelRef)
-          }
-
-          let result = try await WhisperTranscriber.run(url: audio, using: modelRef)
-
-          try await service.importItem(
+        
+          try await service.transcribe(
             title: title ?? "(Not fetched)",
-            audioFileURL: result.audioFileURL,
-            segments: result.segments.map { .init(segment: $0) }
+            audioFileURL: audio
           )
 
           onComplete()
