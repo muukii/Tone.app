@@ -149,9 +149,16 @@ public final class Service {
           audioFileDestinationPath.relative(basedOn: .init(url: URL.documentsDirectory)).rawValue
         try new.setSegmentData(storedSubtitle)
 
+        new.pinItems = []
+
         modelContext.insert(new)
 
-        try modelContext.delete(model: PinEntity.self, where: #Predicate { [identifier = new.identifier] in $0.item?.identifier == identifier }, includeSubclasses: true)
+        let pins = try modelContext.fetch(.init(predicate: #Predicate<PinEntity> { [identifier = new.identifier] in $0.item?.identifier == identifier }))
+
+        for pin in pins {
+          pin.item = nil
+          modelContext.delete(pin)
+        }
 
       }
     }
