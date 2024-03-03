@@ -37,6 +37,8 @@ public final class PlayerController: NSObject {
 
   let title: String
 
+  private var isActivated: Bool = false
+
   private var cancellables: Set<AnyCancellable> = .init()
 
   public convenience init(item: Item) throws {
@@ -163,6 +165,13 @@ public final class PlayerController: NSObject {
 
     Log.debug("deinit \(self)")
 
+    do {
+      let instance = AVAudioSession.sharedInstance()
+      try instance.setActive(false, options: .notifyOthersOnDeactivation)
+    } catch {
+      print(error)
+    }
+
     Task { @MainActor [currentTimeObservation, currentTimer, currentTimerForLoop] in
       currentTimeObservation?.invalidate()
       currentTimer?.invalidate()
@@ -176,13 +185,21 @@ public final class PlayerController: NSObject {
   }
 
   func activate() {
+
+    guard isActivated == false else {
+      return
+    }
+
+    isActivated = true
+
     do {
       let instance = AVAudioSession.sharedInstance()
-      try instance.setActive(true)
+      try instance.setActive(true, options: .notifyOthersOnDeactivation)
       try instance.setCategory(
         .playback,
         mode: .default,
-        options: [.allowBluetooth, .allowAirPlay, .mixWithOthers]
+        policy: .default,
+        options: []
       )
     } catch {
       print(error)
@@ -192,15 +209,25 @@ public final class PlayerController: NSObject {
 
   func deactivate() {
 
+    guard isActivated == true else {
+      return
+    }
+
+    isActivated = false
+
     do {
       let instance = AVAudioSession.sharedInstance()
-      try instance.setActive(false)
+      try instance.setActive(false, options: .notifyOthersOnDeactivation)
     } catch {
       print(error)
     }
   }
 
   public func play() {
+
+    if isActivated == false {
+      activate()
+    }
 
     do {
       try controller.play()
