@@ -49,14 +49,14 @@ extension CellState {
 struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
   private unowned let controller: PlayerController
-  private let actionHandler: @MainActor (PlayerAction) -> Void
+  private let actionHandler: @MainActor (PlayerAction) async -> Void
 
   private let pins: [PinEntity]
 
   init(
     controller: PlayerController,
     pins: [PinEntity],
-    actionHandler: @escaping @MainActor (PlayerAction) -> Void
+    actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   ) {
     self.controller = controller
     self.pins = pins

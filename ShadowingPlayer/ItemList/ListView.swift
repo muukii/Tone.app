@@ -83,13 +83,16 @@ struct ListView: View {
                 },
                 pins: pins,
                 actionHandler: { action in
-                  switch action {
-                  case .onPin(let range):
-
-                    Task {
+                  do {
+                    switch action {
+                    case .onPin(let range):
                       try await service.makePinned(range: range, for: item)
+                    case .onTranscribeAgain:
+                      try await service.updateTranscribe(for: item)
+                      path = .init()
                     }
-
+                  } catch {
+                    Log.error("\(error.localizedDescription)")
                   }
                 }
               )
@@ -111,12 +114,16 @@ struct ListView: View {
               },
               pins: pins,
               actionHandler: { action in
-                switch action {
-                case .onPin(let range):
-
-                  Task {
+                do {
+                  switch action {
+                  case .onPin(let range):
                     try await service.makePinned(range: range, for: item)
+                  case .onTranscribeAgain:
+                    try await service.updateTranscribe(for: item)
+                    path = .init()
                   }
+                } catch {
+                  Log.error("\(error.localizedDescription)")
                 }
               }
             )

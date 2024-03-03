@@ -46,6 +46,15 @@
       }
     },
     {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "state" : {
+        "revision" : "c8ed701b513cf5177118a175d85fbbbcd707ab41",
+        "version" : "1.3.0"
+      }
+    },
+    {
       "identity" : "swift-atomics",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-atomics.git",
@@ -91,6 +100,15 @@
       }
     },
     {
+      "identity" : "swift-transformers",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/huggingface/swift-transformers.git",
+      "state" : {
+        "revision" : "564442fba36b0b694d730a62d0593e5f54043b55",
+        "version" : "0.1.2"
+      }
+    },
+    {
       "identity" : "swiftsubtitles",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dagronf/SwiftSubtitles",
@@ -104,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/siteline/swiftui-introspect",
       "state" : {
-        "revision" : "18e965f867e37a558ad13c12d330dbe047099180",
-        "version" : "1.1.2"
+        "revision" : "0cd2a5a5895306bc21d54a2254302d24a9a571e4",
+        "version" : "1.1.3"
       }
     },
     {
@@ -132,7 +150,16 @@
       "location" : "https://github.com/VergeGroup/Verge",
       "state" : {
         "branch" : "main",
-        "revision" : "33bf20c27b8312389d7b7c5b6dfca4049afd27da"
+        "revision" : "35772f6a14ff8048bf678c65adb8a6402f4ad14c"
+      }
+    },
+    {
+      "identity" : "whisperkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/argmaxinc/whisperkit",
+      "state" : {
+        "revision" : "dda6571ccc5fb2892aaad088883738f8866e6b6c",
+        "version" : "0.3.0"
       }
     },
     {
