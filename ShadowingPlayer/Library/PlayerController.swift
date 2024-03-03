@@ -33,6 +33,8 @@ public final class PlayerController: NSObject {
   @ObservationIgnored
   private let controller: AudioPlayerController
 
+  let audioFileURL: URL
+
   let title: String
 
   private var cancellables: Set<AnyCancellable> = .init()
@@ -67,6 +69,7 @@ public final class PlayerController: NSObject {
 
     self.cues = segments.enumerated().map { i, e in .init(segment: e, index: i) }
     self.title = title
+    self.audioFileURL = audioFileURL
 
     self.controller = try .init(file: .init(forReading: audioFileURL))
     self.controller.repeating = .atEnd

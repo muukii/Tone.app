@@ -60,6 +60,20 @@ public final class Service {
 
   }
 
+  public func updateTranscribe(for item: ItemEntity) async throws {
+
+    let result = try await WhisperKitWrapper.run(url: item.audioFileAbsoluteURL)
+    try await self.importItem(title: item.title, audioFileURL: result.audioFileURL, segments: result.segments)
+
+  }
+
+  public func transcribe(title: String, audioFileURL: URL) async throws {
+
+    let result = try await WhisperKitWrapper.run(url: audioFileURL)
+    try await self.importItem(title: title, audioFileURL: audioFileURL, segments: result.segments)
+
+  }
+
   public func importItem(title: String, audioFileURL: URL, segments: [AbstractSegment]) async throws {
 
     let storedSubtitle = StoredSubtitle(items: segments)

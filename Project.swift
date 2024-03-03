@@ -64,7 +64,6 @@ let project = Project(
 
         .package(product: "SwiftWhisper"),
 
-        .external(name: "WhisperKit"),
         .external(name: "YouTubeKit"),
         .external(name: "AudioKit"),
         .external(name: "Verge"),
@@ -104,6 +103,7 @@ let project = Project(
         .package(product: "SwiftWhisper"),
         .external(name: "Verge"),
         .external(name: "Wrap"),
+        .external(name: "WhisperKit"),
       ],
       mergedBinaryType: .disabled,
       mergeable: true

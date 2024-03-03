@@ -90,6 +90,12 @@ struct ListView: View {
                       try await service.makePinned(range: range, for: item)
                     }
 
+                  case .onTranscribeAgain:
+
+                    Task {
+                      try await service.updateTranscribe(for: item)
+                    }
+
                   }
                 }
               )
@@ -117,6 +123,12 @@ struct ListView: View {
                   Task {
                     try await service.makePinned(range: range, for: item)
                   }
+                case .onTranscribeAgain:
+
+                  Task {
+                    try await service.updateTranscribe(for: item)
+                  }
+
                 }
               }
             )

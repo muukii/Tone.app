@@ -47,6 +47,12 @@ public struct AbstractSegment: Equatable, Identifiable, Codable, Sendable {
     self.endTime = Double(segment.endTime) * 0.001
     self.text = segment.text
   }
+
+  public init(startTime: TimeInterval, endTime: TimeInterval, text: String) {
+    self.startTime = startTime
+    self.endTime = endTime
+    self.text = text
+  }
 }
 
 public struct StoredSubtitle: Codable, Sendable {

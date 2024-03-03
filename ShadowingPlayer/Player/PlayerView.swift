@@ -17,6 +17,7 @@ protocol PlayerDisplay: View {
 
 enum PlayerAction {
   case onPin(range: PlayingRange)
+  case onTranscribeAgain
 }
 
 struct PlayerView<Display: PlayerDisplay>: View {
@@ -111,19 +112,17 @@ struct PlayerView<Display: PlayerDisplay>: View {
           Text("Display pinned items")
         })
       }
-      #if DEBUG
+
       ToolbarItem(placement: .topBarTrailing) {
         Menu {
-          Menu("Update subtitle") {
-            Button("File") {
-              // TODO:
-            }
+          Button("Transcribe again") {
+            actionHandler(.onTranscribeAgain)
           }
         } label: {
           Image(systemName: "ellipsis")
         }
       }
-      #endif
+
     })
     .navigationBarTitleDisplayMode(.inline)
 
