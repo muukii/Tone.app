@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSubtitles
-import SwiftWhisper
 
 public struct DisplayCue: Identifiable, Hashable {
 
@@ -40,12 +39,6 @@ public struct AbstractSegment: Equatable, Identifiable, Codable, Sendable {
     self.startTime = cue.startTime.timeInSeconds
     self.endTime = cue.endTime.timeInSeconds
     self.text = cue.text
-  }
-
-  public init(segment: Segment) {
-    self.startTime = Double(segment.startTime) * 0.001
-    self.endTime = Double(segment.endTime) * 0.001
-    self.text = segment.text
   }
 
   public init(startTime: TimeInterval, endTime: TimeInterval, text: String) {

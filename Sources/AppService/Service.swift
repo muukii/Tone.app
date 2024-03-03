@@ -63,18 +63,30 @@ public final class Service {
   public func updateTranscribe(for item: ItemEntity) async throws {
 
     let result = try await WhisperKitWrapper.run(url: item.audioFileAbsoluteURL)
-    try await self.importItem(title: item.title, audioFileURL: result.audioFileURL, segments: result.segments)
+    try await self.importItem(
+      title: item.title,
+      audioFileURL: result.audioFileURL,
+      segments: result.segments
+    )
 
   }
 
   public func transcribe(title: String, audioFileURL: URL) async throws {
 
     let result = try await WhisperKitWrapper.run(url: audioFileURL)
-    try await self.importItem(title: title, audioFileURL: audioFileURL, segments: result.segments)
+    try await self.importItem(
+      title: title,
+      audioFileURL: audioFileURL,
+      segments: result.segments
+    )
 
   }
 
-  public func importItem(title: String, audioFileURL: URL, segments: [AbstractSegment]) async throws {
+  public func importItem(
+    title: String,
+    audioFileURL: URL,
+    segments: [AbstractSegment]
+  ) async throws {
 
     let storedSubtitle = StoredSubtitle(items: segments)
 
@@ -104,6 +116,8 @@ public final class Service {
       }
 
       func overwrite(file: URL, to url: URL) throws {
+
+        guard file != url else { return }
 
         if fileManager.fileExists(atPath: url.path(percentEncoded: false)) {
           try fileManager.removeItem(at: url)
@@ -136,6 +150,8 @@ public final class Service {
         try new.setSegmentData(storedSubtitle)
 
         modelContext.insert(new)
+
+        try modelContext.delete(model: PinEntity.self, where: #Predicate { [identifier = new.identifier] in $0.item?.identifier == identifier }, includeSubclasses: true)
 
       }
     }

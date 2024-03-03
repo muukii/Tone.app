@@ -11,7 +11,7 @@ protocol PlayerDisplay: View {
   init(
     controller: PlayerController,
     pins: [PinEntity],
-    actionHandler: @escaping @MainActor (PlayerAction) -> Void
+    actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   )
 }
 
@@ -28,17 +28,17 @@ struct PlayerView<Display: PlayerDisplay>: View {
   }
 
   @ObjectEdge var controller: PlayerController
-  private let actionHandler: @MainActor (PlayerAction) -> Void
+  private let actionHandler: @MainActor (PlayerAction) async -> Void
   @State private var controllerForDetail: PlayerController?
-
   @State private var isDisplayingPinList: Bool = false
+  @State private var isProcessing: Bool = false
 
   private let pins: [PinEntity]
 
   init(
     playerController: @escaping () -> PlayerController,
     pins: [PinEntity],
-    actionHandler: @escaping @MainActor (PlayerAction) -> Void
+    actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   ) {
     self._controller = .init(wrappedValue: playerController())
     self.actionHandler = actionHandler
@@ -66,7 +66,9 @@ struct PlayerView<Display: PlayerDisplay>: View {
               return
             }
 
-            actionHandler(.onPin(range: range))
+            Task {
+              await actionHandler(.onPin(range: range))
+            }
 
           },
           onTapDetail: {
@@ -115,8 +117,15 @@ struct PlayerView<Display: PlayerDisplay>: View {
 
       ToolbarItem(placement: .topBarTrailing) {
         Menu {
-          Button("Transcribe again") {
-            actionHandler(.onTranscribeAgain)
+          Menu("Transcribe again") {
+            Text("It removes all of pinned items.")
+            Button("Run") {
+              Task {
+                isProcessing = true
+                defer { isProcessing = false }
+                await actionHandler(.onTranscribeAgain)
+              }
+            }
           }
         } label: {
           Image(systemName: "ellipsis")
@@ -125,6 +134,13 @@ struct PlayerView<Display: PlayerDisplay>: View {
 
     })
     .navigationBarTitleDisplayMode(.inline)
+    .sheet(isPresented: $isProcessing) {
+      VStack {
+        Text("Processing")
+        ProgressView()
+      }
+      .interactiveDismissDisabled(true)
+    }
 
   }
 
