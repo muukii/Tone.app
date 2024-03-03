@@ -84,11 +84,9 @@ struct PlayerView<Display: PlayerDisplay>: View {
       }
     )
     .onAppear {
-      controller.activate()
       UIApplication.shared.isIdleTimerDisabled = true
     }
     .onDisappear {
-      controller.deactivate()
       UIApplication.shared.isIdleTimerDisabled = false
     }
     .sheet(

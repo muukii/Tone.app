@@ -216,7 +216,9 @@ final class RecorderAndPlayer {
       ) { [weak self] _ in
         guard let self else { return }
 
-        recorderController.deactivate()
+        MainActor.assumeIsolated {
+          self.recorderController.deactivate()
+        }
 
       }
     )
@@ -229,10 +231,13 @@ final class RecorderAndPlayer {
       ) { [weak self] _ in
         guard let self else { return }
 
-        do {
-          try recorderController.activate()
-        } catch {
-          Log.error("\(error.localizedDescription)")
+        MainActor.assumeIsolated {
+
+          do {
+            try self.recorderController.activate()
+          } catch {
+            Log.error("\(error.localizedDescription)")
+          }
         }
 
       }
@@ -253,11 +258,10 @@ final class RecorderAndPlayer {
     do {
       let instance = AVAudioSession.sharedInstance()
       try instance.setActive(true)
-      //        try instance.overrideOutputAudioPort(.speaker)
       try instance.setCategory(
         .playAndRecord,
         mode: .spokenAudio,
-        options: [.allowBluetooth, .allowAirPlay, .mixWithOthers, .defaultToSpeaker]
+        options: [.defaultToSpeaker]
       )
 
       try recorderController.activate()
@@ -278,6 +282,7 @@ final class RecorderAndPlayer {
 
   func deactivate() {
 
+    playerController?.pause()
     recorderController.deactivate()
 
     NotificationCenter.default.removeObserver(subscription as Any)
@@ -358,35 +363,48 @@ final class RecorderAndPlayer {
 
 }
 
+@MainActor
 final class VoiceRecorderController {
 
   private let recordingEngine = AVAudioEngine()
 
   private var writingFiles: [AVAudioFile] = []
 
+  private var hasInstalledTap: Bool = false
+
   init() {
 
   }
 
   func activate() throws {
-    recordingEngine.inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) {
-      [weak self] (buffer, when) in
 
-      guard let self else { return }
+    if hasInstalledTap == false {
+      print(recordingEngine.inputNode)
+      recordingEngine.inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) {
+        [weak self] (buffer, when) in
 
-      do {
-        for file in writingFiles {
-          try file.write(from: buffer)
+        guard let self else { return }
+
+        do {
+          for file in writingFiles {
+            try file.write(from: buffer)
+          }
+        } catch let error {
+          print("audioFile.writeFromBuffer error:", error)
         }
-      } catch let error {
-        print("audioFile.writeFromBuffer error:", error)
       }
+
+      hasInstalledTap = true
     }
+
     try recordingEngine.start()
   }
 
   func deactivate() {
-    recordingEngine.inputNode.removeTap(onBus: 0)
+    if hasInstalledTap {
+      recordingEngine.inputNode.removeTap(onBus: 0)
+      hasInstalledTap = false
+    }
     recordingEngine.stop()
   }
 

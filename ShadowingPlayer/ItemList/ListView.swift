@@ -11,12 +11,9 @@ struct ListView: View {
   let service: Service
 
   @Query(sort: \ItemEntity.createdAt, order: .reverse)
-  var itemEntities: [ItemEntity]
+  private var itemEntities: [ItemEntity]
 
-  @Query(sort: \PinEntity.createdAt, order: .reverse)
-  var pinEntities: [PinEntity]
-
-  let isSettinsEnabled = false
+  private let isSettinsEnabled = false
 
   @Environment(\.modelContext) var modelContext
 
@@ -46,62 +43,12 @@ struct ListView: View {
           }
         }
 
-        Section {
-          ForEach(pinEntities) { pin in
-            NavigationLink(value: pin) {
-              VStack {
-                Text(pin.item?.title ?? "null")
-              }
-            }
-            .contextMenu(menuItems: {
-              Button("Delete", role: .destructive) {
-                // TODO: too direct
-                modelContext.delete(pin)
-              }
-            })
-          }
-        }
-
       }
       .overlay {
         if itemEntities.isEmpty {
           emptyView()
         }
       }
-      .navigationDestination(
-        for: PinEntity.self,
-        destination: { pin in
-
-          if let item = pin.item {
-
-            PinEntitiesProvider(targetItem: item) { pins in
-              PlayerView<UsingDisplay>(
-                playerController: {
-                  let controller = try! PlayerController(item: item)
-                  controller.setRepeating(from: pin)
-                  return controller
-                },
-                pins: pins,
-                actionHandler: { action in
-                  do {
-                    switch action {
-                    case .onPin(let range):
-                      try await service.makePinned(range: range, for: item)
-                    case .onTranscribeAgain:
-                      try await service.updateTranscribe(for: item)
-                      path = .init()
-                    }
-                  } catch {
-                    Log.error("\(error.localizedDescription)")
-                  }
-                }
-              )
-            }
-          } else {
-            EmptyView()
-          }
-        }
-      )
       .navigationDestination(
         for: ItemEntity.self,
         destination: { item in

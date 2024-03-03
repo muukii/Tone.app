@@ -43,17 +43,17 @@ struct AppRoot: App {
 
     try? Tips.configure()
 
-    do {
-      let instance = AVAudioSession.sharedInstance()
-      try instance.setCategory(
-        .ambient,
-        mode: .default,
-        options: [.allowBluetooth, .allowAirPlay, .mixWithOthers]
-      )
-      try instance.setActive(true)
-    } catch {
-
-    }
+//    do {
+//      let instance = AVAudioSession.sharedInstance()
+//      try instance.setCategory(
+//        .ambient,
+//        mode: .default,
+//        options: [.allowBluetooth, .allowAirPlay, .mixWithOthers]
+//      )
+//      try instance.setActive(true)
+//    } catch {
+//
+//    }
   }
 
   var body: some Scene {

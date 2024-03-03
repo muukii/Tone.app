@@ -196,7 +196,13 @@ final class AudioPlayerController: StoreDriverType {
 
   private func _seek(frame: AVAudioFramePosition) {
 
-    let startFrame = frame
+    print("seek \(frame)")
+
+    var startFrame = frame
+    if startFrame < 0 {
+      Log.error("Frame must be greater than 0 or equal.")
+      startFrame = 0
+    }
     let rawFrameCount = file.length - frame
 
     guard rawFrameCount >= 0 else {
@@ -205,6 +211,7 @@ final class AudioPlayerController: StoreDriverType {
     }
 
     let frameCount = AVAudioFrameCount(rawFrameCount)
+
 
     audioPlayer.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
 

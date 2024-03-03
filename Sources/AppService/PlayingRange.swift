@@ -45,6 +45,14 @@ public struct PlayingRange: Equatable {
 
   }
 
+  public func after(_ cue: DisplayCue) -> DisplayCue? {
+    whole.first { $0.backed.startTime > cue.backed.endTime }
+  }
+
+  public func before(_ cue: DisplayCue) -> DisplayCue? {
+    whole.last { $0.backed.endTime < cue.backed.startTime }
+  }
+
   public mutating func select(cue: DisplayCue) {
 
     if cues.isEmpty {
