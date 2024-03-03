@@ -156,7 +156,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         
       }
     )
-    .scrolling(to: controller.currentCue)
+    .scrolling(to: controller.currentCue.map { .init(item: $0, skipsWhileTracking: true, animated: true) })
 
   }
 
