@@ -78,7 +78,7 @@ let project = Project(
         "DEVELOPMENT_TEAM": "KU2QEJ9K3Z",
         "OTHER_LDFLAGS": "$(inherited) -all_load",
       ]),
-      mergedBinaryType: .manual(mergeableDependencies: ["AppService"]),
+      mergedBinaryType: .disabled,
       mergeable: false
     ),
 
@@ -93,9 +93,10 @@ let project = Project(
         .external(name: "WhisperKit"),
         .external(name: "Verge"),
         .external(name: "Wrap"),
+        .external(name: "SwiftSubtitles"),
       ],
       mergedBinaryType: .disabled,
-      mergeable: true
+      mergeable: false
     ),
   ],
   schemes: [
