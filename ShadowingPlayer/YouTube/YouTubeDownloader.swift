@@ -10,12 +10,14 @@ enum YouTubeDownloader {
   /// returns audio file in temporary dir
   static func run(url: URL) async throws -> URL {
 
+    let session = URLSession(configuration: .ephemeral)
+
     let video = YouTube(url: url)
 
     let stream = try await video.streams.filter {
       $0.includesVideoAndAudioTrack && $0.fileExtension == .mp4
     }
-      .highestResolutionStream()
+      .highestAudioBitrateStream()
 
     Log.debug("\(String(describing: stream))")
 
@@ -26,7 +28,13 @@ enum YouTubeDownloader {
 
     Log.debug("Download => \(stream.url)")
 
-    let (downloadedTempURL, _) = try await URLSession.shared.download(from: stream.url)
+    let delegate = TaskDeletage()
+
+    let request = URLRequest(url: stream.url)
+
+    let (downloadedTempURL, _) = try await session.download(for: request, delegate: delegate)
+
+    withExtendedLifetime(delegate) {}
 
     let destinationURL = URL.temporaryDirectory.appending(path: "\(UUID().uuidString).mp4")
 
@@ -36,6 +44,38 @@ enum YouTubeDownloader {
 
     return try await AudioExtractor.run(videoURL: destinationURL)
 
+  }
+
+  private final class TaskDeletage: NSObject, URLSessionTaskDelegate {
+
+    func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
+      print("task created")
+    }
+
+    func urlSession(_ session: URLSession, taskIsWaitingForConnectivity task: URLSessionTask) {
+      print("task waiting for connectivity")
+    }
+
+    func urlSession(
+      _ session: URLSession,
+      task: URLSessionTask,
+      didCompleteWithError error: Error?
+    ) {
+      Log.debug("task completed")
+    }
+
+    func urlSession(
+      _ session: URLSession,
+      downloadTask: URLSessionDownloadTask,
+      didWriteData bytesWritten: Int64,
+      totalBytesWritten: Int64,
+      totalBytesExpectedToWrite: Int64
+    ) {
+
+      let progress = Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
+
+      print(progress)
+    }
   }
 
 }
