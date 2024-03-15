@@ -2,6 +2,7 @@ import AppService
 import MediaPlayer
 import SwiftSubtitles
 import Verge
+import Observation
 
 @MainActor
 @Observable
@@ -14,6 +15,7 @@ public final class PlayerController: NSObject {
   }
 
   public private(set) var isPlaying: Bool = false
+
   public private(set) var currentCue: DisplayCue?
 
   public let cues: [DisplayCue]
@@ -42,6 +44,9 @@ public final class PlayerController: NSObject {
 
   @ObservationIgnored
   private var cancellables: Set<AnyCancellable> = .init()
+
+  @ObservationIgnored
+  private var isAppInBackground: Bool = false
 
   public convenience init(item: Item) throws {
     try self.init(
@@ -89,6 +94,20 @@ public final class PlayerController: NSObject {
 
     }
     .store(in: &cancellables)
+
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(didEnterBackground),
+      name: UIApplication.didEnterBackgroundNotification,
+      object: nil
+    )
+
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(didBecomeActive),
+      name: UIApplication.didBecomeActiveNotification,
+      object: nil
+    )
 
   }
 
@@ -164,6 +183,8 @@ public final class PlayerController: NSObject {
   }
 
   deinit {
+
+    NotificationCenter.default.removeObserver(self)
 
     Log.debug("deinit \(self)")
 
@@ -248,6 +269,8 @@ public final class PlayerController: NSObject {
       MainActor.assumeIsolated { [weak self] in
         guard let self else { return }
 
+        guard self.isAppInBackground == false else { return }
+
         if let currentTime = controller.currentTime {
           
           let currentCue = cues.first { cue in
@@ -292,6 +315,17 @@ public final class PlayerController: NSObject {
     //
     //    }
 
+  }
+
+
+  @objc
+  private func didEnterBackground() {
+    isAppInBackground = true
+  }
+
+  @objc
+  private func didBecomeActive() {
+    isAppInBackground = false
   }
 
   public func pause() {

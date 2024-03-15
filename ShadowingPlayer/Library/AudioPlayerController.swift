@@ -55,35 +55,6 @@ final class AudioPlayerController: StoreDriverType {
       name: AVAudioSession.interruptionNotification,
       object: AVAudioSession.sharedInstance()
     )
-
-    NotificationCenter.default.addObserver(
-      self,
-      selector: #selector(didEnterBackground),
-      name: UIApplication.didEnterBackgroundNotification,
-      object: nil
-    )
-    
-    NotificationCenter.default.addObserver(
-      self,
-      selector: #selector(didBecomeActive),
-      name: UIApplication.didBecomeActiveNotification,
-      object: nil
-    )
-
-  }
-
-  @objc
-  private func didEnterBackground() {
-    store.commit {
-      $0.isAppInBackground = true
-    }
-  }
-
-  @objc
-  private func didBecomeActive() {
-    store.commit {
-      $0.isAppInBackground = false
-    }
   }
 
   deinit {
@@ -125,8 +96,6 @@ final class AudioPlayerController: StoreDriverType {
       MainActor.assumeIsolated { [weak self] in
 
         guard let self else { return }
-
-        guard store.state.isAppInBackground == false else { return }
 
         guard let currentFrame else {
           return
