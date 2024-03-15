@@ -23,14 +23,15 @@ enum WhisperKitWrapper {
     }
 
     // Initialize WhisperKit with default settings
-    let pipe = try await WhisperKit(model: "tiny.en")
+    let pipe = try await WhisperKit(model: "base.en")
 
     let result = try await pipe.transcribe(
       audioPath: input.path(percentEncoded: false),
       decodeOptions: .init(
         language: "en",
         skipSpecialTokens: true,
-        wordTimestamps: true
+        wordTimestamps: true,
+        suppressBlank: true
       )
     ) { progress in
       return true
