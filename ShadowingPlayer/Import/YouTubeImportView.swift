@@ -121,8 +121,9 @@ private struct _DebugView: View {
           let streams = try await video.streams
 
           let stream = try await video.streams.filter {
-            $0.includesVideoAndAudioTrack && $0.fileExtension == .mp4
+            [FileExtension.aac, .m4a, .mp4, .mp3].contains($0.fileExtension)
           }
+            .filterAudioOnly()
             .highestAudioBitrateStream()
 
           print(stream!.url)
