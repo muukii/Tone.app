@@ -15,6 +15,7 @@ final class AudioPlayerController: StoreDriverType {
 
   struct State: StateType {
     var isPlaying: Bool = false
+    var isAppInBackground: Bool = false
   }
 
   private let engine = AVAudioEngine()
@@ -55,6 +56,34 @@ final class AudioPlayerController: StoreDriverType {
       object: AVAudioSession.sharedInstance()
     )
 
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(didEnterBackground),
+      name: UIApplication.didEnterBackgroundNotification,
+      object: nil
+    )
+    
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(didBecomeActive),
+      name: UIApplication.didBecomeActiveNotification,
+      object: nil
+    )
+
+  }
+
+  @objc
+  private func didEnterBackground() {
+    store.commit {
+      $0.isAppInBackground = true
+    }
+  }
+
+  @objc
+  private func didBecomeActive() {
+    store.commit {
+      $0.isAppInBackground = false
+    }
   }
 
   deinit {
@@ -94,7 +123,10 @@ final class AudioPlayerController: StoreDriverType {
     currentTimerForLoop = Timer.init(timeInterval: 0.005, repeats: true) { [weak self] _ in
 
       MainActor.assumeIsolated { [weak self] in
+
         guard let self else { return }
+
+        guard store.state.isAppInBackground == false else { return }
 
         guard let currentFrame else {
           return
@@ -168,7 +200,8 @@ final class AudioPlayerController: StoreDriverType {
       return nil
     }
 
-    let currentTime = (Double(currentPlayerTime.sampleTime + offsetSampleTime) / currentPlayerTime.sampleRate)
+    let currentTime =
+      (Double(currentPlayerTime.sampleTime + offsetSampleTime) / currentPlayerTime.sampleRate)
 
     return currentTime
 
@@ -211,7 +244,6 @@ final class AudioPlayerController: StoreDriverType {
     }
 
     let frameCount = AVAudioFrameCount(rawFrameCount)
-
 
     audioPlayer.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
 
@@ -257,8 +289,8 @@ import AppService
 private struct AudioPlayerControllerPreview: View {
 
   let player: AudioPlayerController = try! .init(
-    file: .init(forReading: Item.social.audioFileURL)//,
-//    overlappingFile: .init(forReading: Item.overwhelmed.audioFileURL)
+    file: .init(forReading: Item.social.audioFileURL)  //,
+    //    overlappingFile: .init(forReading: Item.overwhelmed.audioFileURL)
   )
 
   var body: some View {

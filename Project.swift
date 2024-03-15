@@ -78,15 +78,13 @@ let project = Project(
         "TARGETED_DEVICE_FAMILY": "1",
         "DEVELOPMENT_TEAM": "KU2QEJ9K3Z",
         "OTHER_LDFLAGS": "$(inherited) -all_load",
-      ]),
-      mergedBinaryType: .disabled,
-      mergeable: false
+      ])
     ),
 
     .target(
       name: "AppService",
       destinations: [.iPhone],
-      product: .framework,
+      product: .staticLibrary,
       bundleId: "app.muukii.Speaking.AppService",
       deploymentTargets: .iOS("17.0"),
       sources: ["Sources/AppService/**"],
@@ -95,9 +93,7 @@ let project = Project(
         .external(name: "Verge"),
         .external(name: "Wrap"),
         .external(name: "SwiftSubtitles"),
-      ],
-      mergedBinaryType: .disabled,
-      mergeable: false
+      ]
     ),
   ],
   schemes: [
