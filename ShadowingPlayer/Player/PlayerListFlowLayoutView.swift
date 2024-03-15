@@ -4,6 +4,7 @@ import SwiftUISupport
 import Verge
 import AppService
 import MondrianLayout
+import Algorithms
 
 private enum CellIsFocusing: CustomStateKey {
   typealias Value = Bool
@@ -65,10 +66,16 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     self.actionHandler = actionHandler
 
     self.snapshot = NSDiffableDataSourceSnapshot<String, DisplayCue>.init()&>.modify({ s in
-      s.appendSections(["Main"])
-      s.appendItems(controller.cues, toSection: "Main")
-    })
 
+      let chunks = controller.cues.chunked(by: {
+        return ($1.backed.startTime - $0.backed.endTime > 0.08) == false
+      })
+
+      for (index, chunk) in chunks.enumerated() {
+        s.appendSections(["\(index)"])
+        s.appendItems(Array(chunk), toSection: "\(index)")
+      }
+    })
   }
 
   private func makeCellState() -> [DisplayCue : CellState] {
@@ -108,12 +115,9 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
       layout: {
         let layout = AlignedCollectionViewFlowLayout(horizontalAlignment: .leading)
         layout.estimatedItemSize = .init(width: 50, height: 50)
-        layout.sectionInset = .init(top: 0, left: 16, bottom: 0, right: 16)
+        layout.sectionInset = .init(top: 20, left: 16, bottom: 20, right: 16)
         return layout
 
-//        let layout = UICollectionViewFlowLayout()
-//        layout.estimatedItemSize = .init(width: 50, height: 50)
-//        return layout
       },
       scrollDirection: .vertical,
       contentInsetAdjustmentBehavior: .always,

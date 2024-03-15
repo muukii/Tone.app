@@ -69,6 +69,7 @@ let project = Project(
         .external(name: "Wrap"),
         .external(name: "MondrianLayout"),
         .external(name: "SwiftUIIntrospect"),
+        .external(name: "Algorithms"),
 
         .external(name: "SwiftUIRingSlider"),
       ],
