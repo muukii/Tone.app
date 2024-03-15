@@ -1,10 +1,10 @@
+import Algorithms
+import AppService
 import DynamicList
+import MondrianLayout
 import SwiftUI
 import SwiftUISupport
 import Verge
-import AppService
-import MondrianLayout
-import Algorithms
 
 private enum CellIsFocusing: CustomStateKey {
   typealias Value = Bool
@@ -25,7 +25,6 @@ private enum CellPlayingRange: CustomStateKey {
     nil
   }
 }
-
 
 extension CellState {
 
@@ -78,9 +77,9 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     })
   }
 
-  private func makeCellState() -> [DisplayCue : CellState] {
+  private func makeCellState() -> [DisplayCue: CellState] {
 
-    var cellStates: [DisplayCue : CellState] = [:]
+    var cellStates: [DisplayCue: CellState] = [:]
 
     let focusing = controller.currentCue
 
@@ -125,14 +124,14 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
         let cue = context.data
 
-//        return context.cell { cell, state, cellState in
-//          return CueCellContentConfiguration(
-//            text: cue.backed.text,
-//            isFocusing: cellState.isFocusing,
-//            isInRange: cellState.playingRange?.contains(cue) ?? false,
-//            accentColor: .systemMint
-//          )
-//        }
+        //        return context.cell { cell, state, cellState in
+        //          return CueCellContentConfiguration(
+        //            text: cue.backed.text,
+        //            isFocusing: cellState.isFocusing,
+        //            isInRange: cellState.playingRange?.contains(cue) ?? false,
+        //            accentColor: .systemMint
+        //          )
+        //        }
 
         return context.cell { state, customState in
           makeChunk(
@@ -160,10 +159,20 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
             }
           )
         }
-        
+
       }
     )
-    .scrolling(to: controller.currentCue.map { .init(item: $0, skipsWhileTracking: true, animated: true) })
+    .scrolling(
+      to: controller.currentCue.map {
+        .init(
+          item: $0,
+          skipCondition: { scrollView in
+            scrollView.isDecelerating || scrollView.isTracking
+          },
+          animated: true
+        )
+      }
+    )
 
   }
 
@@ -177,7 +186,7 @@ nonisolated func makeChunk(
   isInRange: Bool,
   onSelect: @escaping () -> Void
 )
--> some View
+  -> some View
 {
   VStack(spacing: 4) {
 
@@ -222,10 +231,13 @@ nonisolated func makeChunk(
       .padding(.horizontal, isFocusing ? 0 : 2)
   }
   .animation(.bouncy, value: isFocusing)
-  .transaction(value: identifier, { t in
-    // prevent animation while reusing
-    t.disablesAnimations = true
-  })
+  .transaction(
+    value: identifier,
+    { t in
+      // prevent animation while reusing
+      t.disablesAnimations = true
+    }
+  )
   .padding(.horizontal, 2)
   ._onButtonGesture(
     pressing: { isPressing in },
@@ -278,7 +290,7 @@ private final class CueCellContentView: UIView, UIContentView {
 
     update(with: configuration)
   }
-  
+
   required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
@@ -302,7 +314,7 @@ private struct CueCellContentConfiguration: UIContentConfiguration {
   func makeContentView() -> UIView & UIContentView {
     CueCellContentView(configuration: self)
   }
-  
+
   func updated(for state: UIConfigurationState) -> CueCellContentConfiguration {
     return self
   }
