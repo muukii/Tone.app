@@ -51,6 +51,8 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
   private unowned let controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) async -> Void
 
+  @State var isFollowing: Bool = true
+
   private let pins: [PinEntity]
 
   private let snapshot: NSDiffableDataSourceSnapshot<String, DisplayCue>
@@ -108,72 +110,93 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
   var body: some View {
 
-    DynamicList<String, DisplayCue>(
-      snapshot: snapshot,
-      cellStates: makeCellState(),
-      layout: {
-        let layout = AlignedCollectionViewFlowLayout(horizontalAlignment: .leading)
-        layout.estimatedItemSize = .init(width: 50, height: 50)
-        layout.sectionInset = .init(top: 20, left: 16, bottom: 20, right: 16)
-        return layout
+    ZStack {
+      DynamicList<String, DisplayCue>(
+        snapshot: snapshot,
+        cellStates: makeCellState(),
+        layout: {
+          let layout = AlignedCollectionViewFlowLayout(horizontalAlignment: .leading)
+          layout.estimatedItemSize = .init(width: 50, height: 50)
+          layout.sectionInset = .init(top: 20, left: 16, bottom: 20, right: 16)
+          return layout
 
-      },
-      scrollDirection: .vertical,
-      contentInsetAdjustmentBehavior: .always,
-      cellProvider: { [weak controller] context in
+        },
+        scrollDirection: .vertical,
+        contentInsetAdjustmentBehavior: .always,
+        cellProvider: { [weak controller] context in
 
-        let cue = context.data
+          let cue = context.data
 
-        //        return context.cell { cell, state, cellState in
-        //          return CueCellContentConfiguration(
-        //            text: cue.backed.text,
-        //            isFocusing: cellState.isFocusing,
-        //            isInRange: cellState.playingRange?.contains(cue) ?? false,
-        //            accentColor: .systemMint
-        //          )
-        //        }
+          //        return context.cell { cell, state, cellState in
+          //          return CueCellContentConfiguration(
+          //            text: cue.backed.text,
+          //            isFocusing: cellState.isFocusing,
+          //            isInRange: cellState.playingRange?.contains(cue) ?? false,
+          //            accentColor: .systemMint
+          //          )
+          //        }
 
-        return context.cell { state, customState in
-          makeChunk(
-            text: cue.backed.text,
-            hasMark: customState.hasMark,
-            identifier: cue.id,
-            isFocusing: customState.isFocusing,
-            isInRange: customState.playingRange?.contains(cue) ?? false,
-            onSelect: {
-              guard let controller else { return }
-              if controller.isRepeating {
+          return context.cell { state, customState in
+            makeChunk(
+              text: cue.backed.text,
+              hasMark: customState.hasMark,
+              identifier: cue.id,
+              isFocusing: customState.isFocusing,
+              isInRange: customState.playingRange?.contains(cue) ?? false,
+              onSelect: {
+                guard let controller else { return }
+                if controller.isRepeating {
 
-                if var currentRange = customState.playingRange {
+                  if var currentRange = customState.playingRange {
 
-                  currentRange.select(cue: cue)
+                    currentRange.select(cue: cue)
 
-                  controller.setRepeat(range: currentRange)
+                    controller.setRepeat(range: currentRange)
 
+                  } else {
+
+                  }
                 } else {
-
+                  controller.move(to: cue)
                 }
-              } else {
-                controller.move(to: cue)
               }
-            }
+            )
+          }
+
+        }
+      )
+      .scrollHandler { scrollView, action in
+        switch action {
+        case .didScroll:
+          if scrollView.isTracking {
+            isFollowing = false
+          }
+        }
+      }
+      .scrolling(
+        to: controller.currentCue.map {
+          .init(
+            item: $0,
+            skipCondition: { scrollView in
+              isFollowing == false || scrollView.isDecelerating || scrollView.isTracking
+            },
+            animated: true
           )
         }
+      )
 
+      Button {
+        isFollowing = true
+      } label: {
+        Image(systemName: "arrow.up.backward.circle.fill")
       }
-    )
-    .scrolling(
-      to: controller.currentCue.map {
-        .init(
-          item: $0,
-          skipCondition: { scrollView in
-            scrollView.isDecelerating || scrollView.isTracking
-          },
-          animated: true
-        )
-      }
-    )
+      .buttonStyle(.bordered)
+      .buttonBorderShape(.roundedRectangle)
+      .opacity(isFollowing ? 0 : 1)
+      .relative(vertical: .bottom, horizontal: .trailing)
+      .padding(20)
 
+    }
   }
 
 }
@@ -321,6 +344,17 @@ private struct CueCellContentConfiguration: UIContentConfiguration {
 }
 
 #if DEBUG
+
+#Preview("FollowButton") {
+  Button {
+
+  } label: {
+    Image(systemName: "arrow.up.backward.circle.fill")
+  }
+  .buttonStyle(.bordered)
+  .buttonBorderShape(.roundedRectangle)
+  .tint(.purple)
+}
 
 #Preview("Cell") {
   HStack {
