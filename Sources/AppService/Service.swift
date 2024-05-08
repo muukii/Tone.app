@@ -161,6 +161,9 @@ public final class Service {
         }
 
       }
+    } catch {
+      Log.error("Failed to import item: \(error)")
+      throw error
     }
   }
 
