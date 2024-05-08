@@ -23,9 +23,9 @@ enum WhisperKitWrapper {
     }
 
     // Initialize WhisperKit with default settings
-    let pipe = try await WhisperKit(model: "base.en")
+    let pipe = try await WhisperKit(model: "small.en")
 
-    let result = try await pipe.transcribe(
+    let results: [TranscriptionResult] = try await pipe.transcribe(
       audioPath: input.path(percentEncoded: false),
       decodeOptions: .init(
         language: "en",
@@ -36,6 +36,8 @@ enum WhisperKitWrapper {
     ) { progress in
       return true
     }
+
+    let result = results.first
 
     guard let result else {
       throw Error.failedToTranscribe
