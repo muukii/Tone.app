@@ -53,6 +53,7 @@ let project = Project(
       resources: [
         "ShadowingPlayer/Assets.xcassets",
         "ShadowingPlayer/Preview Content/**",
+        "ShadowingPlayer/PrivacyInfo.xcprivacy",
       ],
       entitlements: .dictionary([:]),
       dependencies: [
