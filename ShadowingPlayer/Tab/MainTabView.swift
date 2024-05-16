@@ -22,17 +22,13 @@ struct MainTabView: View {
       }
       .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
 
-//      WhisperView()
-//        .tabItem {
-//          Label("Whisper", systemImage: "mic")
-//        }
-//        .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
-//
-//      YouTubeDownloadView()
-//        .tabItem {
-//          Label("YouTube", systemImage: "mic")
-//        }
-//        .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
+      #if DEBUG
+      AudioSessionBook()
+        .tabItem {
+          Label("Lab", systemImage: "airpodsmax")
+        }
+      #endif
+
     }
     .tint(.primary)
   }
