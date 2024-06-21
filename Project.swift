@@ -23,6 +23,7 @@ let project = Project(
     base: [
       "CURRENT_PROJECT_VERSION": "1",
       "MARKETING_VERSION": "$(APP_SHORT_VERSION)",
+      "SWIFT_VERSION" : "6.0"
     ],
     configurations: [
       .debug(name: "Debug", settings: [:], xcconfig: "./xcconfigs/Project.xcconfig"),

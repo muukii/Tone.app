@@ -201,7 +201,8 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
 }
 
-nonisolated func makeChunk(
+@MainActor
+func makeChunk(
   text: String,
   hasMark: Bool,
   identifier: some Hashable,

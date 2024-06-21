@@ -7,7 +7,7 @@ public final class Service {
 
   public let modelContainer: ModelContainer
 
-  public nonisolated init() {
+  public init() {
 
     let databasePath = URL.documentsDirectory.appending(path: "database")
     do {
@@ -26,14 +26,16 @@ public final class Service {
   }
 
   public func makePinned(range: PlayingRange, for item: ItemEntity) async throws {
+    
+    let itemID = item.id
 
     try await withBackground { [self] in
 
       let modelContext = ModelContext(modelContainer)
-
+      
       let targetItem = try modelContext.fetch(
         .init(
-          predicate: #Predicate<ItemEntity> { [id = item.id] in
+          predicate: #Predicate<ItemEntity> { [id = itemID] in
             $0.persistentModelID == id
           }
         )
@@ -43,7 +45,7 @@ public final class Service {
       new.createdAt = .init()
       new.startCueRawIdentifier = range.startCue.id
       new.endCueRawIdentifier = range.endCue.id
-      new.identifier = "\(item.id)\(range.startCue.id)-\(range.endCue.id)"
+      new.identifier = "\(itemID)\(range.startCue.id)-\(range.endCue.id)"
 
       guard let targetItem else {
         assertionFailure("not found item")

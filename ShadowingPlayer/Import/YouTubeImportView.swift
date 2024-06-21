@@ -1,6 +1,6 @@
 import AppService
 import SwiftUI
-import YouTubeKit
+@preconcurrency import YouTubeKit
 
 struct YouTubeImportView: View {
 
@@ -120,7 +120,7 @@ private struct _DebugView: View {
 
           let streams = try await video.streams
 
-          let stream = try await video.streams.filter {
+          let stream = streams.filter {
             [FileExtension.aac, .m4a, .mp4, .mp3].contains($0.fileExtension)
           }
             .filterAudioOnly()
