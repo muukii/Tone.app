@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSubtitles
 
-public struct DisplayCue: Identifiable, Hashable {
+public struct DisplayCue: Identifiable, Hashable, Sendable {
 
   public func hash(into hasher: inout Hasher) {
     id.hash(into: &hasher)

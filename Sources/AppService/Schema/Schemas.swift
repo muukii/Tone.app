@@ -8,6 +8,7 @@ public typealias ActiveSchema = Schemas.V2
 public typealias ItemEntity = ActiveSchema.Item
 public typealias PinEntity = ActiveSchema.Pin
 
+@MainActor
 let currentSchema: Schema = .init(versionedSchema: ActiveSchema.self)
 
 enum ServiceSchemaMigrationPlan: SchemaMigrationPlan {
