@@ -77,8 +77,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections",
       "state" : {
-        "revision" : "94cf62b3ba8d4bed62680a282d4c25f9c63c2efb",
-        "version" : "1.1.0"
+        "revision" : "ee97538f5b81ae89698fd95938896dec5217b148",
+        "version" : "1.1.1"
       }
     },
     {
@@ -140,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/siteline/swiftui-introspect",
       "state" : {
-        "revision" : "7dc5b287f8040e4ad5038739850b758e78f77808",
-        "version" : "1.1.4"
+        "revision" : "668a65735751432b640260c56dfa621cec568368",
+        "version" : "1.2.0"
       }
     },
     {
@@ -150,7 +150,7 @@
       "location" : "https://github.com/FluidGroup/swiftui-support",
       "state" : {
         "branch" : "main",
-        "revision" : "121e000c402f957a926de1c97b6fc2b1a15f3e4f"
+        "revision" : "c9dbabb972df705db47251193a2126a40f41ea73"
       }
     },
     {
@@ -168,7 +168,7 @@
       "location" : "https://github.com/VergeGroup/Verge",
       "state" : {
         "branch" : "main",
-        "revision" : "d1196a26f7ead37b452f253bc024c488ef28e5b2"
+        "revision" : "763855f8a11ab26a1a3588e2c502262f00cc0d8c"
       }
     },
     {
@@ -176,8 +176,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/argmaxinc/whisperkit",
       "state" : {
-        "revision" : "c20943d3f5d6f64981e9eaed8a3a9c3a62124fc5",
-        "version" : "0.6.1"
+        "revision" : "aa4bb901c8a09c8b5320ff4bb9fe64a095614d4e",
+        "version" : "0.7.2"
       }
     },
     {
