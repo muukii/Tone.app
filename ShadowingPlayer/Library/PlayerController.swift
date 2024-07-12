@@ -272,9 +272,9 @@ public final class PlayerController: NSObject {
 
         guard self.isAppInBackground == false else { return }
 
-        if let currentTime = controller.currentTime {
+        if let currentTime = self.controller.currentTime {
           
-          let currentCue = cues.first { cue in
+          let currentCue = self.cues.first { cue in
 
             if cue.backed.startTime <= currentTime, cue.backed.endTime >= currentTime {
               return true
