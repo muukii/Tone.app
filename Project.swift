@@ -67,6 +67,7 @@ let project = Project(
         .external(name: "DSWaveformImageViews"),
         .external(name: "SwiftSubtitles"),
         .external(name: "DynamicList"),
+        .external(name: "SwiftUISupportLayout"),
         .external(name: "SwiftUISupport"),
         .external(name: "Wrap"),
         .external(name: "MondrianLayout"),
