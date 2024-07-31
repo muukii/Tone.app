@@ -14,13 +14,13 @@ struct MainTabView: View {
         }
         .tint(#hexColor("5A31FF", colorSpace: .displayP3))
 
-      VoiceRecorderView(
-        controller: RecorderAndPlayer()
-      )
-      .tabItem {
-        Label("Recorder", systemImage: "mic")
-      }
-      .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
+//      VoiceRecorderView(
+//        controller: RecorderAndPlayer()
+//      )
+//      .tabItem {
+//        Label("Recorder", systemImage: "mic")
+//      }
+//      .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
 
 //      WhisperView()
 //        .tabItem {
