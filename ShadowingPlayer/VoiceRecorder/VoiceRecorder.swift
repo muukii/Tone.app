@@ -380,21 +380,33 @@ final class VoiceRecorderController {
   func activate() throws {
 
     if hasInstalledTap == false {
-      print(recordingEngine.inputNode)
       
-      Task { @MainActor in
-        let box = await self.recordingEngine.inputNode
+      Task { @MainActor [weak self] in
+                                
+        let stream = self?.recordingEngine.inputNode
           .installTap(onBus: 0, bufferSize: 4096, format: nil)
-
-        let (buffer, _) = box.value
-
-        do {
-          for file in self.writingFiles {
-            try file.write(from: buffer)
-          }
-        } catch let error {
-          print("audioFile.writeFromBuffer error:", error)
+        
+        guard let stream else {
+          return
         }
+        
+        guard let writingFiles = self?.writingFiles else {
+          return 
+        }
+        
+        for await box in stream { 
+          
+          let (buffer, _) = box.value
+          
+          do {
+            for file in writingFiles {
+              try file.write(from: buffer)
+            }
+          } catch let error {
+            print("audioFile.writeFromBuffer error:", error)
+          }
+        }
+
       }        
 
       hasInstalledTap = true
@@ -437,17 +449,18 @@ struct UnsafeSendableBox<V>: @unchecked Sendable {
 }
 
 extension AVAudioInputNode {
+  
   @MainActor
   func installTap(
     onBus bus: AVAudioNodeBus,
     bufferSize: AVAudioFrameCount,
     format: AVAudioFormat?
-  ) async -> UnsafeSendableBox<(AVAudioPCMBuffer, AVAudioTime)> {
+  ) -> AsyncStream<UnsafeSendableBox<(AVAudioPCMBuffer, AVAudioTime)>> {
     
-    await withCheckedContinuation { continuation in
+    return AsyncStream<UnsafeSendableBox<(AVAudioPCMBuffer, AVAudioTime)>>.init { continuation in
       self.installTap(onBus: bus, bufferSize: bufferSize, format: format) { @Sendable buffer, time in
         let box = UnsafeSendableBox.init(value: (buffer, time))
-        continuation.resume(returning: box)
+        continuation.yield(with: .success(box))
       }
     }
     
