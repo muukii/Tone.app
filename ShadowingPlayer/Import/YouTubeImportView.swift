@@ -1,6 +1,6 @@
 import AppService
 import SwiftUI
-@preconcurrency import YouTubeKit
+import YouTubeKit
 
 struct YouTubeImportView: View {
 
@@ -17,12 +17,13 @@ struct YouTubeImportView: View {
   var body: some View {
     YouTubeImportContentView(
       statusText: statusText,
-      onTranscribe: { @MainActor url in
+      onTranscribe: { url in
+        
         do {
           
           statusText = "Fetching metadata..."
 
-          let title = try await YouTube(url: url).metadata?.title
+          let title = try await withBackground { try await YouTube(url: url).metadata?.title }
 
           statusText = "Downloading audio..."
 
@@ -113,7 +114,8 @@ private struct _DebugView: View {
   var body: some View {
     VStack {
       Button("Run") {
-        Task { @MainActor in
+        
+        Task.background {
           let url = URL(string: "https://www.youtube.com/watch?v=8UwrcVIyvWA")!
 
           let video = YouTube(url: url)

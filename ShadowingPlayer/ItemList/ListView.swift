@@ -13,7 +13,7 @@ struct ListView: View {
   @Query(sort: \ItemEntity.createdAt, order: .reverse)
   private var itemEntities: [ItemEntity]
 
-  private let isSettinsEnabled = false
+  private let isSettinsEnabled = true
 
   @Environment(\.modelContext) var modelContext
 

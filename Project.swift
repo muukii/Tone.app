@@ -45,6 +45,7 @@ let project = Project(
           "UIApplicationSupportsMultipleScenes": "YES",
           "UISceneConfigurations": [:],
         ],
+        "NSSupportsLiveActivities" : "YES",
         "UILaunchScreen": ["UILaunchScreen": [:]],
         "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
         "NSMicrophoneUsageDescription":
@@ -63,6 +64,7 @@ let project = Project(
         .external(name: "Verge"),
         .external(name: "HexColorMacro"),
         .target(name: "AppService"),
+        .target(name: "LiveActivity"),
 
         .external(name: "DSWaveformImageViews"),
         .external(name: "SwiftSubtitles"),
@@ -83,6 +85,25 @@ let project = Project(
         "OTHER_LDFLAGS": "$(inherited) -all_load",
       ])
     ),
+
+      .target(
+        name: "LiveActivity",
+        destinations: .iOS,
+        product: .appExtension,
+        bundleId: "app.muukii.tone.LiveActivity",
+        infoPlist: .dictionary([
+          "CFBundleName": "$(PRODUCT_NAME)",
+          "CFBundleDisplayName": "Tone Widget",
+          "CFBundleShortVersionString": "$(APP_SHORT_VERSION)",
+          "CFBundleIdentifier": "$PRODUCT_BUNDLE_IDENTIFIER",
+          "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
+          "CFBundleExecutable": "$(EXECUTABLE_NAME)",
+          "NSExtension": [
+            "NSExtensionPointIdentifier": "com.apple.widgetkit-extension"
+          ],
+        ]),
+        sources: ["Sources/LiveActivity/**"]
+      ),
 
     .target(
       name: "AppService",
