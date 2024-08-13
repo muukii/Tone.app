@@ -25,6 +25,7 @@ struct SettingsView: View {
 }
 
 import ActivityKit
+import ActivityContent
 
 @MainActor
 final class ActivityManager: ObservableObject {
@@ -40,7 +41,7 @@ final class ActivityManager: ObservableObject {
   func startActivity() {
     do {
       
-      let state = MyActivityAttributes.ContentState()
+      let state = MyActivityAttributes.ContentState(text: "Hello!")
       
       let r = try Activity.request(
         attributes: MyActivityAttributes(),

@@ -1,20 +1,7 @@
 import ActivityKit
 import SwiftUI
 import WidgetKit
-
-public struct MyActivityAttributes: ActivityAttributes {
-  
-  public struct ContentState: Codable, Hashable {
-    public init() {
-      
-    }
-  }
-  
-  public init() {
-    
-  }
-  
-}
+import ActivityContent
 
 struct ExpandedView: View {
   
@@ -34,11 +21,11 @@ struct MyWidget: Widget {
           ExpandedView()
         }
       } compactLeading: {
-        Text("🚌🚌")
+        Text(context.state.text)
       } compactTrailing: {
-        Text("🚌🚌🚌")
+        Text(context.state.text)
       } minimal: {
-        Text("🚌")
+        Text(context.state.text)
       }
     }
     

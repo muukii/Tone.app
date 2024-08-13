@@ -64,6 +64,7 @@ let project = Project(
         .external(name: "Verge"),
         .external(name: "HexColorMacro"),
         .target(name: "AppService"),
+        .target(name: "ActivityContent"),
         .target(name: "LiveActivity"),
 
         .external(name: "DSWaveformImageViews"),
@@ -102,7 +103,10 @@ let project = Project(
             "NSExtensionPointIdentifier": "com.apple.widgetkit-extension"
           ],
         ]),
-        sources: ["Sources/LiveActivity/**"]
+        sources: ["Sources/LiveActivity/**"],
+        dependencies: [
+          .target(name: "ActivityContent"),
+        ]
       ),
 
     .target(
@@ -113,10 +117,22 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       sources: ["Sources/AppService/**"],
       dependencies: [
+        .target(name: "ActivityContent"),
         .external(name: "WhisperKit"),
         .external(name: "Verge"),
         .external(name: "Wrap"),
         .external(name: "SwiftSubtitles"),
+      ]
+    ),
+
+    .target(
+      name: "ActivityContent",
+      destinations: [.iPhone],
+      product: .framework,
+      bundleId: "app.muukii.Speaking.ActivityContent",
+      deploymentTargets: .iOS("17.0"),
+      sources: ["Sources/ActivityContent/**"],
+      dependencies: [
       ]
     ),
   ],
