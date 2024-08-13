@@ -11,9 +11,14 @@ public final class Service {
 
     let databasePath = URL.documentsDirectory.appending(path: "database")
     do {
+      // got an error in migration plan
+//      let container = try ModelContainer(
+//        for: currentSchema,
+//        migrationPlan: ServiceSchemaMigrationPlan.self,
+//        configurations: .init(url: databasePath)
+//      )
       let container = try ModelContainer(
         for: currentSchema,
-        migrationPlan: ServiceSchemaMigrationPlan.self,
         configurations: .init(url: databasePath)
       )
       self.modelContainer = container
