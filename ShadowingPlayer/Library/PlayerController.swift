@@ -183,28 +183,29 @@ public final class PlayerController: NSObject {
   }
 
   deinit {
-
-    NotificationCenter.default.removeObserver(self)
-
-    Log.debug("deinit \(self)")
-
-    do {
-      let instance = AVAudioSession.sharedInstance()
-      try instance.setActive(false, options: .notifyOthersOnDeactivation)
-    } catch {
-      print(error)
-    }
-
-    Task { @MainActor [currentTimeObservation, currentTimer, currentTimerForLoop] in
-      currentTimeObservation?.invalidate()
-      currentTimer?.invalidate()
-      currentTimerForLoop?.invalidate()
-    }
-
-    MPRemoteCommandCenter.shared().playCommand.removeTarget(self)
-    MPRemoteCommandCenter.shared().pauseCommand.removeTarget(self)
-    MPRemoteCommandCenter.shared().nextTrackCommand.removeTarget(self)
-    MPRemoteCommandCenter.shared().previousTrackCommand.removeTarget(self)
+    MainActor.assumeIsolated { 
+      NotificationCenter.default.removeObserver(self)
+      
+      Log.debug("deinit \(self)")
+      
+      do {
+        let instance = AVAudioSession.sharedInstance()
+        try instance.setActive(false, options: .notifyOthersOnDeactivation)
+      } catch {
+        print(error)
+      }
+      
+      Task { @MainActor [currentTimeObservation, currentTimer, currentTimerForLoop] in
+        currentTimeObservation?.invalidate()
+        currentTimer?.invalidate()
+        currentTimerForLoop?.invalidate()
+      }
+      
+      MPRemoteCommandCenter.shared().playCommand.removeTarget(self)
+      MPRemoteCommandCenter.shared().pauseCommand.removeTarget(self)
+      MPRemoteCommandCenter.shared().nextTrackCommand.removeTarget(self)
+      MPRemoteCommandCenter.shared().previousTrackCommand.removeTarget(self)
+    }   
   }
 
   func activate() {
@@ -271,9 +272,9 @@ public final class PlayerController: NSObject {
 
         guard self.isAppInBackground == false else { return }
 
-        if let currentTime = controller.currentTime {
+        if let currentTime = self.controller.currentTime {
           
-          let currentCue = cues.first { cue in
+          let currentCue = self.cues.first { cue in
 
             if cue.backed.startTime <= currentTime, cue.backed.endTime >= currentTime {
               return true

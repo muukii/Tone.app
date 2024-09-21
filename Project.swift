@@ -23,6 +23,7 @@ let project = Project(
     base: [
       "CURRENT_PROJECT_VERSION": "1",
       "MARKETING_VERSION": "$(APP_SHORT_VERSION)",
+      "SWIFT_VERSION" : "6.0"
     ],
     configurations: [
       .debug(name: "Debug", settings: [:], xcconfig: "./xcconfigs/Project.xcconfig"),
@@ -44,6 +45,7 @@ let project = Project(
           "UIApplicationSupportsMultipleScenes": "YES",
           "UISceneConfigurations": [:],
         ],
+        "NSSupportsLiveActivities" : "YES",
         "UILaunchScreen": ["UILaunchScreen": [:]],
         "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
         "NSMicrophoneUsageDescription":
@@ -62,10 +64,13 @@ let project = Project(
         .external(name: "Verge"),
         .external(name: "HexColorMacro"),
         .target(name: "AppService"),
+        .target(name: "ActivityContent"),
+        .target(name: "LiveActivity"),
 
         .external(name: "DSWaveformImageViews"),
         .external(name: "SwiftSubtitles"),
         .external(name: "DynamicList"),
+        .external(name: "SwiftUISupportLayout"),
         .external(name: "SwiftUISupport"),
         .external(name: "Wrap"),
         .external(name: "MondrianLayout"),
@@ -82,6 +87,28 @@ let project = Project(
       ])
     ),
 
+      .target(
+        name: "LiveActivity",
+        destinations: .iOS,
+        product: .appExtension,
+        bundleId: "app.muukii.tone.LiveActivity",
+        infoPlist: .dictionary([
+          "CFBundleName": "$(PRODUCT_NAME)",
+          "CFBundleDisplayName": "Tone Widget",
+          "CFBundleShortVersionString": "$(APP_SHORT_VERSION)",
+          "CFBundleIdentifier": "$PRODUCT_BUNDLE_IDENTIFIER",
+          "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
+          "CFBundleExecutable": "$(EXECUTABLE_NAME)",
+          "NSExtension": [
+            "NSExtensionPointIdentifier": "com.apple.widgetkit-extension"
+          ],
+        ]),
+        sources: ["Sources/LiveActivity/**"],
+        dependencies: [
+          .target(name: "ActivityContent"),
+        ]
+      ),
+
     .target(
       name: "AppService",
       destinations: [.iPhone],
@@ -90,10 +117,22 @@ let project = Project(
       deploymentTargets: .iOS("17.0"),
       sources: ["Sources/AppService/**"],
       dependencies: [
+        .target(name: "ActivityContent"),
         .external(name: "WhisperKit"),
         .external(name: "Verge"),
         .external(name: "Wrap"),
         .external(name: "SwiftSubtitles"),
+      ]
+    ),
+
+    .target(
+      name: "ActivityContent",
+      destinations: [.iPhone],
+      product: .framework,
+      bundleId: "app.muukii.Speaking.ActivityContent",
+      deploymentTargets: .iOS("17.0"),
+      sources: ["Sources/ActivityContent/**"],
+      dependencies: [
       ]
     ),
   ],

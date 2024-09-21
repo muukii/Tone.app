@@ -17,12 +17,13 @@ struct YouTubeImportView: View {
   var body: some View {
     YouTubeImportContentView(
       statusText: statusText,
-      onTranscribe: { @MainActor url in
+      onTranscribe: { url in
+        
         do {
           
           statusText = "Fetching metadata..."
 
-          let title = try await YouTube(url: url).metadata?.title
+          let title = try await withBackground { try await YouTube(url: url).metadata?.title }
 
           statusText = "Downloading audio..."
 
@@ -113,14 +114,15 @@ private struct _DebugView: View {
   var body: some View {
     VStack {
       Button("Run") {
-        Task { @MainActor in
+        
+        Task.background {
           let url = URL(string: "https://www.youtube.com/watch?v=8UwrcVIyvWA")!
 
           let video = YouTube(url: url)
 
           let streams = try await video.streams
 
-          let stream = try await video.streams.filter {
+          let stream = streams.filter {
             [FileExtension.aac, .m4a, .mp4, .mp3].contains($0.fileExtension)
           }
             .filterAudioOnly()

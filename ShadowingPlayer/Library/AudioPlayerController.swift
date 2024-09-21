@@ -97,7 +97,7 @@ final class AudioPlayerController: StoreDriverType {
 
         guard let self else { return }
 
-        guard let currentFrame else {
+        guard let currentFrame = self.currentFrame else {
           return
         }
 
@@ -105,23 +105,23 @@ final class AudioPlayerController: StoreDriverType {
           return
         }
 
-        switch repeating {
+        switch self.repeating {
         case .atEnd:
-          if currentFrame + offsetSampleTime >= file.length {
-            seek(position: 0)
+          if currentFrame + self.offsetSampleTime >= self.file.length {
+            self.seek(position: 0)
           }
         case .range(let start, let end):
 
           if currentTime >= end {
-            seek(position: start)
+            self.seek(position: start)
           }
 
         case nil:
 
-          if currentTime >= file.duration {
+          if currentTime >= self.file.duration {
             // reset cursor to beginning
-            offsetSampleTime = 0
-            pause()
+            self.offsetSampleTime = 0
+            self.pause()
           }
 
         }

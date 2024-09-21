@@ -118,10 +118,10 @@ struct VoiceRecorderView: View {
 
     }
     .onAppear {
-      controller.activate()
+//      controller.activate()
     }
     .onDisappear {
-      controller.deactivate()
+//      controller.deactivate()
     }
 
   }
@@ -376,23 +376,38 @@ final class VoiceRecorderController {
 
   }
 
+  @MainActor
   func activate() throws {
 
     if hasInstalledTap == false {
-      print(recordingEngine.inputNode)
-      recordingEngine.inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) {
-        [weak self] (buffer, when) in
-
-        guard let self else { return }
-
-        do {
-          for file in writingFiles {
-            try file.write(from: buffer)
-          }
-        } catch let error {
-          print("audioFile.writeFromBuffer error:", error)
+      
+      Task { @MainActor [weak self] in
+                                
+        let stream = self?.recordingEngine.inputNode
+          .installTap(onBus: 0, bufferSize: 4096, format: nil)
+        
+        guard let stream else {
+          return
         }
-      }
+        
+        guard let writingFiles = self?.writingFiles else {
+          return 
+        }
+        
+        for await box in stream { 
+          
+          let (buffer, _) = box.value
+          
+          do {
+            for file in writingFiles {
+              try file.write(from: buffer)
+            }
+          } catch let error {
+            print("audioFile.writeFromBuffer error:", error)
+          }
+        }
+
+      }        
 
       hasInstalledTap = true
     }
@@ -427,6 +442,29 @@ final class VoiceRecorderController {
     return newFile
   }
 
+}
+
+struct UnsafeSendableBox<V>: @unchecked Sendable {
+  var value: V
+}
+
+extension AVAudioInputNode {
+  
+  @MainActor
+  func installTap(
+    onBus bus: AVAudioNodeBus,
+    bufferSize: AVAudioFrameCount,
+    format: AVAudioFormat?
+  ) -> AsyncStream<UnsafeSendableBox<(AVAudioPCMBuffer, AVAudioTime)>> {
+    
+    return AsyncStream<UnsafeSendableBox<(AVAudioPCMBuffer, AVAudioTime)>>.init { continuation in
+      self.installTap(onBus: bus, bufferSize: bufferSize, format: format) { @Sendable buffer, time in
+        let box = UnsafeSendableBox.init(value: (buffer, time))
+        continuation.yield(with: .success(box))
+      }
+    }
+    
+  }
 }
 
 #Preview {

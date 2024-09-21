@@ -4,7 +4,7 @@ import _Concurrency
  Performs the given task in background
  */
 public nonisolated func withBackground<Return: Sendable>(
-  _ thunk: @escaping @Sendable () async throws -> Return
+  _ thunk: @escaping @isolated(any) @Sendable () async throws -> Return
 ) async rethrows -> Return {
 
   // here is the background as it's nonisolated
@@ -14,4 +14,29 @@ public nonisolated func withBackground<Return: Sendable>(
   // if it's not sendable, inherit current actor context but it's already background.
   // @_inheritActorContext makes closure runs on current actor context even if it's sendable.
   return try await thunk()
+}
+
+public nonisolated func withA<Return: Sendable>(
+  _ thunk: @escaping @isolated(any) () async throws -> Return
+) async rethrows -> Return {
+  
+  return try await thunk()
+}
+
+extension Task {
+  
+  /**
+   Performs the given task in background
+   It inherits the current actor context compared to Task.detached.
+   */
+  @discardableResult
+  public static func background(
+    priority: TaskPriority? = nil,
+    operation: @escaping @isolated(any) @Sendable () async throws -> Success
+  ) -> Self where Failure == Error {
+    return .init(priority: priority) {
+      return try await withBackground(operation)
+    }
+  }
+  
 }

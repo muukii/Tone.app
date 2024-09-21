@@ -3,6 +3,7 @@ import AppService
 import DynamicList
 import MondrianLayout
 import SwiftUI
+import SwiftUISupportLayout
 import SwiftUISupport
 import Verge
 
@@ -201,7 +202,8 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
 }
 
-nonisolated func makeChunk(
+@MainActor
+func makeChunk(
   text: String,
   hasMark: Bool,
   identifier: some Hashable,
