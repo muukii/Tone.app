@@ -13,7 +13,13 @@ struct ListView: View {
   @Query(sort: \ItemEntity.createdAt, order: .reverse)
   private var itemEntities: [ItemEntity]
 
-  private let isSettinsEnabled = true
+  private var isSettingsEnabled: Bool {
+    #if DEBUG
+    return true
+    #else
+    return false
+    #endif
+  }
 
   @Environment(\.modelContext) var modelContext
 
@@ -79,7 +85,7 @@ struct ListView: View {
         }
       )
       .toolbar(content: {
-        if isSettinsEnabled {
+        if isSettingsEnabled {
           ToolbarItem(placement: .topBarLeading) {
             Button {
               isInSettings = true
