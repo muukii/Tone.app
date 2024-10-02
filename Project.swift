@@ -106,7 +106,10 @@ let project = Project(
         sources: ["Sources/LiveActivity/**"],
         dependencies: [
           .target(name: "ActivityContent"),
-        ]
+        ],
+        settings: .settings(base: [
+          "DEVELOPMENT_TEAM": "KU2QEJ9K3Z",
+        ])
       ),
 
     .target(

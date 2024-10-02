@@ -77,8 +77,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections",
       "state" : {
-        "revision" : "3d2dc41a01f9e49d84f0a3925fb858bed64f702d",
-        "version" : "1.1.2"
+        "revision" : "671108c96644956dddcd89dd59c203dcdb36cec7",
+        "version" : "1.1.4"
       }
     },
     {
@@ -150,7 +150,7 @@
       "location" : "https://github.com/FluidGroup/swiftui-support",
       "state" : {
         "branch" : "main",
-        "revision" : "266e052494f8b7432374ad19a4bd31877cf54640"
+        "revision" : "f7d470f1bb973583647c40d38fa1dde618b4fa4a"
       }
     },
     {
@@ -168,7 +168,7 @@
       "location" : "https://github.com/VergeGroup/Verge",
       "state" : {
         "branch" : "main",
-        "revision" : "78cee392fdb5319cd06409fe5d214ecac4f625dd"
+        "revision" : "073e699c3fddbc480a83df2d02dbc94296582ae2"
       }
     },
     {
