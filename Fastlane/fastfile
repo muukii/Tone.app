@@ -1,0 +1,15 @@
+fastlane_version "2.204.3"
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Deploy the app to the App Store"
+  lane :deploy do
+    # match(type: "appstore") # Ensure the provisioning profile is up to date
+    gym(
+      workspace: "Tone.xcworkspace",
+      scheme: "Tone"
+    )
+    deliver(force: true) # Upload to the App Store
+  end
+end
