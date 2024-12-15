@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ReactiveX/RxSwift.git",
       "state" : {
-        "revision" : "b06a8c8596e4c3e8e7788e08e720e3248563ce6a",
-        "version" : "6.7.1"
+        "revision" : "c7c7d2cf50a3211fe2843f76869c698e4e417930",
+        "version" : "6.8.0"
       }
     },
     {
@@ -95,8 +95,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/muukii/swift-macro-hex-color",
       "state" : {
-        "revision" : "03eff8dfbf64410bb8a34a622ae9b956a9445309",
-        "version" : "0.1.1"
+        "revision" : "a8b1c2ea0ef134c4047b944aefe70df232c0cefc",
+        "version" : "0.2.0"
       }
     },
     {
@@ -113,8 +113,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-syntax.git",
       "state" : {
-        "revision" : "64889f0c732f210a935a0ad7cda38f77f876262d",
-        "version" : "509.1.1"
+        "revision" : "0687f71944021d616d34d922343dcef086855920",
+        "version" : "600.0.1"
       }
     },
     {
@@ -122,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/huggingface/swift-transformers.git",
       "state" : {
-        "revision" : "74b94211bdc741694ed7e700a1104c72e5ba68fe",
-        "version" : "0.1.7"
+        "revision" : "fc6543263e4caed9bf6107466d625cfae9357f08",
+        "version" : "0.1.8"
       }
     },
     {
@@ -150,7 +150,7 @@
       "location" : "https://github.com/FluidGroup/swiftui-support",
       "state" : {
         "branch" : "main",
-        "revision" : "f7d470f1bb973583647c40d38fa1dde618b4fa4a"
+        "revision" : "10b463fc241552c4c6668700c37d4112ae926fe5"
       }
     },
     {
@@ -168,7 +168,7 @@
       "location" : "https://github.com/VergeGroup/Verge",
       "state" : {
         "branch" : "main",
-        "revision" : "073e699c3fddbc480a83df2d02dbc94296582ae2"
+        "revision" : "9980b550f17ad6bc6d557a220561061a436fb231"
       }
     },
     {
@@ -176,8 +176,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/argmaxinc/whisperkit",
       "state" : {
-        "revision" : "02763ca430f7190fc80d003b51a2e4510c35f9cc",
-        "version" : "0.8.0"
+        "revision" : "defefaefe33dc6dbb45005958abaea1c0f8293ff",
+        "version" : "0.9.4"
       }
     },
     {
@@ -194,8 +194,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/alexeichhorn/YouTubeKit",
       "state" : {
-        "revision" : "a04805da8111422e1581ca447e2e167808ec2b44",
-        "version" : "0.2.3"
+        "revision" : "ee5a86f4c18a3db54b403e202a80d24b4aa26847",
+        "version" : "0.2.5"
       }
     }
   ],

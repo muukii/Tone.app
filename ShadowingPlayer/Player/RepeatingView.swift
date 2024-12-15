@@ -7,8 +7,6 @@ struct RepeatingView: View {
   private unowned let controller: PlayerController
   private let range: PlayingRange
 
-  @Namespace var namespace
-
   @MainActor
   init(
     controller: PlayerController
@@ -26,61 +24,16 @@ struct RepeatingView: View {
 
         Group {
           if let currentCue = controller.currentCue {
-            //            if let before = range.before(currentCue) {
-            //              makeText("\(before.backed.text)")
-            //                .transition(.opacity)
-            //            }
-            makeText("\(controller.currentCue?.backed.text ?? "")")
-              .id(currentCue)
-              .transition(
-                .asymmetric(
-                  insertion: .modifier(
-                    active: StyleModifier(opacity: 0, scale: .zero, blurRadius: 10),
-                    identity: StyleModifier.identity
-                  )
-                  .animation(.spring(.snappy(extraBounce: 0.35))),
-                  removal: .modifier(
-                    active: StyleModifier(opacity: 0, scale: .init(width: 0.8, height: 0.9), offset: .init(width: 0, height: -400), blurRadius: 5),
-                    identity: StyleModifier.identity
-                  )
-                  .animation(.smooth(duration: 3))
-                )
-
-              )
-              .drawingGroup(opaque: false)
-            //              .transition(.scale)
-            //            if let after = range.after(currentCue) {
-            //              makeText("\(after.backed.text)")
-            //                .transition(.opacity)
-            //            }
+            makeText("\(currentCue.backed.text)")
+              .id(UUID())
+              .transition(MyTransition().animation(.bouncy))
+            //              .drawingGroup(opaque: false)
           }
         }
       }
 
       Spacer(minLength: 0)
 
-      //      ScrollViewReader(content: { proxy in
-      //        ScrollView(.horizontal) {
-      //          HStack {
-      //            ForEach(range.cues) { cue in
-      //              makeChunk(
-      //                text: cue.backed.text,
-      //                hasMark: false,
-      //                identifier: cue.id,
-      //                isFocusing: controller.currentCue == cue,
-      //                isInRange: true,
-      //                onSelect: {
-      //                })
-      //            }
-      //          }
-      //        }
-      //        .onChange(of: controller.currentCue, initial: true) { _, new in
-      //          guard let new else { return }
-      //          withAnimation(.bouncy) {
-      //            proxy.scrollTo(new.id, anchor: .center)
-      //          }
-      //        }
-      //      })
       PlayerControlPanel(controller: controller, onTapPin: {}, onTapDetail: {})
     }
 
@@ -93,6 +46,82 @@ private func makeText(_ text: String) -> some View {
     .font(.system(size: 38, weight: .bold, design: .default))
 }
 
+private struct TextEmitting: View {
+
+  @State var text: String = ""
+
+  var body: some View {
+
+    TimelineView(.periodic(from: .now, by: 0.5)) { context in
+      VStack {
+        Text(context.date.description)
+          .id(context.date)
+          .transition(MyTransition())
+      }
+    }
+  }
+
+}
+
+private struct MyTransition: Transition {
+
+  nonisolated(unsafe) func body(content: Content, phase: TransitionPhase) -> some View {
+        
+    content
+      .scaleEffect({
+        switch phase {
+        case .willAppear:
+           return .zero
+        case .identity:
+          return .init(width: 1, height: 1)
+        case .didDisappear:        
+          return .zero
+        }
+      }())
+      .opacity({
+        switch phase {
+        case .willAppear:
+          return 0
+        case .identity:
+          return 1
+        case .didDisappear:        
+          return 0
+        }
+      }())
+      .blur(radius: {
+        switch phase {
+        case .willAppear:
+          return 0
+        case .identity:
+          return 0
+        case .didDisappear:        
+          return 40
+        }
+      }())
+      .animatableOffset(y: {
+        switch phase {
+        case .willAppear:
+          return 80
+        case .identity:
+          return 0
+        case .didDisappear:        
+          return -400
+        }
+      }())
+      .animation({
+        switch phase {
+        case .willAppear:
+          return .spring
+        case .identity:
+          return .spring(response: 0.4)
+        case .didDisappear:        
+          return .spring(response: 5)
+        }
+      }(),value: phase)
+       
+  }
+}
+
 #Preview {
-  makeText("Hello")
+  TextEmitting()
 }
