@@ -37,6 +37,15 @@
       }
     },
     {
+      "identity" : "normalization",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/Normalization",
+      "state" : {
+        "revision" : "6e7cb1ddeda4d0f1d2fbf8ca6d25ecd8ed6ba917",
+        "version" : "1.1.0"
+      }
+    },
+    {
       "identity" : "rxswift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ReactiveX/RxSwift.git",
@@ -97,6 +106,15 @@
       "state" : {
         "revision" : "a8b1c2ea0ef134c4047b944aefe70df232c0cefc",
         "version" : "0.2.0"
+      }
+    },
+    {
+      "identity" : "swift-macro-state-struct",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/swift-macro-state-struct",
+      "state" : {
+        "revision" : "4c83462f46bf9e4329e31c174171dfc3d8864844",
+        "version" : "1.0.5"
       }
     },
     {
@@ -163,12 +181,30 @@
       }
     },
     {
+      "identity" : "typedcomparator",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/TypedComparator",
+      "state" : {
+        "revision" : "337ce0e573e7637ddd29392cb88c3b852f042c8e",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "typedidentifier",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/TypedIdentifier",
+      "state" : {
+        "revision" : "284340409ba47858a1b3c353dcef9c21303953db",
+        "version" : "2.0.3"
+      }
+    },
+    {
       "identity" : "verge",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/VergeGroup/Verge",
       "state" : {
         "branch" : "main",
-        "revision" : "9980b550f17ad6bc6d557a220561061a436fb231"
+        "revision" : "4631e8f58dfcf35b7a45515275e8c1a1e18026fc"
       }
     },
     {

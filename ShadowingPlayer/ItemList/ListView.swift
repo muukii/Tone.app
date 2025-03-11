@@ -163,9 +163,13 @@ private struct ImportModifier: ViewModifier {
     .mp3, .aiff, .wav, .mpeg4Audio,
   ]
 
+  private struct Selected: Identifiable {
+    let id = UUID()
+    let selectingFiles: [AudioImportView.TargetFile]
+  }
+
   @Binding var isPresented: Bool
-  @State private var selectingFiles: [AudioImportView.TargetFile]?
-  @State private var isPresentedImportView: Bool = false
+  @State private var selected: Selected?
   private let service: Service
 
   init(isPresented: Binding<Bool>, service: Service) {
@@ -176,19 +180,15 @@ private struct ImportModifier: ViewModifier {
   func body(content: Content) -> some View {
     content
       .sheet(
-        isPresented: $isPresentedImportView,
-        content: {
-          if let selectingFiles = selectingFiles {
-            
-            AudioImportView(
-              service: service,
-              targets: selectingFiles,
-              onComplete: {
-//                processing = false
-              }
-            )
-          }
-            
+        item: $selected,
+        content: { selected in
+          AudioImportView(
+            service: service,
+            targets: selected.selectingFiles,
+            onComplete: {
+              //                processing = false
+            }
+          )
         }
       )
       .fileImporter(
@@ -211,13 +211,15 @@ private struct ImportModifier: ViewModifier {
               }
             )
 
-            self.selectingFiles = audioFiles.map {
-              AudioImportView.TargetFile(
-                name: $0.lastPathComponent,
-                url: $0,
-                isProcessing: false
-              )
-            }
+            self.selected = Selected(
+              selectingFiles: audioFiles.map {
+
+                AudioImportView.TargetFile(
+                  name: $0.lastPathComponent,
+                  url: $0
+                )
+              }
+            )
 
           case .failure(let failure):
             print(failure)

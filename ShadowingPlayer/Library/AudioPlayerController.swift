@@ -13,7 +13,8 @@ final class AudioPlayerController: StoreDriverType {
     case range(start: Double, end: Double)
   }
 
-  struct State: StateType {
+  @Tracking
+  struct State {
     var isPlaying: Bool = false
     var isAppInBackground: Bool = false
   }
