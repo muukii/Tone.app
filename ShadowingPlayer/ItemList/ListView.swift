@@ -1,6 +1,7 @@
 import AppService
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ListView: View {
 
@@ -15,9 +16,9 @@ struct ListView: View {
 
   private var isSettingsEnabled: Bool {
     #if DEBUG
-    return true
+      return true
     #else
-    return false
+      return false
     #endif
   }
 
@@ -127,11 +128,6 @@ struct ListView: View {
           )
         }
       )
-      .sheet(isPresented: $isImportingAudio, content: {
-        AudioImportView(service: service) {
-          isImportingAudio = false
-        }
-      })
       .sheet(
         isPresented: $isImportingYouTube,
         content: {
@@ -149,10 +145,88 @@ struct ListView: View {
           SettingsView()
         }
       )
+      .modifier(
+        ImportModifier(
+          isPresented: $isImportingAudio,
+          service: service
+        )
+      )
 
     }
   }
 
+}
+
+private struct ImportModifier: ViewModifier {
+
+  private let audioUTTypes: Set<UTType> = [
+    .mp3, .aiff, .wav, .mpeg4Audio,
+  ]
+
+  private struct Selected: Identifiable {
+    let id = UUID()
+    let selectingFiles: [AudioImportView.TargetFile]
+  }
+
+  @Binding var isPresented: Bool
+  @State private var selected: Selected?
+  private let service: Service
+
+  init(isPresented: Binding<Bool>, service: Service) {
+    self._isPresented = isPresented
+    self.service = service
+  }
+
+  func body(content: Content) -> some View {
+    content
+      .sheet(
+        item: $selected,
+        content: { selected in
+          AudioImportView(
+            service: service,
+            targets: selected.selectingFiles,
+            onComplete: {
+              //                processing = false
+            }
+          )
+        }
+      )
+      .fileImporter(
+        isPresented: $isPresented,
+        allowedContentTypes: Array(audioUTTypes),
+        allowsMultipleSelection: true,
+        onCompletion: { result in
+          switch result {
+          case .success(let urls):
+
+            // find matching audio files and srt files using same file name
+            let audioFiles = Set(
+              urls.filter {
+                for type in audioUTTypes {
+                  if UTType(filenameExtension: $0.pathExtension)?.conforms(to: type) == true {
+                    return true
+                  }
+                }
+                return false
+              }
+            )
+
+            self.selected = Selected(
+              selectingFiles: audioFiles.map {
+
+                AudioImportView.TargetFile(
+                  name: $0.lastPathComponent,
+                  url: $0
+                )
+              }
+            )
+
+          case .failure(let failure):
+            print(failure)
+          }
+        }
+      )
+  }
 }
 
 private func emptyView() -> some View {
@@ -207,9 +281,11 @@ struct PinEntitiesProvider<Content: View>: View {
 
 }
 
-#Preview("Empty", body: {
-  emptyView()
-})
+#Preview(
+  "Empty",
+  body: {
+    emptyView()
+  })
 
 #Preview {
   Form {

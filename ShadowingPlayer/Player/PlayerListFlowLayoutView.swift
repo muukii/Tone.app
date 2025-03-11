@@ -273,8 +273,8 @@ func makeChunk(
 }
 
 private final class ViewModel: StoreDriverType {
-
-  struct State: StateType {
+  
+  struct State {
 
   }
 

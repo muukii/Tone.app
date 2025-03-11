@@ -1,117 +1,168 @@
 import AppService
 import SwiftUI
 import UniformTypeIdentifiers
+import Verge
 
 struct AudioImportView: View {
 
-  let service: Service
+  struct TargetFile {
+    let name: String
+    let url: URL
+    
+    init(name: String, url: URL) {
+      self.name = name
+      self.url = url
+    }
+  }
 
+  private let service: Service
+
+  @StoreObject private var viewModel: AudioImportViewModel
   let onComplete: @MainActor () -> Void
 
-  var body: some View {
-    AudioImportContentView(onTranscribe: { name, url in
-      do {
-
-        try await service.transcribe(
-          title: name,
-          audioFileURL: url
-        )
-        
-      } catch {
-        print(error)
-      }
-
-      onComplete()
-    })
-  }
-}
-
-private struct AudioImportContentView: View {
-
-  private let audioUTTypes: Set<UTType> = [
-    .mp3, .aiff, .wav, .mpeg4Audio,
-  ]
-
-  @State private var isSelectingFiles: Bool = false
-
-  @State private var processing: Bool = false
-
-  let onTranscribe: @MainActor (String, URL) async throws -> Void
-
-  var body: some View {
-
-    ZStack(alignment: .init(horizontal: .center, vertical: .anchor)) {
-      Color.clear
-      VStack {
-        Button("Import audio file") {
-          isSelectingFiles = true
-        }
-        .alignmentGuide(.anchor, computeValue: { dimension in
-          dimension[VerticalAlignment.center]
-        })
-        if processing {
-          ProgressView()
-        }
-      }
-    }
-    .fileImporter(
-      isPresented: $isSelectingFiles,
-      allowedContentTypes: Array(audioUTTypes),
-      allowsMultipleSelection: false,
-      onCompletion: { result in
-        switch result {
-        case .success(let success):
-
-          // find matching audio files and srt files using same file name
-          let audioFiles = Set(
-            success.filter {
-              for type in audioUTTypes {
-                if UTType(filenameExtension: $0.pathExtension)?.conforms(to: type) == true {
-                  return true
-                }
-              }
-              return false
-            }
-          )
-
-          guard let targetFile = audioFiles.first else {
-            return
-          }
-
-          let filename = targetFile.deletingPathExtension().lastPathComponent
-
-          Task { @MainActor in
-
-            processing = true
-            defer {
-              processing = false
-            }
-
-            try await onTranscribe(filename, targetFile)
-
-          }
-
-        case .failure(let failure):
-          print(failure)
-        }
-      }
+  init(
+    service: Service,
+    targets: [TargetFile],
+    onComplete: @escaping @MainActor () -> Void
+  ) {
+    self.service = service
+    self.onComplete = onComplete
+    self._viewModel = .init(
+      wrappedValue: AudioImportViewModel(
+        targets: targets,
+        service: service
+      )
     )
-    .interactiveDismissDisabled(processing)
-
   }
 
-}
-
-private extension VerticalAlignment {
-  private enum Anchor : AlignmentID {
-    static func defaultValue(in d: ViewDimensions) -> CGFloat {
-      return d[VerticalAlignment.center]
+  var body: some View {
+    StoreReader(viewModel) { state in 
+      List(state.targetFiles, id: \._id) { store in
+        StoreReader(store) { state in 
+          HStack {
+            VStack(alignment: .leading) {
+              Text(state.file.name)
+                .font(.headline)              
+            }
+            Spacer()
+            if state.isProcessing {
+              ProgressView()
+            }
+          }
+        }
+      }
+    }
+    .onAppear {
+      viewModel.startProcessing()
     }
   }
-  static let anchor = VerticalAlignment(Anchor.self)
+ 
 }
 
+extension Store {
+  /// waiting‘  /// https://github.com/VergeGroup/swift-verge/pull/519
+  var _id: ObjectIdentifier {
+    ObjectIdentifier(self)
+  }
+}
+
+final class AudioImportViewModel: StoreDriverType {
+  
+  @Tracking
+  struct TargetFileState {
+    
+    let file: AudioImportView.TargetFile
+    var isProcessing: Bool
+    
+    init(initialState: AudioImportView.TargetFile) {
+      self.file = initialState
+      self.isProcessing = false
+    }
+  }
+
+  @Tracking
+  struct State {
+
+    var targetFiles: [Store<TargetFileState, Never>]
+    var isProcessing: Bool = false
+
+  }
+
+  let store: Store<State, Never>
+  let service: Service
+
+  init(
+    targets: [AudioImportView.TargetFile],
+    service: Service
+  ) {
+    self.service = service
+    self.store = .init(
+      initialState: .init(
+        targetFiles: targets.map {
+          .init(initialState: .init(initialState: $0))
+        }
+      )
+    )
+  }
+
+  func startProcessing() {
+    
+    guard !store.state.isProcessing else {
+      return
+    }
+    
+    store.commit {
+      $0.isProcessing = true
+    }
+    
+    let files = state.targetFiles
+
+    store.task { [store, service] in
+
+      await withTaskGroup(of: Void.self) { group in
+
+        for fileStore in files {
+
+          group.addTask {
+            defer {
+              fileStore.commit {
+                $0.isProcessing = false
+              }
+            }
+            do {
+              let file = fileStore.state.file
+              fileStore.commit {
+                $0.isProcessing = true
+              }
+              try await service.transcribe(
+                title: file.name,
+                audioFileURL: file.url
+              )
+            } catch {
+              print("Error processing \(fileStore.name): \(error)")
+            }
+          }
+        }
+
+        await group.waitForAll()
+
+      }
+      
+      store.commit {
+        $0.isProcessing = false
+      }
+    }
+
+  }
+}
 
 #Preview {
-  AudioImportContentView(onTranscribe: { name, result in })
+  //  AudioImportView(
+  //    service: .mock,
+  //    urls: [
+  //      URL(string: "file://test1.mp3")!,
+  //      URL(string: "file://test2.mp3")!
+  //    ],
+  //    onComplete: {}
+  //  )
 }
