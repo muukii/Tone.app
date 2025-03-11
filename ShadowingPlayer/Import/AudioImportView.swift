@@ -3,115 +3,80 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct AudioImportView: View {
-
-  let service: Service
-
+  
+  struct TargetFile: Identifiable {
+    var id: URL { url }
+    var name: String
+    var url: URL
+    var isProcessing: Bool
+  }
+  
+  private let service: Service
+  @State private var targetFiles: [TargetFile]
   let onComplete: @MainActor () -> Void
 
-  var body: some View {
-    AudioImportContentView(onTranscribe: { name, url in
-      do {
-
-        try await service.transcribe(
-          title: name,
-          audioFileURL: url
-        )
-        
-      } catch {
-        print(error)
-      }
-
-      onComplete()
-    })
+  init(
+    service: Service,
+    targets: [TargetFile],
+    onComplete: @escaping @MainActor () -> Void
+  ) {
+    self.service = service
+    self.targetFiles = targets
+    self.onComplete = onComplete
   }
-}
-
-private struct AudioImportContentView: View {
-
-  private let audioUTTypes: Set<UTType> = [
-    .mp3, .aiff, .wav, .mpeg4Audio,
-  ]
-
-  @State private var isSelectingFiles: Bool = false
-
-  @State private var processing: Bool = false
-
-  let onTranscribe: @MainActor (String, URL) async throws -> Void
 
   var body: some View {
-
-    ZStack(alignment: .init(horizontal: .center, vertical: .anchor)) {
-      Color.clear
-      VStack {
-        Button("Import audio file") {
-          isSelectingFiles = true
+    List(targetFiles) { file in
+      HStack {
+        VStack(alignment: .leading) {
+          Text(file.name)
+            .font(.headline)
+          if file.isProcessing {
+            Text("処理中...")
+              .foregroundColor(.secondary)
+          }
         }
-        .alignmentGuide(.anchor, computeValue: { dimension in
-          dimension[VerticalAlignment.center]
-        })
-        if processing {
+        Spacer()
+        if file.isProcessing {
           ProgressView()
         }
       }
     }
-    .fileImporter(
-      isPresented: $isSelectingFiles,
-      allowedContentTypes: Array(audioUTTypes),
-      allowsMultipleSelection: false,
-      onCompletion: { result in
-        switch result {
-        case .success(let success):
-
-          // find matching audio files and srt files using same file name
-          let audioFiles = Set(
-            success.filter {
-              for type in audioUTTypes {
-                if UTType(filenameExtension: $0.pathExtension)?.conforms(to: type) == true {
-                  return true
-                }
-              }
-              return false
-            }
-          )
-
-          guard let targetFile = audioFiles.first else {
-            return
+    .task {
+      await withTaskGroup(of: Void.self) { group in
+        for index in targetFiles.indices {
+          group.addTask {
+            await processFile(at: index)
           }
-
-          let filename = targetFile.deletingPathExtension().lastPathComponent
-
-          Task { @MainActor in
-
-            processing = true
-            defer {
-              processing = false
-            }
-
-            try await onTranscribe(filename, targetFile)
-
-          }
-
-        case .failure(let failure):
-          print(failure)
         }
       }
-    )
-    .interactiveDismissDisabled(processing)
-
-  }
-
-}
-
-private extension VerticalAlignment {
-  private enum Anchor : AlignmentID {
-    static func defaultValue(in d: ViewDimensions) -> CGFloat {
-      return d[VerticalAlignment.center]
+      await onComplete()
     }
   }
-  static let anchor = VerticalAlignment(Anchor.self)
+  
+  @MainActor
+  private func processFile(at index: Int) async {
+    targetFiles[index].isProcessing = true
+    defer { targetFiles[index].isProcessing = false }
+
+    do {
+      try await service.transcribe(
+        title: targetFiles[index].name,
+        audioFileURL: targetFiles[index].url
+      )
+    } catch {
+      print("Error processing \(targetFiles[index].name): \(error)")
+    }
+  }
 }
 
-
 #Preview {
-  AudioImportContentView(onTranscribe: { name, result in })
+//  AudioImportView(
+//    service: .mock,
+//    urls: [
+//      URL(string: "file://test1.mp3")!,
+//      URL(string: "file://test2.mp3")!
+//    ],
+//    onComplete: {}
+//  )
 }
