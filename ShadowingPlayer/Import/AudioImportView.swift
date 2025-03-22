@@ -8,7 +8,7 @@ struct AudioImportView: View {
   struct TargetFile {
     let name: String
     let url: URL
-    
+
     init(name: String, url: URL) {
       self.name = name
       self.url = url
@@ -36,17 +36,24 @@ struct AudioImportView: View {
   }
 
   var body: some View {
-    StoreReader(viewModel) { state in 
-      List(state.targetFiles, id: \._id) { store in
-        StoreReader(store) { state in 
+    StoreReader(viewModel) { $state in
+      List(state.targetFiles, id: \.self) { store in
+        StoreReader(store) { $state in
           HStack {
             VStack(alignment: .leading) {
               Text(state.file.name)
-                .font(.headline)              
+                .font(.headline)
             }
             Spacer()
-            if state.isProcessing {
+            switch state.status {
+            case .waiting:
+              Image(systemName: "circle")
+            case .processing:
               ProgressView()
+            case .completed:
+              Image(systemName: "checkmark")
+            case .failed:
+              Image(systemName: "xmark")
             }
           }
         }
@@ -56,27 +63,27 @@ struct AudioImportView: View {
       viewModel.startProcessing()
     }
   }
- 
-}
 
-extension Store {
-  /// waiting‘  /// https://github.com/VergeGroup/swift-verge/pull/519
-  var _id: ObjectIdentifier {
-    ObjectIdentifier(self)
-  }
 }
 
 final class AudioImportViewModel: StoreDriverType {
-  
+
   @Tracking
   struct TargetFileState {
-    
+
+    enum Status {
+      case waiting
+      case processing
+      case completed
+      case failed
+    }
+
     let file: AudioImportView.TargetFile
-    var isProcessing: Bool
-    
+
+    var status: Status = .waiting
+
     init(initialState: AudioImportView.TargetFile) {
       self.file = initialState
-      self.isProcessing = false
     }
   }
 
@@ -106,48 +113,44 @@ final class AudioImportViewModel: StoreDriverType {
   }
 
   func startProcessing() {
-    
+
     guard !store.state.isProcessing else {
       return
     }
-    
+
     store.commit {
       $0.isProcessing = true
     }
-    
+
     let files = state.targetFiles
 
     store.task { [store, service] in
 
-      await withTaskGroup(of: Void.self) { group in
+      for fileStore in files {
 
-        for fileStore in files {
-
-          group.addTask {
-            defer {
-              fileStore.commit {
-                $0.isProcessing = false
-              }
-            }
-            do {
-              let file = fileStore.state.file
-              fileStore.commit {
-                $0.isProcessing = true
-              }
-              try await service.transcribe(
-                title: file.name,
-                audioFileURL: file.url
-              )
-            } catch {
-              print("Error processing \(fileStore.name): \(error)")
-            }
+        defer {
+          fileStore.commit {
+            $0.status = .completed
+          }
+        }
+        do {
+          let file = fileStore.state.file
+          fileStore.commit {
+            $0.status = .processing
+          }
+          try await service.transcribe(
+            title: file.name,
+            audioFileURL: file.url
+          )
+        } catch {
+          print("Error processing \(fileStore.name): \(error)")
+          fileStore.commit {
+            $0.status = .failed
           }
         }
 
-        await group.waitForAll()
-
       }
-      
+
       store.commit {
         $0.isProcessing = false
       }
