@@ -18,6 +18,7 @@ protocol PlayerDisplay: View {
 enum PlayerAction {
   case onPin(range: PlayingRange)
   case onTranscribeAgain
+  case onRename(title: String)
 }
 
 struct PlayerView<Display: PlayerDisplay>: View {
@@ -32,6 +33,8 @@ struct PlayerView<Display: PlayerDisplay>: View {
   @State private var controllerForDetail: PlayerController?
   @State private var isDisplayingPinList: Bool = false
   @State private var isProcessing: Bool = false
+  @State private var isShowingRenameDialog: Bool = false
+  @State private var newTitle: String = ""
 
   private let pins: [PinEntity]
 
@@ -126,6 +129,11 @@ struct PlayerView<Display: PlayerDisplay>: View {
               }
             }
           }
+          
+          Button("Rename") {
+            newTitle = controller.title
+            isShowingRenameDialog = true
+          }
         } label: {
           Image(systemName: "ellipsis")
         }
@@ -133,6 +141,17 @@ struct PlayerView<Display: PlayerDisplay>: View {
 
     })
     .navigationBarTitleDisplayMode(.inline)
+    .alert("Rename", isPresented: $isShowingRenameDialog) {
+      TextField("Title", text: $newTitle)
+      Button("Cancel", role: .cancel) { }
+      Button("Rename") {
+        Task {
+          await actionHandler(.onRename(title: newTitle))
+        }
+      }
+    } message: {
+      Text("Enter new title")
+    }
     .sheet(isPresented: $isProcessing) {
       VStack {
         Text("Processing")

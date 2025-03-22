@@ -67,6 +67,32 @@ public final class Service {
 
   }
 
+  public func renameItem(item: ItemEntity, newTitle: String) async throws {
+    
+    let itemID = item.id
+    
+    try await withBackground { [self] in
+      
+      let modelContext = ModelContext(modelContainer)
+      
+      let targetItem = try modelContext.fetch(
+        .init(
+          predicate: #Predicate<ItemEntity> { [id = itemID] in
+            $0.persistentModelID == id
+          }
+        )
+      ).first
+      
+      guard let targetItem else {
+        return
+      }
+      
+      targetItem.title = newTitle
+            
+      try modelContext.save()
+    }
+  }
+
   public func updateTranscribe(for item: ItemEntity) async throws {
 
     let result = try await WhisperKitWrapper.run(url: item.audioFileAbsoluteURL)
