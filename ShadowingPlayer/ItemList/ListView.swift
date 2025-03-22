@@ -75,6 +75,8 @@ struct ListView: View {
                   case .onTranscribeAgain:
                     try await service.updateTranscribe(for: item)
                     path = .init()
+                  case .onRename(let title):
+                    try await service.renameItem(item: item, newTitle: title)
                   }
                 } catch {
                   Log.error("\(error.localizedDescription)")
