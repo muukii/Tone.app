@@ -194,7 +194,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
       .buttonStyle(.bordered)
       .buttonBorderShape(.roundedRectangle)
       .opacity(isFollowing ? 0 : 1)
-      .relative(vertical: .bottom, horizontal: .trailing)
+      .relative(horizontalAlignment: .trailing, verticalAlignment: .bottom)
       .padding(20)
 
     }

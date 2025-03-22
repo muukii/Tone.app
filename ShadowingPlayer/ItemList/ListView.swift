@@ -11,7 +11,7 @@ struct ListView: View {
 
   let service: Service
 
-  @Query(sort: \ItemEntity.createdAt, order: .reverse)
+  @Query(sort: \ItemEntity.title, order: .reverse)
   private var itemEntities: [ItemEntity]
 
   private var isSettingsEnabled: Bool {
