@@ -4,3 +4,6 @@
 [submodule "submodules/FluidGroup/swiftui-ring-slider"]
 	path = submodules/FluidGroup/swiftui-ring-slider
 	url = https://github.com/FluidGroup/swiftui-ring-slider.git
+[submodule "submodules/FluidGroup/swiftui-persistent-control"]
+	path = submodules/FluidGroup/swiftui-persistent-control
+	url = https://github.com/FluidGroup/swiftui-persistent-control.git
