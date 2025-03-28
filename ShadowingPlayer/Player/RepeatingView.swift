@@ -1,18 +1,20 @@
 import AppService
 import SwiftUI
 import SwiftUISupport
+import Verge
 
 struct RepeatingView: View {
 
-  private unowned let controller: PlayerController
   private let range: PlayingRange
+  
+  @Reading<PlayerController> var state: PlayerController.State
 
   @MainActor
   init(
     controller: PlayerController
   ) {
-    self.controller = controller
-    self.range = controller.playingRange!
+    self.range = controller.state.playingRange!
+    self._state = .init(controller)
   }
 
   var body: some View {
@@ -23,7 +25,7 @@ struct RepeatingView: View {
         Color.clear
 
         Group {
-          if let currentCue = controller.currentCue {
+          if let currentCue = state.currentCue {
             makeText("\(currentCue.backed.text)")
               .id(UUID())
               .transition(MyTransition().animation(.bouncy))
@@ -34,7 +36,11 @@ struct RepeatingView: View {
 
       Spacer(minLength: 0)
 
-      PlayerControlPanel(controller: controller, onTapPin: {}, onTapDetail: {})
+      PlayerControlPanel(
+        controller: $state.driver,
+        onTapPin: {
+        },
+        onTapDetail: {})
     }
 
   }

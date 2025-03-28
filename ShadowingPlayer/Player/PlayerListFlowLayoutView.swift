@@ -49,7 +49,7 @@ extension CellState {
 @MainActor
 struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
-  private unowned let controller: PlayerController
+  @Reading<PlayerController> var state: PlayerController.State
   private let actionHandler: @MainActor (PlayerAction) async -> Void
 
   @State var isFollowing: Bool = true
@@ -63,13 +63,13 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     pins: [PinEntity],
     actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   ) {
-    self.controller = controller
+    self._state = .init(mode: .weak, controller)
     self.pins = pins
     self.actionHandler = actionHandler
 
     self.snapshot = NSDiffableDataSourceSnapshot<String, DisplayCue>.init()&>.modify({ s in
 
-      let chunks = controller.cues.chunked(by: {
+      let chunks = controller.state.cues.chunked(by: {
         return ($1.backed.startTime - $0.backed.endTime > 0.08) == false
       })
 
@@ -84,21 +84,21 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
     var cellStates: [DisplayCue: CellState] = [:]
 
-    let focusing = controller.currentCue
+    let focusing = state.currentCue
 
     if let focusing {
       cellStates[focusing, default: .empty].isFocusing = true
     }
 
-    if let playingRange = controller.playingRange {
-      for cue in controller.cues {
+    if let playingRange = state.playingRange {
+      for cue in state.cues {
         cellStates[cue, default: .empty].playingRange = playingRange
       }
     }
 
     let pins = Set(pins.map(\.startCueRawIdentifier))
 
-    for cue in controller.cues {
+    for cue in state.cues {
 
       if pins.contains(cue.id) {
         cellStates[cue, default: .empty].hasMark = true
@@ -124,7 +124,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         },
         scrollDirection: .vertical,
         contentInsetAdjustmentBehavior: .always,
-        cellProvider: { [weak controller] context in
+        cellProvider: { context in
 
           let cue = context.data
 
@@ -137,7 +137,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
           //          )
           //        }
 
-          return context.cell { state, customState in
+          return context.cell { cellState, customState in
             makeChunk(
               text: cue.backed.text,
               hasMark: customState.hasMark,
@@ -145,20 +145,19 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
               isFocusing: customState.isFocusing,
               isInRange: customState.playingRange?.contains(cue) ?? false,
               onSelect: {
-                guard let controller else { return }
-                if controller.isRepeating {
+                if state.isRepeating {
 
                   if var currentRange = customState.playingRange {
 
                     currentRange.select(cue: cue)
-
-                    controller.setRepeat(range: currentRange)
+                    
+                    $state.driver.setRepeat(range: currentRange)
 
                   } else {
 
                   }
                 } else {
-                  controller.move(to: cue)
+                  $state.driver.move(to: cue)
                 }
               }
             )
@@ -175,7 +174,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         }
       }
       .scrolling(
-        to: controller.currentCue.map {
+        to: state.currentCue.map {
           .init(
             item: $0,
             skipCondition: { scrollView in

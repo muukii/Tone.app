@@ -4,6 +4,7 @@ import SwiftData
 import SwiftUI
 import SwiftUIRingSlider
 import SwiftUISupport
+import Verge
 
 @MainActor
 protocol PlayerDisplay: View {
@@ -28,7 +29,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
     var value: String
   }
 
-  @ObjectEdge var controller: PlayerController
+  @Reading<PlayerController> var state: PlayerController.State
   private let actionHandler: @MainActor (PlayerAction) async -> Void
   @State private var controllerForDetail: PlayerController?
   @State private var isDisplayingPinList: Bool = false
@@ -43,7 +44,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
     pins: [PinEntity],
     actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   ) {
-    self._controller = .init(wrappedValue: playerController())
+    self._state = .init(playerController)
     self.actionHandler = actionHandler
     self.pins = pins
   }
@@ -54,7 +55,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
     ZStack {
 
       Display(
-        controller: controller,
+        controller: $state.driver,
         pins: pins,
         actionHandler: actionHandler
       )
@@ -63,10 +64,10 @@ struct PlayerView<Display: PlayerDisplay>: View {
       edge: .bottom,
       content: {
         PlayerControlPanel(
-          controller: controller,
+          controller: $state.driver,
           onTapPin: {
 
-            guard let range = controller.playingRange else {
+            guard let range = state.playingRange else {
               return
             }
 
@@ -76,7 +77,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
 
           },
           onTapDetail: {
-            controllerForDetail = controller
+            controllerForDetail = $state.driver
           }
         )
       }
@@ -100,7 +101,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
           pins: pins,
           onSelect: { pin in
             isDisplayingPinList = false
-            controller.setRepeating(from: pin)
+            $state.driver.setRepeating(from: pin)
           }
         )
       }
@@ -131,7 +132,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
           }
           
           Button("Rename") {
-            newTitle = controller.title
+            newTitle = state.title
             isShowingRenameDialog = true
           }
         } label: {
@@ -224,8 +225,8 @@ enum PlayerDisplayAction {
 }
 
 struct PlayerControlPanel: View {
-
-  private let controller: PlayerController
+  
+  @Reading<PlayerController> var state: PlayerController.State
   private let onTapPin: @MainActor () -> Void
   private let onTapDetail: @MainActor () -> Void
 
@@ -236,7 +237,7 @@ struct PlayerControlPanel: View {
     onTapPin: @escaping @MainActor () -> Void,
     onTapDetail: @escaping @MainActor () -> Void
   ) {
-    self.controller = controller
+    self._state = .init(controller)
     self.onTapPin = onTapPin
     self.onTapDetail = onTapDetail
   }
@@ -266,7 +267,7 @@ struct PlayerControlPanel: View {
           }
           togglePlaying()
         } label: {
-          Image(systemName: controller.isPlaying ? "pause.fill" : "play.fill")
+          Image(systemName: state.isPlaying ? "pause.fill" : "play.fill")
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(square: 30)
@@ -282,13 +283,13 @@ struct PlayerControlPanel: View {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
           }
 
-          if controller.isRepeating {
-            controller.setRepeat(range: nil)
+          if state.isRepeating {
+            $state.driver.setRepeat(range: nil)
           } else {
-            if let currentCue = controller.currentCue {
-              var range = controller.makeRepeatingRange()
+            if let currentCue = state.currentCue {
+              var range = $state.driver.makeRepeatingRange()
               range.select(cue: currentCue)
-              controller.setRepeat(range: range)
+              $state.driver.setRepeat(range: range)
             }
           }
         } label: {
@@ -304,7 +305,7 @@ struct PlayerControlPanel: View {
             RoundedRectangle(cornerRadius: 8)
               .fill(Color.accentColor.tertiary)
               .aspectRatio(1, contentMode: .fill)
-              .opacity(controller.isRepeating ? 1 : 0)
+              .opacity(state.isRepeating ? 1 : 0)
           )
         }
         .frame(square: 50)
@@ -322,7 +323,7 @@ struct PlayerControlPanel: View {
         }
         .frame(square: 50)
         .buttonStyle(PlainButtonStyle())
-        .disabled(controller.isRepeating == false)
+        .disabled(state.isRepeating == false)
 
         // detail
         Button {
@@ -336,7 +337,7 @@ struct PlayerControlPanel: View {
         }
         .frame(square: 50)
         .buttonStyle(PlainButtonStyle())
-        .disabled(controller.isRepeating == false)
+        .disabled(state.isRepeating == false)
 
       }
 
@@ -363,7 +364,7 @@ struct PlayerControlPanel: View {
       of: speed,
       initial: true,
       { _, value in
-        controller.setRate(value)
+        $state.driver.setRate(value)
       }
     )
     .scrollIndicators(.hidden)
@@ -376,10 +377,10 @@ struct PlayerControlPanel: View {
 
   @MainActor
   private func togglePlaying() {
-    if controller.isPlaying {
-      controller.pause()
+    if state.isPlaying {
+      $state.driver.pause()
     } else {
-      controller.play()
+      $state.driver.play()
     }
   }
 
