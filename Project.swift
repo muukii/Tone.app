@@ -36,7 +36,7 @@ let project = Project(
       destinations: [.iPhone, .macWithiPadDesign],
       product: .app,
       bundleId: "app.muukii.tone",
-      deploymentTargets: .iOS("17.0"),
+      deploymentTargets: .iOS("18.0"),
       // infoPlist: "Supporting/Info.plist",
       infoPlist: .extendingDefault(with: [
         "CFBundleShortVersionString": "$(APP_SHORT_VERSION)",
@@ -63,6 +63,8 @@ let project = Project(
         .external(name: "AudioKit"),
         .external(name: "Verge"),
         .external(name: "HexColorMacro"),
+        .external(name: "SwiftUIPersistentControl"),
+                
         .target(name: "AppService"),
         .target(name: "ActivityContent"),
         .target(name: "LiveActivity"),
