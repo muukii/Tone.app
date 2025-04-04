@@ -71,13 +71,25 @@ public final class PlayerController: NSObject, StoreDriverType {
   private var cancellables: Set<AnyCancellable> = .init()
 
   private var isAppInBackground: Bool = false
+  
+  public enum Source: Equatable {
+    case item(Item)
+    case entity(ItemEntity)    
+  }
+  
+  let source: Source
 
   public convenience init(item: Item) throws {
+        
+    let subtitles = try Subtitles(fileURL: item.subtitleFileURL, encoding: .utf8)
+      
     try self.init(
+      source: .item(item),
       title: item.id,
       audioFileURL: item.audioFileURL,
-      subtitleFileURL: item.subtitleFileURL
+      segments: subtitles.cues.map { AbstractSegment(cue: $0) }
     )
+    
   }
 
   public convenience init(item: ItemEntity) throws {
@@ -85,20 +97,21 @@ public final class PlayerController: NSObject, StoreDriverType {
     let segment = try item.segment()
 
     try self.init(
+      source: .entity(item),
       title: item.title,
       audioFileURL: item.audioFileAbsoluteURL,
       segments: segment.items
     )
   }
 
-  public convenience init(title: String, audioFileURL: URL, subtitleFileURL: URL) throws {
-
-    let subtitles = try Subtitles(fileURL: subtitleFileURL, encoding: .utf8)
-
-    try self.init(title: title, audioFileURL: audioFileURL, segments: subtitles.cues.map { AbstractSegment(cue: $0) })
-  }
-
-  public init(title: String, audioFileURL: URL, segments: [AbstractSegment]) throws {
+  public init(
+    source: Source,
+    title: String,
+    audioFileURL: URL,
+    segments: [AbstractSegment]
+  ) throws {
+    
+    self.source = source
     
     self.store = .init(
       initialState: .init(

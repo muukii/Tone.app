@@ -1,24 +1,6 @@
 
 import Foundation
 
-public struct Item_Hashable: Hashable {
-
-  public var hashValue: Int {
-    body.id.hashValue
-  }
-
-  public func hash(into hasher: inout Hasher) {
-    body.id.hash(into: &hasher)
-  }
-
-  public let body: ItemEntity
-
-  public init(body: ItemEntity) {
-    self.body = body
-  }
-
-}
-
 public struct Item: Equatable, Identifiable {
 
   public let id: String
