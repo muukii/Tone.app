@@ -29,7 +29,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
     var value: String
   }
 
-  @Reading<PlayerController> var state: PlayerController.State
+  @ReadingObject<PlayerController> var state: PlayerController.State
   private let actionHandler: @MainActor (PlayerAction) async -> Void
   @State private var controllerForDetail: PlayerController?
   @State private var isDisplayingPinList: Bool = false
@@ -38,15 +38,18 @@ struct PlayerView<Display: PlayerDisplay>: View {
   @State private var newTitle: String = ""
 
   private let pins: [PinEntity]
+  private let namespace: Namespace.ID
 
   init(
     playerController: @escaping () -> PlayerController,
     pins: [PinEntity],
+    namespace: Namespace.ID,
     actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   ) {
     self._state = .init(playerController)
     self.actionHandler = actionHandler
     self.pins = pins
+    self.namespace = namespace
   }
 
   var body: some View {
@@ -65,6 +68,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
       content: {
         PlayerControlPanel(
           controller: $state.driver,
+          namespace: namespace,
           onTapPin: {
 
             guard let range = state.playingRange else {
@@ -231,13 +235,16 @@ struct PlayerControlPanel: View {
   private let onTapDetail: @MainActor () -> Void
 
   @State var speed: Double = 1
+  let namespace: Namespace.ID
 
   init(
     controller: PlayerController,
+    namespace: Namespace.ID,
     onTapPin: @escaping @MainActor () -> Void,
     onTapDetail: @escaping @MainActor () -> Void
   ) {
     self._state = .init(controller)
+    self.namespace = namespace
     self.onTapPin = onTapPin
     self.onTapDetail = onTapDetail
   }
@@ -271,6 +278,7 @@ struct PlayerControlPanel: View {
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(square: 30)
+            .matchedGeometryEffect(id: MainTabView.ComponentKey.playButton, in: namespace)
             .foregroundColor(Color.primary)
             .contentTransition(.symbolEffect(.replace, options: .speed(2)))
 
@@ -403,19 +411,31 @@ struct DefinitionView: UIViewControllerRepresentable {
 #if DEBUG
 
 #Preview {
-  Group {
-    NavigationStack {
-      PlayerView<PlayerListFlowLayoutView>(
-        playerController: { try! .init(item: .social) },
-        pins: [],
-        actionHandler: { action in
+  
+  struct Host: View {
+    
+    @Namespace private var namespace
+    
+    var body: some View {
+      Group {
+        NavigationStack {
+          PlayerView<PlayerListFlowLayoutView>(
+            playerController: { try! .init(item: .social) },
+            pins: [],
+            namespace: namespace,
+              actionHandler: { action in
+              }
+          )
         }
-      )
+        
+      }
+      .accentColor(Color.pink)
+      .tint(Color.pink)
     }
-
   }
-  .accentColor(Color.pink)
-  .tint(Color.pink)
+  
+  return Host()
+    
 }
 
 #endif

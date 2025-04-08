@@ -63,7 +63,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     pins: [PinEntity],
     actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   ) {
-    self._state = .init(mode: .weak, controller)
+    self._state = .init(mode: .unowned, controller)
     self.pins = pins
     self.actionHandler = actionHandler
 
@@ -375,10 +375,12 @@ private struct CueCellContentConfiguration: UIContentConfiguration {
 }
 
 #Preview {
+  @Previewable @Namespace var namespace
   Group {
     PlayerView<PlayerListFlowLayoutView>(
       playerController: { try! .init(item: .social) },
       pins: [],
+      namespace: namespace,
       actionHandler: { action in
       }
     )

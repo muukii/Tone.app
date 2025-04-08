@@ -8,6 +8,7 @@ struct RepeatingView: View {
   private let range: PlayingRange
   
   @Reading<PlayerController> var state: PlayerController.State
+  @Namespace var namespace
 
   @MainActor
   init(
@@ -38,6 +39,7 @@ struct RepeatingView: View {
 
       PlayerControlPanel(
         controller: $state.driver,
+        namespace: namespace,
         onTapPin: {
         },
         onTapDetail: {})

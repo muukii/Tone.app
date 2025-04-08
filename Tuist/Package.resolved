@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/AudioKit/AudioKit",
       "state" : {
-        "revision" : "82cab9d4c168b5b03b67e2ff099819f589b530f7",
-        "version" : "5.6.2"
+        "revision" : "5b3fd238ef8ee95c9842ca4ea83ca58ee151e630",
+        "version" : "5.6.5"
       }
     },
     {
@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dagronf/DSFRegex",
       "state" : {
-        "revision" : "f1ce5c208384bb238b07905d140c2e60182e3601",
-        "version" : "3.3.1"
+        "revision" : "e0e64805519b23b08dcca9c83ca2d4a2b3de4c33",
+        "version" : "3.4.0"
       }
     },
     {
@@ -28,6 +28,15 @@
       }
     },
     {
+      "identity" : "jinja",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/johnmai-dev/Jinja",
+      "state" : {
+        "revision" : "bbddb92fc51ae420b87300298370fd1dfc308f73",
+        "version" : "1.1.1"
+      }
+    },
+    {
       "identity" : "mondrianlayout",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/FluidGroup/MondrianLayout",
@@ -37,12 +46,39 @@
       }
     },
     {
+      "identity" : "normalization",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/Normalization",
+      "state" : {
+        "revision" : "6e7cb1ddeda4d0f1d2fbf8ca6d25ecd8ed6ba917",
+        "version" : "1.1.0"
+      }
+    },
+    {
       "identity" : "rxswift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ReactiveX/RxSwift.git",
       "state" : {
-        "revision" : "9dcaa4b333db437b0fbfaf453fad29069044a8b4",
-        "version" : "6.6.0"
+        "revision" : "5dd1907d64f0d36f158f61a466bab75067224893",
+        "version" : "6.9.0"
+      }
+    },
+    {
+      "identity" : "swift-algorithms",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-algorithms",
+      "state" : {
+        "revision" : "87e50f483c54e6efd60e885f7f5aa946cee68023",
+        "version" : "1.2.1"
+      }
+    },
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "state" : {
+        "revision" : "41982a3656a71c768319979febd796c6fd111d5c",
+        "version" : "1.5.0"
       }
     },
     {
@@ -57,10 +93,10 @@
     {
       "identity" : "swift-collections",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FluidGroup/swift-collections",
+      "location" : "https://github.com/apple/swift-collections",
       "state" : {
-        "revision" : "939cfd25234472b4dc91c3caeab304d15bca9a73",
-        "version" : "1.1.0"
+        "revision" : "671108c96644956dddcd89dd59c203dcdb36cec7",
+        "version" : "1.1.4"
       }
     },
     {
@@ -68,8 +104,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/VergeGroup/swift-concurrency-task-manager",
       "state" : {
-        "revision" : "ab2da927e968464ed3b3b9e01aa0f7357c68526c",
-        "version" : "1.3.2"
+        "revision" : "340cf14e0282977deeeb436605d1810ce4f4fbc9",
+        "version" : "1.4.0"
       }
     },
     {
@@ -77,8 +113,26 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/muukii/swift-macro-hex-color",
       "state" : {
-        "revision" : "03eff8dfbf64410bb8a34a622ae9b956a9445309",
-        "version" : "0.1.1"
+        "revision" : "a8b1c2ea0ef134c4047b944aefe70df232c0cefc",
+        "version" : "0.2.0"
+      }
+    },
+    {
+      "identity" : "swift-macro-state-struct",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/swift-macro-state-struct",
+      "state" : {
+        "revision" : "ab5621e756d40aa48a8b6a7c5f6300632c48a1d0",
+        "version" : "2.3.0"
+      }
+    },
+    {
+      "identity" : "swift-numerics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-numerics.git",
+      "state" : {
+        "revision" : "e0ec0f5f3af6f3e4d5e7a19d2af26b481acb6ba8",
+        "version" : "1.0.3"
       }
     },
     {
@@ -86,8 +140,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-syntax.git",
       "state" : {
-        "revision" : "43c802fb7f96e090dde015344a94b5e85779eff1",
-        "version" : "509.1.0"
+        "revision" : "0687f71944021d616d34d922343dcef086855920",
+        "version" : "600.0.1"
+      }
+    },
+    {
+      "identity" : "swift-transformers",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/huggingface/swift-transformers.git",
+      "state" : {
+        "revision" : "8a83416cc00ab07a5de9991e6ad817a9b8588d20",
+        "version" : "0.1.15"
       }
     },
     {
@@ -100,12 +163,30 @@
       }
     },
     {
+      "identity" : "swiftui-functional-component-macro",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swiftui-functional-component-macro",
+      "state" : {
+        "revision" : "4824b57c924da6cd4759a60bdde38a9c82d65bef",
+        "version" : "1.0.0"
+      }
+    },
+    {
       "identity" : "swiftui-introspect",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/siteline/swiftui-introspect",
       "state" : {
-        "revision" : "9e1cc02a65b22e09a8251261cccbccce02731fc5",
-        "version" : "1.1.1"
+        "revision" : "807f73ce09a9b9723f12385e592b4e0aaebd3336",
+        "version" : "1.3.0"
+      }
+    },
+    {
+      "identity" : "swiftui-scrollview-interoperable-drag-gesture",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swiftui-scrollview-interoperable-drag-gesture",
+      "state" : {
+        "revision" : "60054ac27fcd856c212afba4ca177f44881a5036",
+        "version" : "0.2.1"
       }
     },
     {
@@ -114,7 +195,7 @@
       "location" : "https://github.com/FluidGroup/swiftui-support",
       "state" : {
         "branch" : "main",
-        "revision" : "a6b6c987cdf60ab796254f2557234dbac8e53429"
+        "revision" : "fbc3f1770889f74818a56eea3d7099a0d3a9c5e1"
       }
     },
     {
@@ -127,12 +208,39 @@
       }
     },
     {
+      "identity" : "typedcomparator",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/TypedComparator",
+      "state" : {
+        "revision" : "337ce0e573e7637ddd29392cb88c3b852f042c8e",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "typedidentifier",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/TypedIdentifier",
+      "state" : {
+        "revision" : "284340409ba47858a1b3c353dcef9c21303953db",
+        "version" : "2.0.3"
+      }
+    },
+    {
       "identity" : "verge",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/VergeGroup/Verge",
       "state" : {
-        "branch" : "main",
-        "revision" : "8fdfee5f4448f047ceddb77d77334870a5602f42"
+        "revision" : "4f837ab08b3093163bbc613aec531b98cb3de27d",
+        "version" : "14.0.0-beta.8"
+      }
+    },
+    {
+      "identity" : "whisperkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/argmaxinc/whisperkit",
+      "state" : {
+        "revision" : "e753c568a6e180b3c78a718797e6066884137490",
+        "version" : "0.11.0"
       }
     },
     {
@@ -149,8 +257,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/alexeichhorn/YouTubeKit",
       "state" : {
-        "revision" : "f67f4c3dd53b85a5ce94d16a246613d4dd7faa32",
-        "version" : "0.2.0"
+        "revision" : "e7dbaa332ff190e85241bb90e9a26f3ce4993458",
+        "version" : "0.2.6"
       }
     }
   ],

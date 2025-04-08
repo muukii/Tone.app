@@ -64,6 +64,7 @@ let project = Project(
         .external(name: "Verge"),
         .external(name: "HexColorMacro"),
         .external(name: "SwiftUIPersistentControl"),
+        .external(name: "FunctionalViewComponent"),
                 
         .target(name: "AppService"),
         .target(name: "ActivityContent"),

@@ -8,11 +8,15 @@ struct MainTabView: View {
 
   @Namespace var namespace
   
+  enum ComponentKey: Hashable {
+    case playButton
+  }
+  
   @State private var isCompact: Bool = true
   
   let service: Service
   
-  @Reading<MainViewModel> var state: MainViewModel.State
+  @ReadingObject<MainViewModel> var state: MainViewModel.State
   
   init(service: Service) {
     self._state = .init({
@@ -70,34 +74,76 @@ struct MainTabView: View {
     .tint(.primary)    
     .overlay(
       Container(
-        isCompact: $isCompact,
+        isCompact: state.currentController?.object?.object == nil ? .constant(true) : $isCompact,
         namespace: namespace,
         marginToBottom: 54,
         compactContent: {
-          if let player = state.currentController?.object {
-            Text("Playing")
-          } else {
-            Text("Not playing")
+          Group {
+            if let player = state.currentController?.object?.object {              
+              CompactPlayerBar(controller: player, namespace: namespace)              
+            } else {
+              Text("Not playing")
+            }
           }
+          .frame(height: 60)
         },
         detailContent: {  
           if let player = state.currentController?.object?.object {
-            detailContent(player: player)
+            detailContent(player: player, namespace: namespace)
           }
         },
         detailBackground: {
-          Color.blue
+          Color(uiColor: .systemBackground)
         })
     )
   }
   
-  private func detailContent(player: PlayerController) -> some View {
+  private struct CompactPlayerBar: View {
+    
+    unowned let controller: PlayerController
+    let namespace: Namespace.ID
+        
+    init(
+      controller: PlayerController,
+      namespace: Namespace.ID
+    ) {
+      self.controller = controller
+      self.namespace = namespace
+    }
+    
+    var body: some View {
+      StoreReader(controller) { $state in
+        HStack {
+          Button {
+            MainActor.assumeIsolated {
+              UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            }
+            //                  togglePlaying()
+          } label: {
+            Image(systemName: state.isPlaying ? "pause.fill" : "play.fill")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(square: 30)
+              .matchedGeometryEffect(id: ComponentKey.playButton, in: namespace)
+              .foregroundColor(Color.primary)
+              .contentTransition(.symbolEffect(.replace, options: .speed(2)))
+            
+          }
+          .frame(square: 50)
+        }
+      }
+    }
+    
+  }
+  
+  private func detailContent(player: PlayerController, namespace: Namespace.ID) -> some View {
 //    PinEntitiesProvider(targetItem: item) { pins in
     return PlayerView<PlayerListFlowLayoutView>(
         playerController: {
           return player
         },
         pins: [],
+        namespace: namespace,
         actionHandler: { action in
 //          do {
 //            switch action {
