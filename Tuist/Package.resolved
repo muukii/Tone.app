@@ -64,6 +64,15 @@
       }
     },
     {
+      "identity" : "steppedslider",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/shima11/SteppedSlider.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "36725121569eb55225e100765e057b23f16e3090"
+      }
+    },
+    {
       "identity" : "swift-algorithms",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-algorithms",

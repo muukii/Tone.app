@@ -20,5 +20,6 @@ let package = Package(
     .package(url: "https://github.com/alexeichhorn/YouTubeKit", from: "0.2.0"),
     .package(url: "https://github.com/argmaxinc/whisperkit", from: "0.2.1"),
     .package(url: "https://github.com/apple/swift-algorithms", from: "1.2.0"),
+    .package(url: "https://github.com/shima11/SteppedSlider.git", branch: "main"),
   ]
 )

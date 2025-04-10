@@ -4,6 +4,7 @@ import SwiftData
 import SwiftUI
 import SwiftUIRingSlider
 import SwiftUISupport
+import SteppedSlider
 import Verge
 
 @MainActor
@@ -56,7 +57,6 @@ struct PlayerView<Display: PlayerDisplay>: View {
 
     //
     ZStack {
-
       Display(
         controller: $state.driver,
         pins: pins,
@@ -234,7 +234,7 @@ struct PlayerControlPanel: View {
   private let onTapPin: @MainActor () -> Void
   private let onTapDetail: @MainActor () -> Void
 
-  @State var speed: Double = 1
+//  @State var speed: CGFloat = 1
   let namespace: Namespace.ID
 
   init(
@@ -249,18 +249,20 @@ struct PlayerControlPanel: View {
     self.onTapDetail = onTapDetail
   }
 
-  private static func fractionLabel(fraction: Double) -> String {
+  private static func fractionLabel(fraction: CGFloat) -> String {
     if fraction < 1 {
       var text = String.init(format: "%0.2f", fraction)
       text.removeFirst()
       return text
     } else {
       return .init(format: "%.1f", fraction)
-    }
+    }    
   }
+  
+  @Namespace private var namespaceId
 
   var body: some View {
-
+    
     VStack {
 
       Spacer(minLength: 24).fixedSize()
@@ -353,9 +355,9 @@ struct PlayerControlPanel: View {
 
       VStack {
         Button {
-          speed = 1.0
+          $state.rate.wrappedValue = 1
         } label: {
-          Text("\(String(format: "%.2f", speed))")
+          Text("\(String(format: "%.2f", state.rate))")
             .font(.title3.monospacedDigit().bold())
             .contentTransition(.numericText(value: 1))
         }
@@ -363,18 +365,40 @@ struct PlayerControlPanel: View {
         .buttonBorderShape(.roundedRectangle(radius: 8))
         .tint(Color.accentColor)
 
-        RingSlider(value: $speed, stride: 0.025, valueRange: 0.3...1)
+//        RingSlider(value: $speed, stride: 0.025, valueRange: 0.3...1)
+        
+        SteppedSlider(
+          value: $state.rate,
+          range: 0.3...1,
+          steps: 0.02,
+          horizontalEdgeMask: .hidden,
+          anchorView: {
+            Rectangle()
+              .frame(width: 1, height: 12)
+              .foregroundColor(.red)
+          },
+          segmentView: { _, _ in
+            Rectangle()
+              .frame(width: 1, height: 12)
+          },
+          segmentOverlayView: { index, _ in
+            Text(String(format: "%g", CGFloat(index)))
+          },
+          onEditing: {}
+        )
+        .frame(height: 40)
+        
       }
 
       Spacer(minLength: 10).fixedSize()
     }
-    .onChange(
-      of: speed,
-      initial: true,
-      { _, value in
-        $state.driver.setRate(value)
-      }
-    )
+//    .onChange(
+//      of: speed,
+//      initial: true,
+//      { _, value in
+//        $state.driver.setRate(value)
+//      }
+//    )
     .scrollIndicators(.hidden)
     .background(.quinary)
     .onKeyPress(.space) {

@@ -65,6 +65,7 @@ let project = Project(
         .external(name: "HexColorMacro"),
         .external(name: "SwiftUIPersistentControl"),
         .external(name: "FunctionalViewComponent"),
+        .external(name: "SteppedSlider"),
                 
         .target(name: "AppService"),
         .target(name: "ActivityContent"),

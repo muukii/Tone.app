@@ -21,6 +21,8 @@ public final class PlayerController: NSObject, StoreDriverType {
     
     public var isPlaying: Bool
     
+    public var rate: CGFloat = 1
+    
     public var currentCue: DisplayCue?
     
     public let cues: [DisplayCue]
@@ -126,6 +128,13 @@ public final class PlayerController: NSObject, StoreDriverType {
     self.controller.repeating = .atEnd
     
     super.init()
+    
+    self.sinkState { [weak self] state in
+      state.ifChanged(\.rate).do {
+        self?.controller.setSpeed(speed: $0)
+      }
+    }
+    .store(in: &cancellables)
     
     controller.sinkState { [weak self] state in
 
@@ -437,8 +446,10 @@ public final class PlayerController: NSObject, StoreDriverType {
     }
   }
 
-  public func setRate(_ rate: Double) {
-    controller.setSpeed(speed: rate)
+  public func setRate(_ rate: CGFloat) {
+    commit {
+      $0.rate = rate
+    }
   }
 
 }

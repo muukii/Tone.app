@@ -159,7 +159,7 @@ struct MainTabView: View {
   private func detailContent(player: PlayerController, namespace: Namespace.ID) -> some View {
     if case .entity(let entity) = player.source {
       PinEntitiesProvider(targetItem: entity) { pins in
-        return PlayerView<PlayerListFlowLayoutView>(
+        PlayerView<PlayerListFlowLayoutView>(
           playerController: player,
           pins: pins,
           namespace: namespace,
