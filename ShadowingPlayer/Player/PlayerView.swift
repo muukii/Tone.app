@@ -234,7 +234,6 @@ struct PlayerControlPanel: View {
   private let onTapPin: @MainActor () -> Void
   private let onTapDetail: @MainActor () -> Void
 
-//  @State var speed: CGFloat = 1
   let namespace: Namespace.ID
 
   init(
@@ -259,8 +258,6 @@ struct PlayerControlPanel: View {
     }    
   }
   
-  @Namespace private var namespaceId
-
   var body: some View {
     
     VStack {
@@ -364,8 +361,6 @@ struct PlayerControlPanel: View {
         .buttonStyle(.bordered)
         .buttonBorderShape(.roundedRectangle(radius: 8))
         .tint(Color.accentColor)
-
-//        RingSlider(value: $speed, stride: 0.025, valueRange: 0.3...1)
         
         SteppedSlider(
           value: $state.rate,
@@ -373,16 +368,17 @@ struct PlayerControlPanel: View {
           steps: 0.02,
           horizontalEdgeMask: .hidden,
           anchorView: {
-            Rectangle()
-              .frame(width: 1, height: 12)
-              .foregroundColor(.red)
+            RoundedRectangle(cornerRadius: 1)
+              .frame(width: 2, height: 20)
+              .foregroundStyle(.tint)
           },
           segmentView: { _, _ in
-            Rectangle()
-              .frame(width: 1, height: 12)
+            RoundedRectangle(cornerRadius: 1)
+              .frame(width: 2, height: 20)
+              .foregroundStyle(.tint.secondary)
           },
           segmentOverlayView: { index, _ in
-            Text(String(format: "%g", CGFloat(index)))
+            EmptyView()
           },
           onEditing: {}
         )
