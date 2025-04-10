@@ -374,17 +374,4 @@ private struct CueCellContentConfiguration: UIContentConfiguration {
   }
 }
 
-#Preview {
-  @Previewable @Namespace var namespace
-  Group {
-    PlayerView<PlayerListFlowLayoutView>(
-      playerController: { try! .init(item: .social) },
-      pins: [],
-      namespace: namespace,
-      actionHandler: { action in
-      }
-    )
-  }
-}
-
 #endif

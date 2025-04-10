@@ -230,8 +230,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/VergeGroup/Verge",
       "state" : {
-        "revision" : "4f837ab08b3093163bbc613aec531b98cb3de27d",
-        "version" : "14.0.0-beta.8"
+        "branch" : "main",
+        "revision" : "3f5ce18abd0321a0cf8d8a28a8b93ddf77c933ad"
       }
     },
     {

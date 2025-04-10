@@ -3,6 +3,7 @@ import HexColorMacro
 import SwiftUI
 import SwiftUIPersistentControl
 import Verge
+import FunctionalViewComponent
 
 struct MainTabView: View {
 
@@ -80,7 +81,12 @@ struct MainTabView: View {
         compactContent: {
           Group {
             if let player = state.currentController?.object?.object {              
-              CompactPlayerBar(controller: player, namespace: namespace)              
+              CompactPlayerBar(
+                controller: player,
+                namespace: namespace,
+                onDiscard: {                  
+                  $state.driver.discardPlayerController()                  
+                })              
             } else {
               Text("Not playing")
             }
@@ -97,28 +103,43 @@ struct MainTabView: View {
         })
     )
   }
-  
+    
   private struct CompactPlayerBar: View {
     
     unowned let controller: PlayerController
     let namespace: Namespace.ID
+    private let onDiscard: () -> Void
         
     init(
       controller: PlayerController,
-      namespace: Namespace.ID
+      namespace: Namespace.ID,
+      onDiscard: @escaping () -> Void
     ) {
       self.controller = controller
       self.namespace = namespace
+      self.onDiscard = onDiscard
     }
     
     var body: some View {
       StoreReader(controller) { $state in
         HStack {
           Button {
+            onDiscard()
+          } label: {
+            Image(systemName: "xmark")     
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(square: 30)
+          }
+          Button {
             MainActor.assumeIsolated {
               UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             }
-            //                  togglePlaying()
+            if state.isPlaying {
+              controller.pause()
+            } else {
+              controller.play()
+            }
           } label: {
             Image(systemName: state.isPlaying ? "pause.fill" : "play.fill")
               .resizable()
@@ -126,8 +147,7 @@ struct MainTabView: View {
               .frame(square: 30)
               .matchedGeometryEffect(id: ComponentKey.playButton, in: namespace)
               .foregroundColor(Color.primary)
-              .contentTransition(.symbolEffect(.replace, options: .speed(2)))
-            
+              .contentTransition(.symbolEffect(.replace, options: .speed(2)))            
           }
           .frame(square: 50)
         }
@@ -137,30 +157,31 @@ struct MainTabView: View {
   }
   
   private func detailContent(player: PlayerController, namespace: Namespace.ID) -> some View {
-//    PinEntitiesProvider(targetItem: item) { pins in
-    return PlayerView<PlayerListFlowLayoutView>(
-        playerController: {
-          return player
-        },
-        pins: [],
-        namespace: namespace,
-        actionHandler: { action in
-//          do {
-//            switch action {
-//            case .onPin(let range):
-//              try await service.makePinned(range: range, for: item)
-//            case .onTranscribeAgain:
-//              try await service.updateTranscribe(for: item)
-//              path = .init()
-//            case .onRename(let title):
-//              try await service.renameItem(item: item, newTitle: title)
-//            }
-//          } catch {
-//            Log.error("\(error.localizedDescription)")
-//          }
-        }
-      )
-//    }
+    if case .entity(let entity) = player.source {
+      PinEntitiesProvider(targetItem: entity) { pins in
+        return PlayerView<PlayerListFlowLayoutView>(
+          playerController: player,
+          pins: pins,
+          namespace: namespace,
+          actionHandler: { action in          
+            do {
+              switch action {
+              case .onPin(let range):
+                try await service.makePinned(range: range, for: entity)
+              case .onTranscribeAgain:
+                try await service.updateTranscribe(for: entity)
+              case .onRename(let title):
+                try await service.renameItem(item: entity, newTitle: title)
+              }
+            } catch {
+              Log.error("\(error.localizedDescription)")
+            }
+          }
+        )
+      }
+    } else {
+      fatalError()
+    }
   }
 }
 
@@ -196,6 +217,16 @@ final class MainViewModel: StoreDriverType {
       $0.currentController = .init(.init(newController))
     }
     
+  }
+  
+  @MainActor
+  func discardPlayerController() {
+    try? AudioSessionManager.shared.deactivate()
+    commit { 
+      $0.currentController?.object?.object.pause()
+      $0.currentController?.dispose() 
+      $0.currentController = nil
+    }
   }
   
 }

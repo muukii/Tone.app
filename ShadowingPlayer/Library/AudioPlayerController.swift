@@ -19,7 +19,7 @@ final class AudioPlayerController: StoreDriverType {
     var isAppInBackground: Bool = false
   }
 
-  private let engine = AVAudioEngine()
+  private var engine: AVAudioEngine?
   private let audioPlayer = AVAudioPlayerNode()
 
   private let pitchControl = AVAudioUnitTimePitch()
@@ -39,17 +39,6 @@ final class AudioPlayerController: StoreDriverType {
       throw AudioPlayerControllerError.fileLengthIsZero
     }
 
-    let format = file.processingFormat
-
-    engine.attach(pitchControl)
-    engine.attach(audioPlayer)
-
-    let mainMixer = engine.mainMixerNode
-
-    engine.connect(audioPlayer, to: pitchControl, format: format)
-
-    engine.connect(pitchControl, to: mainMixer, format: format)
-
     NotificationCenter.default.addObserver(
       self,
       selector: #selector(handleInterruption),
@@ -68,7 +57,7 @@ final class AudioPlayerController: StoreDriverType {
   }
 
   func prepare() throws {
-    try engine.start()
+    try engine?.start()
   }
 
   func setSpeed(speed: Double) {
@@ -77,15 +66,37 @@ final class AudioPlayerController: StoreDriverType {
 
     pitchControl.rate = Float(speed)
   }
+  
+  private func createEngine() {
+    
+    // making AVAudioEngine triggers AVAudioSession to start
+    
+    let format = file.processingFormat
+
+    let newEngine = AVAudioEngine()
+    self.engine = newEngine
+    
+    newEngine.attach(pitchControl)
+    newEngine.attach(audioPlayer)
+    
+    let mainMixer = newEngine.mainMixerNode
+    
+    newEngine.connect(audioPlayer, to: pitchControl, format: format)
+    newEngine.connect(pitchControl, to: mainMixer, format: format)    
+  }
 
   func play() throws {
+    
+    if engine == nil {
+      createEngine()
+    }
 
     commit {
       $0.isPlaying = true
     }
 
-    if engine.isRunning == false {
-      try engine.start()
+    if engine?.isRunning == false {
+      try engine?.start()
     }
 
     audioPlayer.stop()

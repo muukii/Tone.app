@@ -62,7 +62,6 @@ public final class PlayerController: NSObject, StoreDriverType {
   private var currentTimer: Timer?
 
   private var currentTimerForLoop: Timer?
-  //  private let player: AVAudioPlayer
 
   private let controller: AudioPlayerController
 
@@ -235,8 +234,7 @@ public final class PlayerController: NSObject, StoreDriverType {
       Log.debug("deinit \(String(describing: self))")
       
       do {
-        let instance = AVAudioSession.sharedInstance()
-        try instance.setActive(false, options: .notifyOthersOnDeactivation)
+        try AudioSessionManager.shared.deactivate()
       } catch {
         print(error)
       }
@@ -255,7 +253,6 @@ public final class PlayerController: NSObject, StoreDriverType {
   }
 
   func activate() {
-
     guard isActivated == false else {
       return
     }
@@ -263,34 +260,18 @@ public final class PlayerController: NSObject, StoreDriverType {
     isActivated = true
 
     do {
-      let instance = AVAudioSession.sharedInstance()
-      try instance.setActive(true, options: .notifyOthersOnDeactivation)
-      try instance.setCategory(
-        .playback,
-        mode: .default,
-        policy: .default,
-        options: []
-      )
+      try AudioSessionManager.shared.activate()
     } catch {
       print(error)
     }
-
   }
 
   func deactivate() {
-
     guard isActivated == true else {
       return
     }
 
     isActivated = false
-
-    do {
-      let instance = AVAudioSession.sharedInstance()
-      try instance.setActive(false, options: .notifyOthersOnDeactivation)
-    } catch {
-      print(error)
-    }
   }
 
   public func play() {
@@ -379,6 +360,10 @@ public final class PlayerController: NSObject, StoreDriverType {
   }
 
   public func pause() {
+    
+    guard state.isPlaying else {
+      return
+    }
 
     controller.pause()
 

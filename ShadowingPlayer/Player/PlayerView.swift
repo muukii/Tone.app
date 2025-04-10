@@ -29,7 +29,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
     var value: String
   }
 
-  @ReadingObject<PlayerController> var state: PlayerController.State
+  @Reading<PlayerController> var state: PlayerController.State
   private let actionHandler: @MainActor (PlayerAction) async -> Void
   @State private var controllerForDetail: PlayerController?
   @State private var isDisplayingPinList: Bool = false
@@ -41,12 +41,12 @@ struct PlayerView<Display: PlayerDisplay>: View {
   private let namespace: Namespace.ID
 
   init(
-    playerController: @escaping () -> PlayerController,
+    playerController: PlayerController,
     pins: [PinEntity],
     namespace: Namespace.ID,
     actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   ) {
-    self._state = .init(playerController)
+    self._state = .init(mode: .unowned, playerController)
     self.actionHandler = actionHandler
     self.pins = pins
     self.namespace = namespace
@@ -416,11 +416,15 @@ struct DefinitionView: UIViewControllerRepresentable {
     
     @Namespace private var namespace
     
+    @ReadingObject<PlayerController>({
+      try! .init(item: .social)
+    }) var state: PlayerController.State
+    
     var body: some View {
       Group {
         NavigationStack {
           PlayerView<PlayerListFlowLayoutView>(
-            playerController: { try! .init(item: .social) },
+            playerController: $state.driver,
             pins: [],
             namespace: namespace,
               actionHandler: { action in
