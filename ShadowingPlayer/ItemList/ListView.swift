@@ -2,6 +2,7 @@ import AppService
 import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
+import Verge
 
 struct ListView: View {
 
@@ -31,6 +32,16 @@ struct ListView: View {
   @State private var isImportingAudioAndSRT: Bool = false
   @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
+    
+  private let onSelect: (ItemEntity) -> Void
+  
+  init(
+    service: Service,
+    onSelect: @escaping (ItemEntity) -> Void
+  ) {
+    self.service = service
+    self.onSelect = onSelect
+  }
 
   var body: some View {
     NavigationStack(path: $path) {
@@ -38,7 +49,9 @@ struct ListView: View {
       List {
         Section {
           ForEach(itemEntities) { item in
-            NavigationLink(value: item) {
+            Button { 
+              onSelect(item)
+            } label: {               
               ItemCell(item: item)
             }
             .contextMenu(menuItems: {
@@ -56,6 +69,7 @@ struct ListView: View {
           emptyView()
         }
       }
+      /*
       .navigationDestination(
         for: ItemEntity.self,
         destination: { item in
@@ -87,6 +101,7 @@ struct ListView: View {
 
         }
       )
+       */
       .toolbar(content: {
         if isSettingsEnabled {
           ToolbarItem(placement: .topBarLeading) {
@@ -295,8 +310,3 @@ struct PinEntitiesProvider<Content: View>: View {
   }
 }
 
-#Preview {
-
-  ListView(service: .init())
-
-}

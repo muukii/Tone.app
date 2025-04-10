@@ -37,6 +37,8 @@ struct AppRoot: App {
     WindowGroup {
       ContentView(service: service)
         .onAppear {
+          UIApplication.shared.beginReceivingRemoteControlEvents()
+          AudioSessionManager.shared.setInitialState()
           #if targetEnvironment(simulator)
           addExampleItems(using: service)
           #endif

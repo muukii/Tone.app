@@ -2,58 +2,95 @@ import AppService
 import MediaPlayer
 import SwiftSubtitles
 import Verge
-import Observation
 
 @MainActor
-@Observable
-public final class PlayerController: NSObject {
-
-  public private(set) var playingRange: PlayingRange?
-
-  public var isRepeating: Bool {
-    playingRange != nil
+public final class PlayerController: NSObject, StoreDriverType {
+  
+  @Tracking
+  public struct State {
+            
+    public let title: String
+    
+    public let audioFileURL: URL    
+    
+    public var playingRange: PlayingRange?
+    
+    public var isRepeating: Bool {
+      playingRange != nil
+    }
+    
+    public var isPlaying: Bool
+    
+    public var rate: CGFloat = 1
+    
+    public var currentCue: DisplayCue?
+    
+    public let cues: [DisplayCue]
+    
+    public var pin: [PinEntity] = []
+    
+    public init(
+      title: String,
+      audioFileURL: URL,
+      playingRange: PlayingRange? = nil,
+      isPlaying: Bool = false,
+      currentCue: DisplayCue? = nil,
+      cues: [DisplayCue] = [],
+      pin: [PinEntity] = []
+    ) {
+      self.title = title
+      self.audioFileURL = audioFileURL
+      self.playingRange = playingRange
+      self.isPlaying = isPlaying
+      self.currentCue = currentCue
+      self.cues = cues
+      self.pin = pin
+    }
+      
   }
+  
+//  nonisolated public static func == (lhs: PlayerController, rhs: PlayerController) -> Bool {
+//    lhs === rhs
+//  }
+//  
+//  public nonisolated func hash(into hasher: inout Hasher) {
+//    hasher.combine(ObjectIdentifier(self))
+//  }
+  
+  public let store: Store<State, Never>
 
-  public private(set) var isPlaying: Bool = false
-
-  public private(set) var currentCue: DisplayCue?
-
-  public let cues: [DisplayCue]
-
-  public var pin: [PinEntity] = []
-
-  @ObservationIgnored
   private var currentTimeObservation: NSKeyValueObservation?
-
-  @ObservationIgnored
+  
   private var currentTimer: Timer?
 
-  @ObservationIgnored
   private var currentTimerForLoop: Timer?
-  //  private let player: AVAudioPlayer
 
-  @ObservationIgnored
   private let controller: AudioPlayerController
 
-  let audioFileURL: URL
-
-  let title: String
-
-  @ObservationIgnored
   private var isActivated: Bool = false
 
-  @ObservationIgnored
   private var cancellables: Set<AnyCancellable> = .init()
 
-  @ObservationIgnored
   private var isAppInBackground: Bool = false
+  
+  public enum Source: Equatable {
+    case item(Item)
+    case entity(ItemEntity)    
+  }
+  
+  let source: Source
 
   public convenience init(item: Item) throws {
+        
+    let subtitles = try Subtitles(fileURL: item.subtitleFileURL, encoding: .utf8)
+      
     try self.init(
+      source: .item(item),
       title: item.id,
       audioFileURL: item.audioFileURL,
-      subtitleFileURL: item.subtitleFileURL
+      segments: subtitles.cues.map { AbstractSegment(cue: $0) }
     )
+    
   }
 
   public convenience init(item: ItemEntity) throws {
@@ -61,35 +98,52 @@ public final class PlayerController: NSObject {
     let segment = try item.segment()
 
     try self.init(
+      source: .entity(item),
       title: item.title,
       audioFileURL: item.audioFileAbsoluteURL,
       segments: segment.items
     )
   }
 
-  public convenience init(title: String, audioFileURL: URL, subtitleFileURL: URL) throws {
-
-    let subtitles = try Subtitles(fileURL: subtitleFileURL, encoding: .utf8)
-
-    try self.init(title: title, audioFileURL: audioFileURL, segments: subtitles.cues.map { AbstractSegment(cue: $0) })
-  }
-
-  public init(title: String, audioFileURL: URL, segments: [AbstractSegment]) throws {
-
-    self.cues = segments.enumerated().map { i, e in .init(segment: e, index: i) }
-    self.title = title
-    self.audioFileURL = audioFileURL
-
+  public init(
+    source: Source,
+    title: String,
+    audioFileURL: URL,
+    segments: [AbstractSegment]
+  ) throws {
+    
+    self.source = source
+    
+    self.store = .init(
+      initialState: .init(
+        title: title,
+        audioFileURL: audioFileURL,
+        cues: segments.enumerated()
+          .map { i, e in .init(segment: e, index: i) }        
+      )
+    )
+    
     self.controller = try .init(file: .init(forReading: audioFileURL))
+    
     self.controller.repeating = .atEnd
+    
     super.init()
-
+    
+    self.sinkState { [weak self] state in
+      state.ifChanged(\.rate).do {
+        self?.controller.setSpeed(speed: $0)
+      }
+    }
+    .store(in: &cancellables)
+    
     controller.sinkState { [weak self] state in
 
       guard let self else { return }
 
-      state.ifChanged(\.isPlaying).do {
-        self.isPlaying = $0
+      state.ifChanged(\.isPlaying).do { isPlaying in
+        self.commit { 
+          $0.isPlaying = isPlaying
+        }
       }
 
     }
@@ -112,7 +166,7 @@ public final class PlayerController: NSObject {
   }
 
   public func makeRepeatingRange() -> PlayingRange {
-    .init(whole: cues)
+    .init(whole: state.cues)
   }
 
   @MainActor
@@ -124,7 +178,7 @@ public final class PlayerController: NSObject {
   }
 
   public func setRepeating(identifier: String) {
-    guard let cue = cues.first(where: { $0.id == identifier }) else { return }
+    guard let cue = state.cues.first(where: { $0.id == identifier }) else { return }
 
     var range = makeRepeatingRange()
     range.select(cue: cue)
@@ -150,7 +204,7 @@ public final class PlayerController: NSObject {
 
   @objc
   private dynamic func onTogglePlayPauseCommand() -> MPRemoteCommandHandlerStatus {
-    if isPlaying {
+    if state.isPlaying {
       pause()
     } else {
       play()
@@ -186,11 +240,10 @@ public final class PlayerController: NSObject {
     MainActor.assumeIsolated { 
       NotificationCenter.default.removeObserver(self)
       
-      Log.debug("deinit \(self)")
+      Log.debug("deinit \(String(describing: self))")
       
       do {
-        let instance = AVAudioSession.sharedInstance()
-        try instance.setActive(false, options: .notifyOthersOnDeactivation)
+        try AudioSessionManager.shared.deactivate()
       } catch {
         print(error)
       }
@@ -209,7 +262,6 @@ public final class PlayerController: NSObject {
   }
 
   func activate() {
-
     guard isActivated == false else {
       return
     }
@@ -217,34 +269,18 @@ public final class PlayerController: NSObject {
     isActivated = true
 
     do {
-      let instance = AVAudioSession.sharedInstance()
-      try instance.setActive(true, options: .notifyOthersOnDeactivation)
-      try instance.setCategory(
-        .playback,
-        mode: .default,
-        policy: .default,
-        options: []
-      )
+      try AudioSessionManager.shared.activate()
     } catch {
       print(error)
     }
-
   }
 
   func deactivate() {
-
     guard isActivated == true else {
       return
     }
 
     isActivated = false
-
-    do {
-      let instance = AVAudioSession.sharedInstance()
-      try instance.setActive(false, options: .notifyOthersOnDeactivation)
-    } catch {
-      print(error)
-    }
   }
 
   public func play() {
@@ -274,7 +310,7 @@ public final class PlayerController: NSObject {
 
         if let currentTime = self.controller.currentTime {
           
-          let currentCue = self.cues.first { cue in
+          let currentCue = self.state.cues.first { cue in
 
             if cue.backed.startTime <= currentTime, cue.backed.endTime >= currentTime {
               return true
@@ -284,9 +320,12 @@ public final class PlayerController: NSObject {
 
           }
           
-          if self.currentCue != currentCue {
-            self.currentCue = currentCue
+          self.commit {
+            if $0.currentCue != currentCue {
+              $0.currentCue = currentCue
+            }
           }
+         
         }
 
       }
@@ -330,6 +369,10 @@ public final class PlayerController: NSObject {
   }
 
   public func pause() {
+    
+    guard state.isPlaying else {
+      return
+    }
 
     controller.pause()
 
@@ -345,19 +388,21 @@ public final class PlayerController: NSObject {
     
     controller.seek(position: cue.backed.startTime)
 
-    self.currentCue = cue
-
+    commit {
+      $0.currentCue = cue
+    }
+    
   }
 
   public func moveToNext() {
 
-    guard let currentCue else {
+    guard let currentCue = state.currentCue else {
       return
     }
 
-    guard let target = cues.nextElement(after: currentCue) else { return }
+    guard let target = state.cues.nextElement(after: currentCue) else { return }
 
-    if playingRange == nil {
+    if state.playingRange == nil {
       move(to: target)
     } else {
       // TODO: considier what to do
@@ -367,13 +412,13 @@ public final class PlayerController: NSObject {
 
   public func moveToPrevious() {
 
-    guard let currentCue else {
+    guard let currentCue = state.currentCue else {
       return
     }
 
-    guard let target = cues.previousElement(before: currentCue) else { return }
+    guard let target = state.cues.previousElement(before: currentCue) else { return }
 
-    if playingRange == nil {
+    if state.playingRange == nil {
       move(to: target)
     } else {
       // TODO: considier what to do
@@ -382,23 +427,29 @@ public final class PlayerController: NSObject {
   }
 
   public func setRepeat(range: PlayingRange?) {
-
-    if let range {
-
-      playingRange = range
-      controller.repeating = .range(start: range.startTime, end: range.endTime)
-      controller.seek(position: range.startTime)
-
-    } else {
-
-      playingRange = nil
-      controller.repeating = .atEnd
-
+    
+    commit {
+      
+      if let range {
+        
+        $0.playingRange = range
+        controller.repeating = .range(start: range.startTime, end: range.endTime)
+        controller.seek(position: range.startTime)
+        
+      } else {
+        
+        $0.playingRange = nil
+        controller.repeating = .atEnd
+        
+      }
+      
     }
   }
 
-  public func setRate(_ rate: Double) {
-    controller.setSpeed(speed: rate)
+  public func setRate(_ rate: CGFloat) {
+    commit {
+      $0.rate = rate
+    }
   }
 
 }
