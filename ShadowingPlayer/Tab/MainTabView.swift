@@ -43,6 +43,13 @@ struct MainTabView: View {
           Label("List", systemImage: "list.bullet")
         }
         .tint(#hexColor("5A31FF", colorSpace: .displayP3))
+        
+      // Add the AnkiView tab
+      AnkiView()
+        .tabItem {
+          Label("Vocabulary", systemImage: "textformat.abc")
+        }
+        .tint(#hexColor("FF5722", colorSpace: .displayP3))
 
       Form {
         Button("Open") {
