@@ -27,7 +27,6 @@ public final class AnkiBook {
   
   public var title: String = ""
   
-  // Added fields to match JSON structure
   public var input: String = ""
   public var meaning: String = ""
   public var partsOfSpeech: String = ""

@@ -190,6 +190,15 @@
       }
     },
     {
+      "identity" : "swiftui-object-edge",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swiftui-object-edge",
+      "state" : {
+        "revision" : "2848582ee253565ff8d529506e0988b2d2c4404a",
+        "version" : "1.0.0"
+      }
+    },
+    {
       "identity" : "swiftui-scrollview-interoperable-drag-gesture",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/FluidGroup/swiftui-scrollview-interoperable-drag-gesture",

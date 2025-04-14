@@ -10,6 +10,7 @@ let package = Package(
     .package(url: "https://github.com/dagronf/SwiftSubtitles", from: "0.5.0"),
     .package(url: "https://github.com/VergeGroup/Verge", branch: "main"),
     .package(url: "https://github.com/FluidGroup/swiftui-support", branch: "main"),
+    .package(url: "https://github.com/FluidGroup/swiftui-object-edge", from: "1.0.0"),
     .package(url: "https://github.com/FluidGroup/swiftui-functional-component-macro", from: "1.0.0"),
     .package(url: "https://github.com/VergeGroup/Wrap", from: "4.0.0"),
     .package(url: "https://github.com/FluidGroup/MondrianLayout", branch: "main"),

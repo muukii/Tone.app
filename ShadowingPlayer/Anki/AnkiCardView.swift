@@ -64,12 +64,16 @@ struct AnkiView: View {
 }
 
 struct AnkiBookDetail: View {
+  
   var book: AnkiBook
+  
+  @ObjectEdge var speechClient: SpeechClient = .init()
 
   var body: some View {
     List {
       ForEach(book.items) { item in
-        NavigationLink(destination: AnkiItemDetail(item: item)) {
+        NavigationLink(
+          destination: AnkiItemDetail(item: item, speechClient: speechClient)) {
           VStack(alignment: .leading) {
             Text(item.input)
               .font(.headline)
@@ -85,102 +89,35 @@ struct AnkiBookDetail: View {
   }
 }
 
+final class SpeechClient {
+  
+  private let synthesizer = AVSpeechSynthesizer()
+  
+  func speak(text: String) {
+    synthesizer.stopSpeaking(at: .immediate)
+
+    let utterance = AVSpeechUtterance(string: text)
+    utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+    utterance.rate = 0.5
+    utterance.pitchMultiplier = 1.0
+    synthesizer.speak(utterance)
+  }
+}
+
 struct AnkiItemDetail: View {
   var item: AnkiItem
-  @State private var playingAudio = false
-  private let synthesizer = AVSpeechSynthesizer()
+  let speechClient: SpeechClient
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 16) {
-        HStack(alignment: .top) {
-          VStack(alignment: .leading) {
-            Text(item.input)
-              .font(.largeTitle.bold())
-
-            if !item.ipa.isEmpty {
-              Text(item.ipa)
-                .font(.title3.monospaced())
-                .foregroundStyle(.secondary)
-            }
-          }
-
-          Spacer()
-
-          Button(action: {
-            if playingAudio {
-              synthesizer.stopSpeaking(at: .immediate)
-            } else {
-              let utterance = AVSpeechUtterance(string: item.input)
-              utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-              utterance.rate = 0.5
-              utterance.pitchMultiplier = 1.0
-              synthesizer.speak(utterance)
-            }
-            playingAudio.toggle()
-          }) {
-            Image(systemName: playingAudio ? "speaker.wave.2.fill" : "speaker.wave.2")
-              .font(.title)
-          }
-          .buttonStyle(.bordered)
-        }
-
-        Divider()
-
-        Text(item.meaning)
-          .font(.title2)
-
-        if !item.partsOfSpeech.isEmpty {
-          Text("**Part of speech:** \(item.partsOfSpeech)")
-            .font(.subheadline)
-            .padding(.top, 4)
-        }
-
-        if !item.synonyms.isEmpty {
-          VStack(alignment: .leading, spacing: 8) {
-            Text("Synonyms:")
-              .font(.headline)
-
-            ScrollView(.horizontal, showsIndicators: false) {
-              HStack {
-                ForEach(item.synonyms, id: \.self) { synonym in
-                  Text(synonym)
-                    .padding(8)
-                    .background(
-                      RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.accentColor.opacity(0.1))
-                    )
-                    .overlay(
-                      RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
-                    )
-                }
-              }
-            }
-          }
-          .padding(.top, 8)
-        }
-
-        if !item.sentences.isEmpty {
-          VStack(alignment: .leading, spacing: 8) {
-            Text("Example Sentences:")
-              .font(.headline)
-
-            ForEach(item.sentences, id: \.self) { sentence in
-              Text(sentence)
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                  RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.secondary.opacity(0.1))
-                )
-            }
-          }
-          .padding(.top, 8)
-        }
-      }
-      .padding()
-    }
+    VocabularyCardView(
+      input: item.input,
+      meaning: item.meaning,
+      ipa: item.ipa,
+      partsOfSpeech: item.partsOfSpeech,
+      synonyms: item.synonyms,
+      sentences: item.sentences,
+      speechClient: speechClient
+    )
     .navigationTitle("Vocabulary Detail")
   }
 }
@@ -348,21 +285,4 @@ struct AnkiCardView: View {
 #Preview {
   AnkiView()
     .modelContainer(for: [AnkiBook.self, AnkiItem.self])
-}
-
-#Preview("Item Detail") {
-  let item = AnkiItem()
-  item.input = "apple"
-  item.meaning = "りんご（果物の一種）"
-  item.partsOfSpeech = "noun"
-  item.ipa = "/ˈæpəl/"
-  item.synonyms = ["fruit", "pome", "orchard fruit"]
-  item.sentences = [
-    "I ate a juicy apple for breakfast.",
-    "She picked an apple from the tree in the backyard.",
-  ]
-
-  return NavigationStack {
-    AnkiItemDetail(item: item)
-  }
 }

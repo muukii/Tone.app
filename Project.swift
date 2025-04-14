@@ -66,6 +66,7 @@ let project = Project(
         .external(name: "SwiftUIPersistentControl"),
         .external(name: "FunctionalViewComponent"),
         .external(name: "SteppedSlider"),
+        .external(name: "ObjectEdge"),
                 
         .target(name: "AppService"),
         .target(name: "ActivityContent"),
