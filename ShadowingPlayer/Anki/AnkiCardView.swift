@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import AVFoundation
 
 struct AnkiView: View {
   @Environment(\.modelContext) private var modelContext
@@ -87,6 +88,7 @@ struct AnkiBookDetail: View {
 struct AnkiItemDetail: View {
   var item: AnkiItem
   @State private var playingAudio = false
+  private let synthesizer = AVSpeechSynthesizer()
 
   var body: some View {
     ScrollView {
@@ -106,8 +108,16 @@ struct AnkiItemDetail: View {
           Spacer()
 
           Button(action: {
+            if playingAudio {
+              synthesizer.stopSpeaking(at: .immediate)
+            } else {
+              let utterance = AVSpeechUtterance(string: item.input)
+              utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+              utterance.rate = 0.5
+              utterance.pitchMultiplier = 1.0
+              synthesizer.speak(utterance)
+            }
             playingAudio.toggle()
-            // Here you could implement text-to-speech functionality
           }) {
             Image(systemName: playingAudio ? "speaker.wave.2.fill" : "speaker.wave.2")
               .font(.title)
