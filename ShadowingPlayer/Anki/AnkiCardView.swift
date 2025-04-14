@@ -3,9 +3,8 @@ import SwiftUI
 
 struct AnkiView: View {
   @Environment(\.modelContext) private var modelContext
-  @Query private var books: [AnkiBook]
+  @Query(sort: \AnkiBook.name) private var books: [AnkiBook]
   @State private var showingJSONImport: Bool = false
-  @State private var selectedBook: AnkiBook?
 
   var body: some View {
     NavigationStack {
@@ -25,7 +24,7 @@ struct AnkiView: View {
         } else {
           List {
             ForEach(books) { book in
-              NavigationLink(destination: AnkiBookDetail(book: book)) {
+              NavigationLink(value: book) { 
                 HStack {
                   Text(book.name)
                   Spacer()
@@ -38,6 +37,9 @@ struct AnkiView: View {
           }
         }
       }
+      .navigationDestination(for: AnkiBook.self, destination: { book in
+        AnkiBookDetail(book: book)
+      })
       .navigationTitle("Vocabulary")
       .toolbar {
         ToolbarItem(placement: .primaryAction) {

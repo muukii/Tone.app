@@ -47,7 +47,7 @@ final class AnkiService {
     
   }
   
-  private func createModelContext() -> ModelContainer {
+  private func createModelContainer() -> ModelContainer {
     let container = try! ModelContainer(for: AnkiBook.self, AnkiItem.self)
     return container
   }
@@ -68,18 +68,23 @@ final class AnkiService {
   ///   - book: The AnkiBook to add items to (will create a new book if nil)
   ///   - modelContext: The SwiftData model context
   /// - Returns: The number of items imported
-  @discardableResult
-  func importFromJSON(_ jsonData: Data, into book: AnkiBook? = nil, modelContext: ModelContext) throws -> Int {
+  @MainActor
+  @discardableResult  
+  func importFromJSON(
+    _ jsonData: Data
+  ) throws -> Int {
+    
+    let modelContainer = createModelContainer()
+    let modelContext = modelContainer.mainContext
+    
     let decoder = JSONDecoder()
     let items = try decoder.decode([AnkiItemJSON].self, from: jsonData)
     
-    let targetBook = book ?? AnkiBook()
+    let targetBook = AnkiBook()
     targetBook.name = targetBook.name.isEmpty ? "Imported Vocabulary" : targetBook.name
     
-    if book == nil {
-      modelContext.insert(targetBook)
-    }
-    
+    modelContext.insert(targetBook)
+        
     for jsonItem in items {
       let ankiItem = AnkiItem()
       ankiItem.input = jsonItem.input

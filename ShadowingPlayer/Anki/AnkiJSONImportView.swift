@@ -127,7 +127,6 @@ struct AnkiJSONImportView: View {
     }
     
     do {
-      try modelContext.transaction {
         
         do {
           guard let jsonData = jsonText.data(using: .utf8) else {
@@ -135,19 +134,11 @@ struct AnkiJSONImportView: View {
               domain: "JSONImport", code: 1,
               userInfo: [NSLocalizedDescriptionKey: "Could not convert text to data"])
           }
-          
-          let targetBook: AnkiBook?
-          if shouldCreateNewBook {
-            let newBook = AnkiBook()
-            newBook.name = newBookName
-            modelContext.insert(newBook)
-            targetBook = newBook
-          } else {
-            targetBook = selectedBook
-          }
-          
+                    
           let count = try ankiService.importFromJSON(
-            jsonData, into: targetBook, modelContext: modelContext)
+            jsonData
+          )
+          
           importStatus = "Successfully imported \(count) vocabulary items"
           
           // Reset form after successful import
@@ -158,7 +149,6 @@ struct AnkiJSONImportView: View {
           errorMessage = "Import failed: \(error.localizedDescription)"
           showErrorAlert = true
         }
-      }
     } catch {
       print("Transaction failed: \(error)")
     }

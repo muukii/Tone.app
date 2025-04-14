@@ -50,6 +50,10 @@ struct MainTabView: View {
           Label("Vocabulary", systemImage: "textformat.abc")
         }
         .tint(#hexColor("FF5722", colorSpace: .displayP3))
+        .modelContainer(for: [
+          AnkiBook.self,
+          AnkiItem.self,
+        ])
 
       Form {
         Button("Open") {
