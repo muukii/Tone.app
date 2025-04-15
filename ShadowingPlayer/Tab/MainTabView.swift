@@ -64,12 +64,7 @@ struct MainTabView: View {
           Label("Thesaurus", systemImage: "globe")
         }
         .tint(#hexColor("4CAF50", colorSpace: .displayP3))
-
-      SettingsView()
-        .tabItem {
-          Label("Settings", systemImage: "gear")
-        }
-        .tint(#hexColor("9E9E9E", colorSpace: .displayP3))
+      
     }
     .tint(.primary)    
     .overlay(
