@@ -4,7 +4,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import Verge
 
-struct ListView: View {
+struct AudioListView: View {
 
   //  typealias UsingDisplay = PlayerListDisplayView
   typealias UsingDisplay = PlayerListFlowLayoutView

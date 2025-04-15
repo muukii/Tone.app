@@ -4,6 +4,7 @@ import SwiftUI
 import SwiftUIPersistentControl
 import Verge
 import FunctionalViewComponent
+import WebKit
 
 struct MainTabView: View {
 
@@ -28,7 +29,7 @@ struct MainTabView: View {
 
   var body: some View {   
     TabView {
-      ListView(
+      AudioListView(
         service: service,
         onSelect: { item in 
           do {
@@ -82,6 +83,12 @@ struct MainTabView: View {
 //          Label("YouTube", systemImage: "mic")
 //        }
 //        .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
+
+      WebView(url: URL(string: "https://www.thesaurus.com/browse/apple")!)
+        .tabItem {
+          Label("Thesaurus", systemImage: "globe")
+        }
+        .tint(#hexColor("4CAF50", colorSpace: .displayP3))
     }
     .tint(.primary)    
     .overlay(
@@ -193,6 +200,19 @@ struct MainTabView: View {
     } else {
       fatalError()
     }
+  }
+}
+
+struct WebView: UIViewRepresentable {
+  let url: URL
+  
+  func makeUIView(context: Context) -> WKWebView {
+    return WKWebView()
+  }
+  
+  func updateUIView(_ webView: WKWebView, context: Context) {
+    let request = URLRequest(url: url)
+    webView.load(request)
   }
 }
 
