@@ -1,6 +1,35 @@
 import SwiftUI
+import SafariServices
+
+struct SelectableText: View {
+  let text: String  
+  
+  init(_ text: String) {
+    self.text = text
+  }
+  
+  var body: some View {
+    Text(text)
+      .textSelection(.enabled)
+  }
+}
+
+struct DictionarySite {
+  let name: String
+  let url: String
+}
 
 struct VocabularyCardView: View {
+  
+  struct BrowserItem: Identifiable {
+    
+    var id: String {
+      url.absoluteString
+    }
+    
+    let url: URL
+  }
+  
   let input: String
   let meaning: String
   let ipa: String
@@ -10,12 +39,24 @@ struct VocabularyCardView: View {
   
   let speechClient: SpeechClient
   
+  @State private var browsingItem: BrowserItem?
+  
+  private let dictionarySites = [
+    DictionarySite(name: "Thesaurus", url: "https://www.thesaurus.com/browse/"),
+    DictionarySite(name: "Dictionary.com", url: "https://www.dictionary.com/browse/")
+  ]
+  
+  private func openDictionary(site: DictionarySite) {
+    let encodedWord = input.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+    browsingItem = .init(url: URL(string: site.url + encodedWord)!)
+  }
+  
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
         HStack(alignment: .top) {
           VStack(alignment: .leading) {
-            Text(input)
+            SelectableText(input)
               .font(.largeTitle.bold())
             
             if !ipa.isEmpty {
@@ -27,13 +68,27 @@ struct VocabularyCardView: View {
           
           Spacer()
           
-          Button(action: {            
-            speechClient.speak(text: input)
-          }) {
-            Image(systemName: "speaker.wave.2")
-              .font(.title)
+          HStack(spacing: 8) {
+            Button(action: {            
+              speechClient.speak(text: input)
+            }) {
+              Image(systemName: "speaker.wave.2")
+                .font(.title)
+            }
+            .buttonStyle(.bordered)
+            
+            Menu {
+              ForEach(dictionarySites, id: \.name) { site in
+                Button(site.name) {
+                  openDictionary(site: site)
+                }
+              }
+            } label: {
+              Image(systemName: "book")
+                .font(.title)
+            }
+            .buttonStyle(.bordered)
           }
-          .buttonStyle(.bordered)
         }
         
         Divider()
@@ -59,15 +114,19 @@ struct VocabularyCardView: View {
                     .padding(8)
                     .background(
                       RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.accentColor.opacity(0.1))
+                        .fill(.primary.opacity(0.1))
                     )
                     .overlay(
                       RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+                        .inset(by: 1)
+                        .stroke(.primary.opacity(0.3), lineWidth: 2)
                     )
                 }
               }
+              .padding(.vertical, 2)
             }
+            .contentMargins(.horizontal, 16, for: .automatic)
+            .padding(.horizontal, -16)
           }
           .padding(.top, 8)
         }
@@ -83,7 +142,7 @@ struct VocabularyCardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
                   RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.secondary.opacity(0.1))
+                    .fill(.thinMaterial)
                 )
             }
           }
@@ -92,9 +151,21 @@ struct VocabularyCardView: View {
       }
       .padding()
     }
+    .sheet(item: $browsingItem) { item in 
+      SafariView(url: item.url)
+    }
   }
 }
 
+struct SafariView: UIViewControllerRepresentable {
+  let url: URL
+  
+  func makeUIViewController(context: Context) -> SFSafariViewController {
+    SFSafariViewController(url: url)
+  }
+  
+  func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
+}
 
 #Preview("Vocabulary Card") {
   NavigationStack {

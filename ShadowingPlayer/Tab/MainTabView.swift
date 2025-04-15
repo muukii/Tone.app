@@ -8,6 +8,7 @@ import WebKit
 
 struct MainTabView: View {
 
+  @AppStorage("openAIAPIKey") var openAIAPIKey: String = ""
   @Namespace var namespace
   
   enum ComponentKey: Hashable {
@@ -56,39 +57,19 @@ struct MainTabView: View {
           AnkiItem.self,
         ])
 
-      Form {
-        Button("Open") {
-          isCompact = false
-        }
-        Button("Close") {
-          isCompact = true
-        }
-      }
-//      VoiceRecorderView(
-//        controller: RecorderAndPlayer()
-//      )
-//      .tabItem {
-//        Label("Recorder", systemImage: "mic")
-//      }
-//      .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
-
-//      WhisperView()
-//        .tabItem {
-//          Label("Whisper", systemImage: "mic")
-//        }
-//        .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
-//
-//      YouTubeDownloadView()
-//        .tabItem {
-//          Label("YouTube", systemImage: "mic")
-//        }
-//        .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
+      PlaygroundPanel()
 
       WebView(url: URL(string: "https://www.thesaurus.com/browse/apple")!)
         .tabItem {
           Label("Thesaurus", systemImage: "globe")
         }
         .tint(#hexColor("4CAF50", colorSpace: .displayP3))
+
+      SettingsView()
+        .tabItem {
+          Label("Settings", systemImage: "gear")
+        }
+        .tint(#hexColor("9E9E9E", colorSpace: .displayP3))
     }
     .tint(.primary)    
     .overlay(

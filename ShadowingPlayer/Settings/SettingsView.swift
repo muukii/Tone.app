@@ -4,10 +4,15 @@ import AppService
 struct SettingsView: View {
   
   @StateObject var manager = ActivityManager.shared
+  @AppStorage("openAIAPIKey") var openAIAPIKey: String = ""
       
   var body: some View {
     NavigationStack {
       Form {
+        Section("OpenAI API") {
+          SecureField("API Key", text: $openAIAPIKey)
+            .textContentType(.password)
+        }
 
         Section {
           Button("Start") {
@@ -19,7 +24,7 @@ struct SettingsView: View {
         }
 
       }
-      .navigationTitle("")
+      .navigationTitle("Settings")
     }
   }
 }
