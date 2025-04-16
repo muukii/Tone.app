@@ -4,13 +4,14 @@ import SwiftUI
 import UniformTypeIdentifiers
 import Verge
 
-struct ListView: View {
+struct AudioListView: View {
 
   //  typealias UsingDisplay = PlayerListDisplayView
   typealias UsingDisplay = PlayerListFlowLayoutView
   //  typealias UsingDisplay = PlayerListHorizontalView
 
   let service: Service
+  let openAIService: OpenAIService?
 
   @Query(sort: \ItemEntity.title, order: .reverse)
   private var itemEntities: [ItemEntity]
@@ -32,14 +33,16 @@ struct ListView: View {
   @State private var isImportingAudioAndSRT: Bool = false
   @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
-    
+
   private let onSelect: (ItemEntity) -> Void
-  
+
   init(
     service: Service,
+    openAIService: OpenAIService?,
     onSelect: @escaping (ItemEntity) -> Void
   ) {
     self.service = service
+    self.openAIService = openAIService
     self.onSelect = onSelect
   }
 
@@ -49,15 +52,32 @@ struct ListView: View {
       List {
         Section {
           ForEach(itemEntities) { item in
-            Button { 
+            Button {
               onSelect(item)
-            } label: {               
+            } label: {
               ItemCell(item: item)
             }
             .contextMenu(menuItems: {
               Button("Delete", role: .destructive) {
                 // TODO: too direct
                 modelContext.delete(item)
+              }
+              if let openAIService {
+                Menu("Cloud Transcription") {
+                  ForEach(OpenAIService.TranscriptionModel.allCases, id: \.rawValue) { model in
+                    Button("\(model.rawValue)") {
+                      Task { [openAIService] in
+                        do {
+                          let result = try await openAIService.transcribe(
+                            fileURL: item.audioFileAbsoluteURL, model: model)
+                          try await service.updateTranscription(for: item, with: result)
+                        } catch {
+                          Log.error("\(error.localizedDescription)")
+                        }
+                      }
+                    }
+                  }
+                }
               }
             })
           }
@@ -309,4 +329,3 @@ struct PinEntitiesProvider<Content: View>: View {
     ItemCell(title: "Hello, Tone.")
   }
 }
-

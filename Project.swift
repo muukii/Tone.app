@@ -66,6 +66,8 @@ let project = Project(
         .external(name: "SwiftUIPersistentControl"),
         .external(name: "FunctionalViewComponent"),
         .external(name: "SteppedSlider"),
+        .external(name: "ObjectEdge"),
+        .external(name: "Alamofire"),
                 
         .target(name: "AppService"),
         .target(name: "ActivityContent"),
@@ -129,6 +131,8 @@ let project = Project(
         .external(name: "Verge"),
         .external(name: "Wrap"),
         .external(name: "SwiftSubtitles"),
+        .external(name: "Alamofire"),
+        .external(name: "UserDefaultsSnapshotLib"),
       ]
     ),
 

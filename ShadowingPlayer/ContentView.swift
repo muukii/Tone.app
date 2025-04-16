@@ -10,9 +10,9 @@ import AppService
 
 struct ContentView: View {
 
-  unowned let service: Service
+  let rootDriver: RootDriver
 
   var body: some View {
-    MainTabView(service: service)
+    MainTabView(rootDriver: rootDriver)
   }
 }

@@ -8,8 +8,10 @@ let package = Package(
     .package(path: "../submodules/FluidGroup/swiftui-ring-slider"),
     .package(path: "../submodules/FluidGroup/swiftui-persistent-control"),
     .package(url: "https://github.com/dagronf/SwiftSubtitles", from: "0.5.0"),
+    .package(url: "https://github.com/VergeGroup/UserDefaultsSnapshot", from: "1.4.1"),
     .package(url: "https://github.com/VergeGroup/Verge", branch: "main"),
     .package(url: "https://github.com/FluidGroup/swiftui-support", branch: "main"),
+    .package(url: "https://github.com/FluidGroup/swiftui-object-edge", from: "1.0.0"),
     .package(url: "https://github.com/FluidGroup/swiftui-functional-component-macro", from: "1.0.0"),
     .package(url: "https://github.com/VergeGroup/Wrap", from: "4.0.0"),
     .package(url: "https://github.com/FluidGroup/MondrianLayout", branch: "main"),
@@ -21,5 +23,6 @@ let package = Package(
     .package(url: "https://github.com/argmaxinc/whisperkit", from: "0.2.1"),
     .package(url: "https://github.com/apple/swift-algorithms", from: "1.2.0"),
     .package(url: "https://github.com/shima11/SteppedSlider.git", branch: "main"),
+    .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.10.2"),
   ]
 )

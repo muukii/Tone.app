@@ -14,8 +14,9 @@ import TipKit
 
 @main
 struct AppRoot: App {
-
-  private let service = Service()
+  
+  @State var rootDriver: RootDriver?
+  @AppStorage("openAIAPIKey") var openAIAPIKey: String = ""
 
   init() {
     try? Tips.configure()
@@ -35,17 +36,25 @@ struct AppRoot: App {
 
   var body: some Scene {
     WindowGroup {
-      ContentView(service: service)
-        .onAppear {
-          UIApplication.shared.beginReceivingRemoteControlEvents()
-          AudioSessionManager.shared.setInitialState()
-          #if targetEnvironment(simulator)
-          addExampleItems(using: service)
-          #endif
+      Group {
+        if let rootDriver = rootDriver {        
+          ContentView(rootDriver: rootDriver)
+            .onAppear {
+              UIApplication.shared.beginReceivingRemoteControlEvents()
+              AudioSessionManager.shared.setInitialState()
+#if targetEnvironment(simulator)
+              addExampleItems(using: rootDriver.service)
+#endif
+            }
+        } else {
+          EmptyView()
         }
+      }
+      .task {
+        self.rootDriver = .init(openAIAPIToken: openAIAPIKey)     
+      }
     }
-    .modelContainer(service.modelContainer)
-
+    
   }
 }
 

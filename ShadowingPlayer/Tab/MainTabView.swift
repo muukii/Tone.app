@@ -1,36 +1,43 @@
 import AppService
+import FunctionalViewComponent
 import HexColorMacro
 import SwiftUI
 import SwiftUIPersistentControl
 import Verge
-import FunctionalViewComponent
+import WebKit
+import os.lock
 
 struct MainTabView: View {
 
-  @Namespace var namespace
+  @AppStorage("openAIAPIKey") var openAIAPIKey: String = ""
   
+  @Namespace var namespace
+
   enum ComponentKey: Hashable {
     case playButton
   }
-  
+
   @State private var isCompact: Bool = true
-  
-  let service: Service
+
+  @Reading<RootDriver> var rootState: RootDriver.TargetStore.State
   
   @ReadingObject<MainViewModel> var state: MainViewModel.State
-  
-  init(service: Service) {
+
+  init(
+    rootDriver: RootDriver
+  ) {
     self._state = .init({
       .init()
     })
-    self.service = service
+    self._rootState = .init(rootDriver)
   }
 
-  var body: some View {   
+  var body: some View {
     TabView {
-      ListView(
-        service: service,
-        onSelect: { item in 
+      AudioListView(
+        service: $rootState.driver.service,
+        openAIService: rootState.openAIService,
+        onSelect: { item in
           do {
             try $state.driver.setPlayerController(for: item)
             isCompact = false
@@ -39,40 +46,36 @@ struct MainTabView: View {
           }
         }
       )
-        .tabItem {
-          Label("List", systemImage: "list.bullet")
-        }
-        .tint(#hexColor("5A31FF", colorSpace: .displayP3))
-
-      Form {
-        Button("Open") {
-          isCompact = false
-        }
-        Button("Close") {
-          isCompact = true
-        }
+      .tabItem {
+        Label("List", systemImage: "list.bullet")
       }
-//      VoiceRecorderView(
-//        controller: RecorderAndPlayer()
-//      )
-//      .tabItem {
-//        Label("Recorder", systemImage: "mic")
-//      }
-//      .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
+      .tint(#hexColor("5A31FF", colorSpace: .displayP3))
+      .modelContainer($rootState.driver.service.modelContainer)
 
-//      WhisperView()
-//        .tabItem {
-//          Label("Whisper", systemImage: "mic")
-//        }
-//        .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
-//
-//      YouTubeDownloadView()
-//        .tabItem {
-//          Label("YouTube", systemImage: "mic")
-//        }
-//        .tint(#hexColor("FB2B2B", colorSpace: .displayP3))
+      // Add the AnkiView tab
+      AnkiView()
+        .tabItem {
+          Label("Vocabulary", systemImage: "textformat.abc")
+        }
+        .tint(#hexColor("FF5722", colorSpace: .displayP3))
+        .modelContainer(for: [
+          AnkiBook.self,
+          AnkiItem.self,
+        ])
+
+      PlaygroundPanel()
+
+      WebView(url: URL(string: "https://www.thesaurus.com/browse/apple")!)
+        .tabItem {
+          Label("Thesaurus", systemImage: "globe")
+        }
+        .tint(#hexColor("4CAF50", colorSpace: .displayP3))
+
     }
-    .tint(.primary)    
+    .onChange(of: openAIAPIKey, initial: true, { oldValue, newValue in
+      $rootState.driver.setOpenAIAPIToken(newValue)
+    })   
+    .tint(.primary)
     .overlay(
       Container(
         isCompact: state.currentController?.object?.object == nil ? .constant(true) : $isCompact,
@@ -80,20 +83,20 @@ struct MainTabView: View {
         marginToBottom: 54,
         compactContent: {
           Group {
-            if let player = state.currentController?.object?.object {              
+            if let player = state.currentController?.object?.object {
               CompactPlayerBar(
                 controller: player,
                 namespace: namespace,
-                onDiscard: {                  
-                  $state.driver.discardPlayerController()                  
-                })              
+                onDiscard: {
+                  $state.driver.discardPlayerController()
+                })
             } else {
               Text("Not playing")
             }
           }
           .frame(height: 60)
         },
-        detailContent: {  
+        detailContent: {
           if let player = state.currentController?.object?.object {
             detailContent(player: player, namespace: namespace)
           }
@@ -103,13 +106,13 @@ struct MainTabView: View {
         })
     )
   }
-    
+
   private struct CompactPlayerBar: View {
-    
+
     unowned let controller: PlayerController
     let namespace: Namespace.ID
     private let onDiscard: () -> Void
-        
+
     init(
       controller: PlayerController,
       namespace: Namespace.ID,
@@ -119,14 +122,14 @@ struct MainTabView: View {
       self.namespace = namespace
       self.onDiscard = onDiscard
     }
-    
+
     var body: some View {
       StoreReader(controller) { $state in
         HStack {
           Button {
             onDiscard()
           } label: {
-            Image(systemName: "xmark")     
+            Image(systemName: "xmark")
               .resizable()
               .aspectRatio(contentMode: .fit)
               .frame(square: 30)
@@ -147,23 +150,29 @@ struct MainTabView: View {
               .frame(square: 30)
               .matchedGeometryEffect(id: ComponentKey.playButton, in: namespace)
               .foregroundColor(Color.primary)
-              .contentTransition(.symbolEffect(.replace, options: .speed(2)))            
+              .contentTransition(.symbolEffect(.replace, options: .speed(2)))
           }
           .frame(square: 50)
         }
       }
     }
-    
+
   }
-  
-  private func detailContent(player: PlayerController, namespace: Namespace.ID) -> some View {
+
+  private func detailContent(
+    player: PlayerController,
+    namespace: Namespace.ID
+  ) -> some View {
+    
+    let service = $rootState.driver.service
+    
     if case .entity(let entity) = player.source {
-      PinEntitiesProvider(targetItem: entity) { pins in
+      return PinEntitiesProvider(targetItem: entity) { pins in
         PlayerView<PlayerListFlowLayoutView>(
           playerController: player,
           pins: pins,
           namespace: namespace,
-          actionHandler: { action in          
+          actionHandler: { action in
             do {
               switch action {
               case .onPin(let range):
@@ -185,91 +194,102 @@ struct MainTabView: View {
   }
 }
 
+struct WebView: UIViewRepresentable {
+  let url: URL
+
+  func makeUIView(context: Context) -> WKWebView {
+    return WKWebView()
+  }
+
+  func updateUIView(_ webView: WKWebView, context: Context) {
+    let request = URLRequest(url: url)
+    webView.load(request)
+  }
+}
+
 final class MainViewModel: StoreDriverType {
-  
+
   @Tracking
   struct State {
-    
+
     @PrimitiveTrackingProperty
     fileprivate(set) var currentController: ReferenceHolder<MainIsolated<PlayerController>>?
   }
-  
+
   let store: Store<State, Never> = .init(initialState: .init())
-  
+
   init() {
-    
+
   }
-    
+
   @MainActor
   func setPlayerController(for item: ItemEntity) throws {
-              
+
     try commit {
-      
+
       if let controller = $0.currentController?.object?.object {
         if controller.source == .entity(item) {
           return
         }
       }
-      
+
       let newController = try PlayerController(item: item)
-      
+
       $0.currentController?.dispose()
       $0.currentController = .init(.init(newController))
     }
-    
+
   }
-  
+
   @MainActor
   func discardPlayerController() {
     try? AudioSessionManager.shared.deactivate()
-    commit { 
+    commit {
       $0.currentController?.object?.object.pause()
-      $0.currentController?.dispose() 
+      $0.currentController?.dispose()
       $0.currentController = nil
     }
   }
-  
+
 }
 
-import os.lock
-
 final class MainIsolated<T: AnyObject & Sendable>: Sendable {
-  
+
   let object: T
-  
+
   nonisolated init(_ object: T) {
     self.object = object
   }
-  
+
   deinit {
-    Task { @MainActor [object] in 
+    Task { @MainActor [object] in
       _ = object
     }
   }
 }
 
 final class ReferenceHolder<T: AnyObject>: Sendable {
-  
+
   var identifier: some Hashable {
     ObjectIdentifier(self)
   }
-  
+
   nonisolated(unsafe)
-  private(set) weak var object: T?
-  
+    private(set) weak var object: T?
+
   nonisolated(unsafe)
-  private let unmanaged: Unmanaged<T>
-  
+    private let unmanaged: Unmanaged<T>
+
   nonisolated(unsafe)
-  private var hasDisposed: Bool = false
-  
+    private var hasDisposed: Bool = false
+
   private let lock = OSAllocatedUnfairLock()
-      
+
   init(_ object: T) {
     self.object = object
     self.unmanaged = Unmanaged.passUnretained(object).retain()
   }
-  
+
   func dispose() {
     lock.lock()
     defer { lock.unlock() }
@@ -277,16 +297,13 @@ final class ReferenceHolder<T: AnyObject>: Sendable {
     unmanaged.release()
     hasDisposed = true
   }
-  
+
   deinit {
     lock.lock()
     defer { lock.unlock() }
     guard !hasDisposed else { return }
     unmanaged.release()
   }
-  
+
 }
 
-#Preview {
-  MainTabView(service: .init())
-}
