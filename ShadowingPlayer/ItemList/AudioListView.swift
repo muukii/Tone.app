@@ -11,6 +11,7 @@ struct AudioListView: View {
   //  typealias UsingDisplay = PlayerListHorizontalView
 
   let service: Service
+  let openAIService: OpenAIService?
 
   @Query(sort: \ItemEntity.title, order: .reverse)
   private var itemEntities: [ItemEntity]
@@ -37,9 +38,11 @@ struct AudioListView: View {
   
   init(
     service: Service,
+    openAIService: OpenAIService?,
     onSelect: @escaping (ItemEntity) -> Void
   ) {
     self.service = service
+    self.openAIService = openAIService
     self.onSelect = onSelect
   }
 
@@ -58,6 +61,17 @@ struct AudioListView: View {
               Button("Delete", role: .destructive) {
                 // TODO: too direct
                 modelContext.delete(item)
+              }
+              if let openAIService {                
+                Button("Cloud Transcribe") {
+                  Task { [openAIService] in
+                    do {
+                      try await openAIService.transcribe(fileURL: item.audioFileAbsoluteURL)
+                    } catch {
+                      Log.error("\(error.localizedDescription)")
+                    }
+                  }
+                }                
               }
             })
           }

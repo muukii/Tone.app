@@ -253,12 +253,21 @@
       }
     },
     {
+      "identity" : "userdefaultssnapshot",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/UserDefaultsSnapshot",
+      "state" : {
+        "revision" : "26e9064cf45e48ced6220073071eeaf3dd60c62c",
+        "version" : "1.4.1"
+      }
+    },
+    {
       "identity" : "verge",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/VergeGroup/Verge",
       "state" : {
         "branch" : "main",
-        "revision" : "3f5ce18abd0321a0cf8d8a28a8b93ddf77c933ad"
+        "revision" : "83ff19dca6617b8dee8a4384cfb06850a20fb856"
       }
     },
     {
@@ -266,8 +275,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/argmaxinc/whisperkit",
       "state" : {
-        "revision" : "e753c568a6e180b3c78a718797e6066884137490",
-        "version" : "0.11.0"
+        "revision" : "6a509d6181da1f71517159425d6ec9d94d424f55",
+        "version" : "0.12.0"
       }
     },
     {

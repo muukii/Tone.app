@@ -132,6 +132,7 @@ let project = Project(
         .external(name: "Wrap"),
         .external(name: "SwiftSubtitles"),
         .external(name: "Alamofire"),
+        .external(name: "UserDefaultsSnapshotLib"),
       ]
     ),
 
