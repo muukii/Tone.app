@@ -33,9 +33,9 @@ struct AudioListView: View {
   @State private var isImportingAudioAndSRT: Bool = false
   @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
-    
+
   private let onSelect: (ItemEntity) -> Void
-  
+
   init(
     service: Service,
     openAIService: OpenAIService?,
@@ -52,9 +52,9 @@ struct AudioListView: View {
       List {
         Section {
           ForEach(itemEntities) { item in
-            Button { 
+            Button {
               onSelect(item)
-            } label: {               
+            } label: {
               ItemCell(item: item)
             }
             .contextMenu(menuItems: {
@@ -62,16 +62,22 @@ struct AudioListView: View {
                 // TODO: too direct
                 modelContext.delete(item)
               }
-              if let openAIService {                
-                Button("Cloud Transcribe") {
-                  Task { [openAIService] in
-                    do {
-                      try await openAIService.transcribe(fileURL: item.audioFileAbsoluteURL)
-                    } catch {
-                      Log.error("\(error.localizedDescription)")
+              if let openAIService {
+                Menu("Cloud Transcription") {
+                  ForEach(OpenAIService.TranscriptionModel.allCases, id: \.rawValue) { model in
+                    Button("\(model.rawValue)") {
+                      Task { [openAIService] in
+                        do {
+                          let result = try await openAIService.transcribe(
+                            fileURL: item.audioFileAbsoluteURL, model: model)
+                          try await service.updateTranscription(for: item, with: result)
+                        } catch {
+                          Log.error("\(error.localizedDescription)")
+                        }
+                      }
                     }
                   }
-                }                
+                }
               }
             })
           }
@@ -323,4 +329,3 @@ struct PinEntitiesProvider<Content: View>: View {
     ItemCell(title: "Hello, Tone.")
   }
 }
-

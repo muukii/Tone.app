@@ -123,8 +123,19 @@ public final class OpenAIService {
     case fileTooLarge(maxSize: Int)
     case fileNotFound
   }
+  
+  public enum TranscriptionModel: String, CaseIterable {    
+    case whisper1 = "whisper-1"
+    case gpt_4o_mini = "gpt-4o-mini-transcribe"
+    case gpt_4o = "gpt-4o-transcribe"
+  }
 
-  public func transcribe(fileURL: URL) async throws(TranscribeError) -> Responses.Transcription {
+  public func transcribe(
+    fileURL: URL,
+    model: TranscriptionModel = .whisper1
+  ) async throws(TranscribeError) -> Responses.Transcription {
+    
+    Log.debug("Transcribing file: \(fileURL)")
     
     do {
       let fileSize = try fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
@@ -143,7 +154,7 @@ public final class OpenAIService {
             mimeType: "audio/mpeg"
           )
           form.append("word".data(using: .utf8)!, withName: "timestamp_granularities[]")
-          form.append("whisper-1".data(using: .utf8)!, withName: "model")
+          form.append(model.rawValue.data(using: .utf8)!, withName: "model")
           form.append("verbose_json".data(using: .utf8)!, withName: "response_format")
           form.append("en".data(using: .utf8)!, withName: "language")
         },
@@ -156,8 +167,11 @@ public final class OpenAIService {
         .serializingDecodable(Responses.Transcription.self)
         .value
       
+      Log.debug("Transcription completed")
+      
       return result
     } catch {
+      assertionFailure(error.localizedDescription)
       throw TranscribeError.underlying(error)
     }
   }

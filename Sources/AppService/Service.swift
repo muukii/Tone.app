@@ -103,6 +103,19 @@ public final class Service {
     )
 
   }
+  
+  public func updateTranscription(for item: ItemEntity, with result: OpenAIService.Responses.Transcription) async throws {
+
+    let segments = result.words.map { word in      
+      AbstractSegment(startTime: word.start, endTime: word.end, text: word.word)
+    }
+    
+    try await self.importItem(
+      title: item.title,
+      audioFileURL: item.audioFileAbsoluteURL,
+      segments: segments
+    )
+  }
 
   public func transcribe(title: String, audioFileURL: URL) async throws {
 
@@ -114,7 +127,7 @@ public final class Service {
     )
 
   }
-
+  
   public func importItem(
     title: String,
     audioFileURL: URL,
