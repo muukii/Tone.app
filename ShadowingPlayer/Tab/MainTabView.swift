@@ -59,8 +59,8 @@ struct MainTabView: View {
         }
         .tint(#hexColor("FF5722", colorSpace: .displayP3))
         .modelContainer(for: [
-          AnkiBook.self,
-          AnkiItem.self,
+          ExpressionTag.self,
+          ExpressionItem.self,
         ])
 
       PlaygroundPanel()

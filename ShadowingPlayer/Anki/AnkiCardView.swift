@@ -4,76 +4,125 @@ import AVFoundation
 
 struct AnkiView: View {
   @Environment(\.modelContext) private var modelContext
-  @Query(sort: \AnkiBook.name) private var books: [AnkiBook]
-  @State private var showingJSONImport: Bool = false
+  @Query(sort: \ExpressionItem.input) private var items: [ExpressionItem]
+  @State private var showingAddView: Bool = false
 
   var body: some View {
     NavigationStack {
       VStack {
-        if books.isEmpty {
+        if items.isEmpty {
           ContentUnavailableView {
-            Text("No Vocabulary Books")
+            Text("No Vocabulary")
           } description: {
             Text("Add vocabulary by importing JSON data")
           } actions: {
-            Button(action: { showingJSONImport = true }) {
-              Text("Import Vocabulary")
-                .frame(maxWidth: 200)
+            Button(action: { showingAddView = true }) {
+              Text("Add expressions")
             }
             .buttonStyle(.borderedProminent)
           }
         } else {
           List {
-            ForEach(books) { book in
-              NavigationLink(value: book) { 
+            ForEach(items) { item in
+              NavigationLink(value: item) { 
                 HStack {
-                  Text(book.name)
-                  Spacer()
-                  Text("\(book.items.count) items")
-                    .foregroundStyle(.secondary)
+                  Text(item.input)                
                 }
               }
             }
-            .onDelete(perform: deleteBooks)
+            .onDelete(perform: deleteItems)
           }
         }
       }
-      .navigationDestination(for: AnkiBook.self, destination: { book in
-        AnkiBookDetail(book: book)
+      .navigationDestination(for: ExpressionItem.self, destination: { tag in
+        ExpressionDetail(item: tag, speechClient: SpeechClient())
       })
       .navigationTitle("Vocabulary")
       .toolbar {
         ToolbarItem(placement: .primaryAction) {
-          Button(action: { showingJSONImport = true }) {
-            Label("Import", systemImage: "square.and.arrow.down")
-          }
+          Button(action: { showingAddView = true }) {
+            Label("新しい表現を追加", systemImage: "plus")
+          }         
         }
-      }
-      .sheet(isPresented: $showingJSONImport) {
-        AnkiJSONImportView()
+      }    
+      .sheet(isPresented: $showingAddView) {
+        VocabularyAddView { text in
+          let newItem = ExpressionItem(input: text)
+          modelContext.insert(newItem)
+          showingAddView = false
+        } onCancel: {
+          showingAddView = false
+        }
       }
     }
   }
 
-  private func deleteBooks(at offsets: IndexSet) {
-    for index in offsets {
-      let book = books[index]
-      modelContext.delete(book)
+  private func deleteItems(at offsets: IndexSet) {
+    do {
+      try modelContext.transaction {
+        for index in offsets {
+          let item = items[index]
+          modelContext.delete(item)
+        }
+      }
+    } catch {
+      Log.error("\(error.localizedDescription)")
     }
   }
 }
 
-struct AnkiBookDetail: View {
+struct VocabularyAddView: View {
   
-  var book: AnkiBook
+  @State private var text: String = ""
+  @FocusState private var isFocused: Bool
+  
+  let onSave: (String) -> Void
+  let onCancel: () -> Void
+  
+  var body: some View {
+    NavigationStack {
+      Form {
+        Section {
+          TextField("Input", text: $text)
+            .font(.system(size: 24, weight: .bold))
+            .frame(height: 100)
+            .focused($isFocused)
+        }
+      }
+      .navigationTitle("新しい表現を追加")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button("キャンセル") {
+            onCancel()
+          }
+        }
+        
+        ToolbarItem(placement: .confirmationAction) {
+          Button("保存") {
+            onSave(text)
+          }
+        }
+      }
+      .onAppear {
+        isFocused = true
+      }
+    }
+    .interactiveDismissDisabled(!text.isEmpty)
+  }
+}
+
+struct TagDetail: View {
+  
+  var tag: ExpressionTag
   
   @ObjectEdge var speechClient: SpeechClient = .init()
 
   var body: some View {
     List {
-      ForEach(book.items) { item in
+      ForEach(tag.expressions) { item in
         NavigationLink(
-          destination: AnkiItemDetail(item: item, speechClient: speechClient)) {
+          destination: ExpressionDetail(item: item, speechClient: speechClient)) {
           VStack(alignment: .leading) {
             Text(item.input)
               .font(.headline)
@@ -85,7 +134,7 @@ struct AnkiBookDetail: View {
         }
       }
     }
-    .navigationTitle(book.name)
+    .navigationTitle(tag.name)
   }
 }
 
@@ -104,8 +153,8 @@ final class SpeechClient {
   }
 }
 
-struct AnkiItemDetail: View {
-  var item: AnkiItem
+struct ExpressionDetail: View {
+  var item: ExpressionItem
   let speechClient: SpeechClient
 
   var body: some View {
@@ -284,5 +333,5 @@ struct AnkiCardView: View {
 
 #Preview {
   AnkiView()
-    .modelContainer(for: [AnkiBook.self, AnkiItem.self])
+    .modelContainer(for: [ExpressionTag.self, ExpressionItem.self])
 }
