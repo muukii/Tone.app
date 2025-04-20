@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/VergeGroup/Normalization",
       "state" : {
-        "revision" : "6e7cb1ddeda4d0f1d2fbf8ca6d25ecd8ed6ba917",
-        "version" : "1.1.0"
+        "revision" : "6b5ebbe680da5359ae2a3fc3e53a144069bd6845",
+        "version" : "1.2.0"
       }
     },
     {
@@ -259,15 +259,6 @@
       "state" : {
         "revision" : "26e9064cf45e48ced6220073071eeaf3dd60c62c",
         "version" : "1.4.1"
-      }
-    },
-    {
-      "identity" : "verge",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/VergeGroup/Verge",
-      "state" : {
-        "branch" : "main",
-        "revision" : "83ff19dca6617b8dee8a4384cfb06850a20fb856"
       }
     },
     {

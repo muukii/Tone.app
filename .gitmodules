@@ -7,3 +7,6 @@
 [submodule "submodules/FluidGroup/swiftui-persistent-control"]
 	path = submodules/FluidGroup/swiftui-persistent-control
 	url = https://github.com/FluidGroup/swiftui-persistent-control.git
+[submodule "submodules/VergeGroup/swift-verge"]
+	path = submodules/VergeGroup/swift-verge
+	url = https://github.com/VergeGroup/swift-verge
