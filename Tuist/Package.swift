@@ -3,10 +3,11 @@
 
 let package = Package(
   name: "Tuist",
-  dependencies: [
+  dependencies: [    
     .package(path: "../submodules/FluidGroup/swift-dynamic-list"),
     .package(path: "../submodules/FluidGroup/swiftui-ring-slider"),
     .package(path: "../submodules/FluidGroup/swiftui-persistent-control"),
+    .package(path: "../submodules/VergeGroup/swift-state-graph"),
     .package(path: "../submodules/VergeGroup/swift-verge"),
     .package(url: "https://github.com/dagronf/SwiftSubtitles", from: "0.5.0"),
     .package(url: "https://github.com/VergeGroup/UserDefaultsSnapshot", from: "1.4.1"),

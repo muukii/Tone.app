@@ -1,66 +1,46 @@
 import AppService
 import MediaPlayer
+import StateGraph
 import SwiftSubtitles
-import Verge
 
 @MainActor
-public final class PlayerController: NSObject, StoreDriverType {
-  
-  @Tracking
-  public struct State {
-            
-    public let title: String
-    
-    public let audioFileURL: URL    
-    
-    public var playingRange: PlayingRange?
-    
-    public var isRepeating: Bool {
-      playingRange != nil
-    }
-    
-    public var isPlaying: Bool
-    
-    public var rate: CGFloat = 1
-    
-    public var currentCue: DisplayCue?
-    
-    public let cues: [DisplayCue]
-    
-    public var pin: [PinEntity] = []
-    
-    public init(
-      title: String,
-      audioFileURL: URL,
-      playingRange: PlayingRange? = nil,
-      isPlaying: Bool = false,
-      currentCue: DisplayCue? = nil,
-      cues: [DisplayCue] = [],
-      pin: [PinEntity] = []
-    ) {
-      self.title = title
-      self.audioFileURL = audioFileURL
-      self.playingRange = playingRange
-      self.isPlaying = isPlaying
-      self.currentCue = currentCue
-      self.cues = cues
-      self.pin = pin
-    }
-      
+public final class PlayerController: NSObject {
+
+  public let title: String
+
+  public let audioFileURL: URL
+
+  @GraphStored
+  public var playingRange: PlayingRange?
+
+  public var isRepeating: Bool {
+    playingRange != nil
   }
-  
-//  nonisolated public static func == (lhs: PlayerController, rhs: PlayerController) -> Bool {
-//    lhs === rhs
-//  }
-//  
-//  public nonisolated func hash(into hasher: inout Hasher) {
-//    hasher.combine(ObjectIdentifier(self))
-//  }
-  
-  public let store: Store<State, Never>
+
+  @GraphStored
+  public var isPlaying: Bool = false
+
+  @GraphStored
+  public var rate: CGFloat = 1
+
+  @GraphStored
+  public var currentCue: DisplayCue?
+
+  public let cues: [DisplayCue]
+
+  @GraphStored
+  public var pin: [PinEntity] = []
+
+  //  nonisolated public static func == (lhs: PlayerController, rhs: PlayerController) -> Bool {
+  //    lhs === rhs
+  //  }
+  //
+  //  public nonisolated func hash(into hasher: inout Hasher) {
+  //    hasher.combine(ObjectIdentifier(self))
+  //  }
 
   private var currentTimeObservation: NSKeyValueObservation?
-  
+
   private var currentTimer: Timer?
 
   private var currentTimerForLoop: Timer?
@@ -69,28 +49,26 @@ public final class PlayerController: NSObject, StoreDriverType {
 
   private var isActivated: Bool = false
 
-  private var cancellables: Set<AnyCancellable> = .init()
-
   private var isAppInBackground: Bool = false
-  
+
   public enum Source: Equatable {
     case item(Item)
-    case entity(ItemEntity)    
+    case entity(ItemEntity)
   }
-  
+
   let source: Source
 
   public convenience init(item: Item) throws {
-        
+
     let subtitles = try Subtitles(fileURL: item.subtitleFileURL, encoding: .utf8)
-      
+
     try self.init(
       source: .item(item),
       title: item.id,
       audioFileURL: item.audioFileURL,
       segments: subtitles.cues.map { AbstractSegment(cue: $0) }
     )
-    
+
   }
 
   public convenience init(item: ItemEntity) throws {
@@ -111,43 +89,35 @@ public final class PlayerController: NSObject, StoreDriverType {
     audioFileURL: URL,
     segments: [AbstractSegment]
   ) throws {
-    
+
     self.source = source
-    
-    self.store = .init(
-      initialState: .init(
-        title: title,
-        audioFileURL: audioFileURL,
-        cues: segments.enumerated()
-          .map { i, e in .init(segment: e, index: i) }        
-      )
-    )
-    
+
+    self.title = title
+    self.audioFileURL = audioFileURL
+    self.cues = segments.enumerated()
+      .map { i, e in .init(segment: e, index: i) }
+
     self.controller = try .init(file: .init(forReading: audioFileURL))
-    
+
     self.controller.repeating = .atEnd
-    
+
     super.init()
-    
-    self.sinkState { [weak self] state in
-      state.ifChanged(\.rate).do {
-        self?.controller.setSpeed(speed: $0)
-      }
+
+    withContinuousStateGraphTracking {
+      _ = self.rate
+    } didChange: { [weak self] in
+      guard let self else { return .stop }
+      self.controller.setSpeed(speed: self.rate)
+      return .next
     }
-    .store(in: &cancellables)
-    
-    controller.sinkState { [weak self] state in
 
-      guard let self else { return }
-
-      state.ifChanged(\.isPlaying).do { isPlaying in
-        self.commit { 
-          $0.isPlaying = isPlaying
-        }
-      }
-
+    withContinuousStateGraphTracking { [controller] in
+      _ = controller.isPlaying
+    } didChange: { [weak self] in
+      guard let self else { return .stop }
+      self.isPlaying = self.controller.isPlaying
+      return .next
     }
-    .store(in: &cancellables)
 
     NotificationCenter.default.addObserver(
       self,
@@ -166,7 +136,7 @@ public final class PlayerController: NSObject, StoreDriverType {
   }
 
   public func makeRepeatingRange() -> PlayingRange {
-    .init(whole: state.cues)
+    .init(whole: cues)
   }
 
   @MainActor
@@ -178,7 +148,7 @@ public final class PlayerController: NSObject, StoreDriverType {
   }
 
   public func setRepeating(identifier: String) {
-    guard let cue = state.cues.first(where: { $0.id == identifier }) else { return }
+    guard let cue = cues.first(where: { $0.id == identifier }) else { return }
 
     var range = makeRepeatingRange()
     range.select(cue: cue)
@@ -204,7 +174,7 @@ public final class PlayerController: NSObject, StoreDriverType {
 
   @objc
   private dynamic func onTogglePlayPauseCommand() -> MPRemoteCommandHandlerStatus {
-    if state.isPlaying {
+    if isPlaying {
       pause()
     } else {
       play()
@@ -237,28 +207,28 @@ public final class PlayerController: NSObject, StoreDriverType {
   }
 
   deinit {
-    MainActor.assumeIsolated { 
+    MainActor.assumeIsolated {
       NotificationCenter.default.removeObserver(self)
-      
+
       Log.debug("deinit \(String(describing: self))")
-      
+
       do {
         try AudioSessionManager.shared.deactivate()
       } catch {
         print(error)
       }
-      
+
       Task { @MainActor [currentTimeObservation, currentTimer, currentTimerForLoop] in
         currentTimeObservation?.invalidate()
         currentTimer?.invalidate()
         currentTimerForLoop?.invalidate()
       }
-      
+
       MPRemoteCommandCenter.shared().playCommand.removeTarget(self)
       MPRemoteCommandCenter.shared().pauseCommand.removeTarget(self)
       MPRemoteCommandCenter.shared().nextTrackCommand.removeTarget(self)
       MPRemoteCommandCenter.shared().previousTrackCommand.removeTarget(self)
-    }   
+    }
   }
 
   func activate() {
@@ -309,8 +279,8 @@ public final class PlayerController: NSObject, StoreDriverType {
         guard self.isAppInBackground == false else { return }
 
         if let currentTime = self.controller.currentTime {
-          
-          let currentCue = self.state.cues.first { cue in
+
+          let currentCue = self.cues.first { cue in
 
             if cue.backed.startTime <= currentTime, cue.backed.endTime >= currentTime {
               return true
@@ -319,13 +289,11 @@ public final class PlayerController: NSObject, StoreDriverType {
             }
 
           }
-          
-          self.commit {
-            if $0.currentCue != currentCue {
-              $0.currentCue = currentCue
-            }
+
+          if self.currentCue != currentCue {
+            self.currentCue = currentCue
           }
-         
+
         }
 
       }
@@ -357,7 +325,6 @@ public final class PlayerController: NSObject, StoreDriverType {
 
   }
 
-
   @objc
   private func didEnterBackground() {
     isAppInBackground = true
@@ -369,8 +336,8 @@ public final class PlayerController: NSObject, StoreDriverType {
   }
 
   public func pause() {
-    
-    guard state.isPlaying else {
+
+    guard isPlaying else {
       return
     }
 
@@ -385,24 +352,22 @@ public final class PlayerController: NSObject, StoreDriverType {
   }
 
   public func move(to cue: DisplayCue) {
-    
+
     controller.seek(position: cue.backed.startTime)
 
-    commit {
-      $0.currentCue = cue
-    }
-    
+    self.currentCue = cue
+
   }
 
   public func moveToNext() {
 
-    guard let currentCue = state.currentCue else {
+    guard let currentCue = currentCue else {
       return
     }
 
-    guard let target = state.cues.nextElement(after: currentCue) else { return }
+    guard let target = cues.nextElement(after: currentCue) else { return }
 
-    if state.playingRange == nil {
+    if playingRange == nil {
       move(to: target)
     } else {
       // TODO: considier what to do
@@ -412,13 +377,13 @@ public final class PlayerController: NSObject, StoreDriverType {
 
   public func moveToPrevious() {
 
-    guard let currentCue = state.currentCue else {
+    guard let currentCue = currentCue else {
       return
     }
 
-    guard let target = state.cues.previousElement(before: currentCue) else { return }
+    guard let target = cues.previousElement(before: currentCue) else { return }
 
-    if state.playingRange == nil {
+    if playingRange == nil {
       move(to: target)
     } else {
       // TODO: considier what to do
@@ -427,29 +392,26 @@ public final class PlayerController: NSObject, StoreDriverType {
   }
 
   public func setRepeat(range: PlayingRange?) {
-    
-    commit {
-      
-      if let range {
-        
-        $0.playingRange = range
-        controller.repeating = .range(start: range.startTime, end: range.endTime)
-        controller.seek(position: range.startTime)
-        
-      } else {
-        
-        $0.playingRange = nil
-        controller.repeating = .atEnd
-        
-      }
-      
+
+    if let range {
+
+      self.playingRange = range
+      controller.repeating = .range(start: range.startTime, end: range.endTime)
+      controller.seek(position: range.startTime)
+
+    } else {
+
+      self.playingRange = nil
+      controller.repeating = .atEnd
+
     }
+
   }
 
   public func setRate(_ rate: CGFloat) {
-    commit {
-      $0.rate = rate
-    }
+
+    self.rate = rate
+
   }
 
 }

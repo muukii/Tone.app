@@ -61,6 +61,7 @@ let project = Project(
       dependencies: [
         .external(name: "YouTubeKit"),
         .external(name: "AudioKit"),
+        .external(name: "StateGraph"),
         .external(name: "Verge"),
         .external(name: "HexColorMacro"),
         .external(name: "SwiftUIPersistentControl"),

@@ -10,7 +10,7 @@ import os.lock
 struct MainTabView: View {
 
   @AppStorage("openAIAPIKey") var openAIAPIKey: String = ""
-  
+
   @Namespace var namespace
 
   enum ComponentKey: Hashable {
@@ -20,7 +20,7 @@ struct MainTabView: View {
   @State private var isCompact: Bool = true
 
   @Reading<RootDriver> var rootState: RootDriver.TargetStore.State
-  
+
   @ReadingObject<MainViewModel> var state: MainViewModel.State
 
   init(
@@ -72,9 +72,12 @@ struct MainTabView: View {
         .tint(#hexColor("4CAF50", colorSpace: .displayP3))
 
     }
-    .onChange(of: openAIAPIKey, initial: true, { oldValue, newValue in
-      $rootState.driver.setOpenAIAPIToken(newValue)
-    })   
+    .onChange(
+      of: openAIAPIKey, initial: true,
+      { oldValue, newValue in
+        $rootState.driver.setOpenAIAPIToken(newValue)
+      }
+    )
     .tint(.primary)
     .overlay(
       Container(
@@ -124,37 +127,37 @@ struct MainTabView: View {
     }
 
     var body: some View {
-      StoreReader(controller) { $state in
-        HStack {
-          Button {
-            onDiscard()
-          } label: {
-            Image(systemName: "xmark")
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(square: 30)
-          }
-          Button {
-            MainActor.assumeIsolated {
-              UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-            }
-            if state.isPlaying {
-              controller.pause()
-            } else {
-              controller.play()
-            }
-          } label: {
-            Image(systemName: state.isPlaying ? "pause.fill" : "play.fill")
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(square: 30)
-              .matchedGeometryEffect(id: ComponentKey.playButton, in: namespace)
-              .foregroundColor(Color.primary)
-              .contentTransition(.symbolEffect(.replace, options: .speed(2)))
-          }
-          .frame(square: 50)
+
+      HStack {
+        Button {
+          onDiscard()
+        } label: {
+          Image(systemName: "xmark")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(square: 30)
         }
+        Button {
+          MainActor.assumeIsolated {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          }
+          if controller.isPlaying {
+            controller.pause()
+          } else {
+            controller.play()
+          }
+        } label: {
+          Image(systemName: controller.isPlaying ? "pause.fill" : "play.fill")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(square: 30)
+            .matchedGeometryEffect(id: ComponentKey.playButton, in: namespace)
+            .foregroundColor(Color.primary)
+            .contentTransition(.symbolEffect(.replace, options: .speed(2)))
+        }
+        .frame(square: 50)
       }
+
     }
 
   }
@@ -163,9 +166,9 @@ struct MainTabView: View {
     player: PlayerController,
     namespace: Namespace.ID
   ) -> some View {
-    
+
     let service = $rootState.driver.service
-    
+
     if case .entity(let entity) = player.source {
       return PinEntitiesProvider(targetItem: entity) { pins in
         PlayerView<PlayerListFlowLayoutView>(
@@ -306,4 +309,3 @@ final class ReferenceHolder<T: AnyObject>: Sendable {
   }
 
 }
-

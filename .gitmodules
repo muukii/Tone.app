@@ -10,3 +10,6 @@
 [submodule "submodules/VergeGroup/swift-verge"]
 	path = submodules/VergeGroup/swift-verge
 	url = https://github.com/VergeGroup/swift-verge
+[submodule "submodules/VergeGroup/swift-state-graph"]
+	path = submodules/VergeGroup/swift-state-graph
+	url = https://github.com/VergeGroup/swift-state-graph

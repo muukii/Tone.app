@@ -1,0 +1,22 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+## テキスト選択と長押しメニュー
+
+### SwiftUIでテキスト選択を有効にする
+- `.textSelection(.enabled)` - これを使用するとユーザーはテキストを長押しして選択できるようになり、コピーなどの操作ができます
+- 例: `Text("テキスト").textSelection(.enabled)`
+
+### 主な使用場所
+- PlayerListFlowLayoutViewでは `.textSelection(.enabled)` を使用してテキストの長押しメニューを可能にしています
+- これにより、ユーザーはテキストを長押しして選択、コピーなどの操作が可能になります
+
+### コンテキストメニューとの違い
+- `.textSelection(.enabled)` - テキスト選択とシステム標準のコンテキストメニュー
+- `.contextMenu {}` - カスタムのコンテキストメニュー
+
+### 注意点
+- `.textSelection(.enabled)` はテキスト要素に対してのみ機能します
+- 通常のビューでコンテキストメニューを表示したい場合は `.contextMenu {}` を使用します 

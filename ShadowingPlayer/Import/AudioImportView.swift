@@ -1,7 +1,8 @@
 import AppService
+import ObjectEdge
+import StateGraph
 import SwiftUI
 import UniformTypeIdentifiers
-import Verge
 
 struct AudioImportView: View {
 
@@ -17,7 +18,7 @@ struct AudioImportView: View {
 
   private let service: Service
 
-  @StoreObject private var viewModel: AudioImportViewModel
+  @ObjectEdge private var viewModel: AudioImportViewModel
   let onComplete: @MainActor () -> Void
 
   init(
@@ -36,26 +37,22 @@ struct AudioImportView: View {
   }
 
   var body: some View {
-    StoreReader(viewModel) { $state in
-      List(state.targetFiles, id: \.self) { store in
-        StoreReader(store) { $state in
-          HStack {
-            VStack(alignment: .leading) {
-              Text(state.file.name)
-                .font(.headline)
-            }
-            Spacer()
-            switch state.status {
-            case .waiting:
-              Image(systemName: "circle")
-            case .processing:
-              ProgressView()
-            case .completed:
-              Image(systemName: "checkmark")
-            case .failed:
-              Image(systemName: "xmark")
-            }
-          }
+    List(viewModel.targetFiles, id: \.self) { store in
+      HStack {
+        VStack(alignment: .leading) {
+          Text(store.file.name)
+            .font(.headline)
+        }
+        Spacer()
+        switch store.status {
+        case .waiting:
+          Image(systemName: "circle")
+        case .processing:
+          ProgressView()
+        case .completed:
+          Image(systemName: "checkmark")
+        case .failed:
+          Image(systemName: "xmark")
         }
       }
     }
@@ -66,10 +63,18 @@ struct AudioImportView: View {
 
 }
 
-final class AudioImportViewModel: StoreDriverType {
+@MainActor
+final class AudioImportViewModel {
 
-  @Tracking
-  struct TargetFileState {
+  final class TargetFileState: Hashable {
+        
+    static func == (lhs: AudioImportViewModel.TargetFileState, rhs: AudioImportViewModel.TargetFileState) -> Bool {
+      lhs === rhs
+    }
+
+    func hash(into hasher: inout Hasher) {
+      ObjectIdentifier(self).hash(into: &hasher)
+    }
 
     enum Status {
       case waiting
@@ -80,22 +85,20 @@ final class AudioImportViewModel: StoreDriverType {
 
     let file: AudioImportView.TargetFile
 
+    @GraphStored
     var status: Status = .waiting
 
-    init(initialState: AudioImportView.TargetFile) {
-      self.file = initialState
+    init(file: AudioImportView.TargetFile) {
+      self.file = file
     }
   }
 
-  @Tracking
-  struct State {
+  @GraphStored
+  var targetFiles: [TargetFileState]
 
-    var targetFiles: [Store<TargetFileState, Never>]
-    var isProcessing: Bool = false
+  @GraphStored
+  var isProcessing: Bool = false
 
-  }
-
-  let store: Store<State, Never>
   let service: Service
 
   init(
@@ -103,57 +106,46 @@ final class AudioImportViewModel: StoreDriverType {
     service: Service
   ) {
     self.service = service
-    self.store = .init(
-      initialState: .init(
-        targetFiles: targets.map {
-          .init(initialState: .init(initialState: $0))
-        }
-      )
-    )
+
+    self.targetFiles = targets.map {
+      .init(file: $0)
+    }
+
   }
 
   func startProcessing() {
 
-    guard !store.state.isProcessing else {
+    guard !isProcessing else {
       return
     }
 
-    store.commit {
-      $0.isProcessing = true
-    }
+    self.isProcessing = true
 
-    let files = state.targetFiles
+    let files = targetFiles
 
-    store.task { [store, service] in
+    Task { [service] in
 
       for fileStore in files {
 
         defer {
-          fileStore.commit {
-            $0.status = .completed
-          }
+          fileStore.status = .completed
         }
         do {
-          let file = fileStore.state.file
-          fileStore.commit {
-            $0.status = .processing
-          }
+          let file = fileStore.file
+
+          fileStore.status = .processing
+
           try await service.transcribe(
             title: file.name,
             audioFileURL: file.url
           )
         } catch {
-          print("Error processing \(fileStore.name): \(error)")
-          fileStore.commit {
-            $0.status = .failed
-          }
+          fileStore.status = .failed
         }
 
       }
 
-      store.commit {
-        $0.isProcessing = false
-      }
+      self.isProcessing = false
     }
 
   }

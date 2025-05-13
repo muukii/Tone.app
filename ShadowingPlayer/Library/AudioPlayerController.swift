@@ -1,23 +1,22 @@
 import AVFoundation
-import Verge
+import MediaPlayer
+import StateGraph
 
 enum AudioPlayerControllerError: Error {
   case fileLengthIsZero
 }
 
 @MainActor
-final class AudioPlayerController: StoreDriverType {
+final class AudioPlayerController: NSObject {
 
   enum Repeating {
     case atEnd
     case range(start: Double, end: Double)
   }
 
-  @Tracking
-  struct State {
-    var isPlaying: Bool = false
-    var isAppInBackground: Bool = false
-  }
+  @GraphStored
+  var isPlaying: Bool = false
+  var isAppInBackground: Bool = false
 
   private var engine: AVAudioEngine?
   private let audioPlayer = AVAudioPlayerNode()
@@ -29,8 +28,6 @@ final class AudioPlayerController: StoreDriverType {
 
   var repeating: Repeating? = nil
 
-  let store: Store<State, Never> = .init(initialState: .init())
-
   init(file: AVAudioFile) throws {
 
     self.file = file
@@ -38,21 +35,43 @@ final class AudioPlayerController: StoreDriverType {
     guard file.length > 0 else {
       throw AudioPlayerControllerError.fileLengthIsZero
     }
+    
+    super.init()
 
+    // Listen for audio session interruptions (e.g., incoming call)
     NotificationCenter.default.addObserver(
       self,
       selector: #selector(handleInterruption),
       name: AVAudioSession.interruptionNotification,
       object: AVAudioSession.sharedInstance()
     )
+    // Listen for route changes (e.g., headphones unplug or Bluetooth device removed)
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleRouteChange(_:)),
+      name: AVAudioSession.routeChangeNotification,
+      object: AVAudioSession.sharedInstance()
+    )
   }
 
   deinit {
+    // Remove observers for notifications and remote commands
     NotificationCenter.default.removeObserver(self)
     Log.debug("deinit \(String(describing: self))")
   }
 
   @objc private func handleInterruption() {
+    pause()
+  }
+  
+  /// Handle audio route changes, such as headphones being unplugged or Bluetooth device removed
+  @objc private func handleRouteChange(_ notification: Notification) {
+    guard let info = notification.userInfo,
+          let reasonValue = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
+          let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue),
+          reason == .oldDeviceUnavailable else {
+      return
+    }
     pause()
   }
 
@@ -91,9 +110,7 @@ final class AudioPlayerController: StoreDriverType {
       createEngine()
     }
 
-    commit {
-      $0.isPlaying = true
-    }
+    isPlaying = true
 
     if engine?.isRunning == false {
       try engine?.start()
@@ -149,9 +166,7 @@ final class AudioPlayerController: StoreDriverType {
 
   func pause() {
 
-    commit {
-      $0.isPlaying = false
-    }
+    isPlaying = false
 
     currentTimerForLoop?.invalidate()
     currentTimerForLoop = nil

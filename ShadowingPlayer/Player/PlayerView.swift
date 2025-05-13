@@ -30,7 +30,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
     var value: String
   }
 
-  @Reading<PlayerController> var state: PlayerController.State
+  let controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) async -> Void
   @State private var controllerForDetail: PlayerController?
   @State private var isDisplayingPinList: Bool = false
@@ -47,7 +47,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
     namespace: Namespace.ID,
     actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   ) {
-    self._state = .init(mode: .unowned, playerController)
+    self.controller = playerController
     self.actionHandler = actionHandler
     self.pins = pins
     self.namespace = namespace
@@ -58,7 +58,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
     //
     ZStack {
       Display(
-        controller: $state.driver,
+        controller: controller,
         pins: pins,
         actionHandler: actionHandler
       )
@@ -67,11 +67,11 @@ struct PlayerView<Display: PlayerDisplay>: View {
       edge: .bottom,
       content: {
         PlayerControlPanel(
-          controller: $state.driver,
+          controller: controller,
           namespace: namespace,
           onTapPin: {
 
-            guard let range = state.playingRange else {
+            guard let range = controller.playingRange else {
               return
             }
 
@@ -81,7 +81,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
 
           },
           onTapDetail: {
-            controllerForDetail = $state.driver
+            controllerForDetail = controller
           }
         )
       }
@@ -105,7 +105,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
           pins: pins,
           onSelect: { pin in
             isDisplayingPinList = false
-            $state.driver.setRepeating(from: pin)
+            controller.setRepeating(from: pin)
           }
         )
       }
@@ -136,7 +136,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
           }
           
           Button("Rename") {
-            newTitle = state.title
+            newTitle = controller.title
             isShowingRenameDialog = true
           }
         } label: {
@@ -230,7 +230,7 @@ enum PlayerDisplayAction {
 
 struct PlayerControlPanel: View {
   
-  @Reading<PlayerController> var state: PlayerController.State
+  let controller: PlayerController
   private let onTapPin: @MainActor () -> Void
   private let onTapDetail: @MainActor () -> Void
 
@@ -242,7 +242,7 @@ struct PlayerControlPanel: View {
     onTapPin: @escaping @MainActor () -> Void,
     onTapDetail: @escaping @MainActor () -> Void
   ) {
-    self._state = .init(controller)
+    self.controller = controller
     self.namespace = namespace
     self.onTapPin = onTapPin
     self.onTapDetail = onTapDetail
@@ -273,7 +273,7 @@ struct PlayerControlPanel: View {
           }
           togglePlaying()
         } label: {
-          Image(systemName: state.isPlaying ? "pause.fill" : "play.fill")
+          Image(systemName: controller.isPlaying ? "pause.fill" : "play.fill")
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(square: 30)
@@ -290,13 +290,13 @@ struct PlayerControlPanel: View {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
           }
 
-          if state.isRepeating {
-            $state.driver.setRepeat(range: nil)
+          if controller.isRepeating {
+            controller.setRepeat(range: nil)
           } else {
-            if let currentCue = state.currentCue {
-              var range = $state.driver.makeRepeatingRange()
+            if let currentCue = controller.currentCue {
+              var range = controller.makeRepeatingRange()
               range.select(cue: currentCue)
-              $state.driver.setRepeat(range: range)
+              controller.setRepeat(range: range)
             }
           }
         } label: {
@@ -312,7 +312,7 @@ struct PlayerControlPanel: View {
             RoundedRectangle(cornerRadius: 8)
               .fill(Color.accentColor.tertiary)
               .aspectRatio(1, contentMode: .fill)
-              .opacity(state.isRepeating ? 1 : 0)
+              .opacity(controller.isRepeating ? 1 : 0)
           )
         }
         .frame(square: 50)
@@ -330,7 +330,7 @@ struct PlayerControlPanel: View {
         }
         .frame(square: 50)
         .buttonStyle(PlainButtonStyle())
-        .disabled(state.isRepeating == false)
+        .disabled(controller.isRepeating == false)
 
         // detail
         Button {
@@ -344,7 +344,7 @@ struct PlayerControlPanel: View {
         }
         .frame(square: 50)
         .buttonStyle(PlainButtonStyle())
-        .disabled(state.isRepeating == false)
+        .disabled(controller.isRepeating == false)
 
       }
 
@@ -352,9 +352,9 @@ struct PlayerControlPanel: View {
 
       VStack {
         Button {
-          $state.rate.wrappedValue = 1
+          controller.rate = 1
         } label: {
-          Text("\(String(format: "%.2f", state.rate))")
+          Text("\(String(format: "%.2f", controller.rate))")
             .font(.title3.monospacedDigit().bold())
             .contentTransition(.numericText(value: 1))
         }
@@ -363,7 +363,7 @@ struct PlayerControlPanel: View {
         .tint(Color.accentColor)
         
         SteppedSlider(
-          value: $state.rate,
+          value: controller.$rate.binding,
           range: 0.3...1,
           steps: 0.02,
           horizontalEdgeMask: .hidden,
@@ -405,10 +405,10 @@ struct PlayerControlPanel: View {
 
   @MainActor
   private func togglePlaying() {
-    if state.isPlaying {
-      $state.driver.pause()
+    if controller.isPlaying {
+      controller.pause()
     } else {
-      $state.driver.play()
+      controller.play()
     }
   }
 
@@ -436,15 +436,13 @@ struct DefinitionView: UIViewControllerRepresentable {
     
     @Namespace private var namespace
     
-    @ReadingObject<PlayerController>({
-      try! .init(item: .social)
-    }) var state: PlayerController.State
+    @ObjectEdge var playerController: PlayerController = try! .init(item: .social)
     
     var body: some View {
       Group {
         NavigationStack {
           PlayerView<PlayerListFlowLayoutView>(
-            playerController: $state.driver,
+            playerController: playerController,
             pins: [],
             namespace: namespace,
               actionHandler: { action in

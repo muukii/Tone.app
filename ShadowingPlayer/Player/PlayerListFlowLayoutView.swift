@@ -5,6 +5,7 @@ import MondrianLayout
 import SwiftUI
 import SwiftUISupportLayout
 import SwiftUISupport
+import UIKit
 import Verge
 
 private enum CellIsFocusing: CustomStateKey {
@@ -46,10 +47,16 @@ extension CellState {
 
 }
 
+enum PlayerChunkAction {
+  case copy(text: String)
+  case addMark(identifier: String)
+  case removeMark(identifier: String)
+}
+
 @MainActor
 struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
-  @Reading<PlayerController> var state: PlayerController.State
+  unowned let controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) async -> Void
 
   @State var isFollowing: Bool = true
@@ -63,13 +70,13 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     pins: [PinEntity],
     actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   ) {
-    self._state = .init(mode: .unowned, controller)
+    self.controller = controller
     self.pins = pins
     self.actionHandler = actionHandler
 
     self.snapshot = NSDiffableDataSourceSnapshot<String, DisplayCue>.init()&>.modify({ s in
 
-      let chunks = controller.state.cues.chunked(by: {
+      let chunks = controller.cues.chunked(by: {
         return ($1.backed.startTime - $0.backed.endTime > 0.08) == false
       })
 
@@ -84,21 +91,21 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
     var cellStates: [DisplayCue: CellState] = [:]
 
-    let focusing = state.currentCue
+    let focusing = controller.currentCue
 
     if let focusing {
       cellStates[focusing, default: .empty].isFocusing = true
     }
 
-    if let playingRange = state.playingRange {
-      for cue in state.cues {
+    if let playingRange = controller.playingRange {
+      for cue in controller.cues {
         cellStates[cue, default: .empty].playingRange = playingRange
       }
     }
 
     let pins = Set(pins.map(\.startCueRawIdentifier))
 
-    for cue in state.cues {
+    for cue in controller.cues {
 
       if pins.contains(cue.id) {
         cellStates[cue, default: .empty].hasMark = true
@@ -145,20 +152,23 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
               isFocusing: customState.isFocusing,
               isInRange: customState.playingRange?.contains(cue) ?? false,
               onSelect: {
-                if state.isRepeating {
+                if controller.isRepeating {
 
                   if var currentRange = customState.playingRange {
 
                     currentRange.select(cue: cue)
                     
-                    $state.driver.setRepeat(range: currentRange)
+                    controller.setRepeat(range: currentRange)
 
                   } else {
 
                   }
                 } else {
-                  $state.driver.move(to: cue)
+                  controller.move(to: cue)
                 }
+              },
+              onAction: { action in
+                handleAction(action, cue: cue)
               }
             )
           }
@@ -174,7 +184,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         }
       }
       .scrolling(
-        to: state.currentCue.map {
+        to: controller.currentCue.map {
           .init(
             item: $0,
             skipCondition: { scrollView in
@@ -199,6 +209,17 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     }
   }
 
+  private func handleAction(_ action: PlayerChunkAction, cue: DisplayCue) {
+    switch action {
+    case .copy(let text):
+      UIPasteboard.general.string = text
+    case .addMark(let identifier):
+      break
+    case .removeMark(let identifier):
+      break
+    }
+  }
+
 }
 
 @MainActor
@@ -208,7 +229,8 @@ func makeChunk(
   identifier: some Hashable,
   isFocusing: Bool,
   isInRange: Bool,
-  onSelect: @escaping () -> Void
+  onSelect: @escaping () -> Void,
+  onAction: @escaping (PlayerChunkAction) -> Void = { _ in }
 )
   -> some View
 {
@@ -232,7 +254,29 @@ func makeChunk(
           active: StyleModifier(opacity: 0.2)
         )
         .id(identifier)
-        .textSelection(.enabled)
+        .contextMenu {
+          Button {
+            onAction(.copy(text: text))
+          } label: {
+            Label("Copy", systemImage: "doc.on.doc")
+          }
+          
+          Divider()
+          
+          if hasMark {
+            Button {
+              onAction(.removeMark(identifier: String(describing: identifier)))
+            } label: {
+              Label("Remove Mark", systemImage: "bookmark.slash")
+            }
+          } else {
+            Button {
+              onAction(.addMark(identifier: String(describing: identifier)))
+            } label: {
+              Label("Add Mark", systemImage: "bookmark")
+            }
+          }
+        }
     }
 
     // Indicator
@@ -271,79 +315,6 @@ func makeChunk(
   )
 }
 
-private final class ViewModel: StoreDriverType {
-  
-  struct State {
-
-  }
-
-  let store: UIStateStore<State, Never>
-
-  init() {
-    self.store = .init(initialState: .init())
-  }
-
-}
-
-private final class CueCellContentView: UIView, UIContentView {
-
-  private let textLabel: UILabel = .init()
-  private let underlineView: UIView = .init()
-
-  var configuration: UIContentConfiguration {
-    didSet {
-      update(with: configuration as! CueCellContentConfiguration)
-    }
-  }
-
-  init(configuration: CueCellContentConfiguration) {
-    self.configuration = configuration
-    super.init(frame: .zero)
-
-    underlineView.backgroundColor = .white
-
-    Mondrian.buildSubviews(on: self) {
-      VStackBlock {
-        textLabel
-
-        underlineView
-          .viewBlock
-          .height(2)
-      }
-    }
-
-    update(with: configuration)
-  }
-
-  required init?(coder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
-
-  private func update(with configuration: CueCellContentConfiguration) {
-
-    textLabel.text = configuration.text
-
-  }
-
-}
-
-private struct CueCellContentConfiguration: UIContentConfiguration {
-
-  let text: String
-  let isFocusing: Bool
-  let isInRange: Bool
-
-  let accentColor: UIColor
-
-  func makeContentView() -> UIView & UIContentView {
-    CueCellContentView(configuration: self)
-  }
-
-  func updated(for state: UIConfigurationState) -> CueCellContentConfiguration {
-    return self
-  }
-}
-
 #if DEBUG
 
 #Preview("FollowButton") {
@@ -368,6 +339,9 @@ private struct CueCellContentConfiguration: UIContentConfiguration {
       isInRange: false,
       onSelect: {
 
+      },
+      onAction: { action in
+        print("Action: \(action)")
       }
     )
     Spacer()

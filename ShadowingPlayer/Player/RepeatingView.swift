@@ -7,15 +7,15 @@ struct RepeatingView: View {
 
   private let range: PlayingRange
   
-  @Reading<PlayerController> var state: PlayerController.State
+  let controller: PlayerController
   @Namespace var namespace
 
   @MainActor
   init(
     controller: PlayerController
   ) {
-    self.range = controller.state.playingRange!
-    self._state = .init(controller)
+    self.range = controller.playingRange!
+    self.controller = controller
   }
 
   var body: some View {
@@ -26,7 +26,7 @@ struct RepeatingView: View {
         Color.clear
 
         Group {
-          if let currentCue = state.currentCue {
+          if let currentCue = controller.currentCue {
             makeText("\(currentCue.backed.text)")
               .id(UUID())
               .transition(MyTransition().animation(.bouncy))
@@ -38,7 +38,7 @@ struct RepeatingView: View {
       Spacer(minLength: 0)
 
       PlayerControlPanel(
-        controller: $state.driver,
+        controller: controller,
         namespace: namespace,
         onTapPin: {
         },
