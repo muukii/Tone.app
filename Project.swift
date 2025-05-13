@@ -128,6 +128,7 @@ let project = Project(
       sources: ["Sources/AppService/**"],
       dependencies: [
         .target(name: "ActivityContent"),
+        .external(name: "StateGraph"),
         .external(name: "WhisperKit"),
         .external(name: "Verge"),
         .external(name: "Wrap"),

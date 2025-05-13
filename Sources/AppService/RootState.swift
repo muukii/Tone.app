@@ -1,52 +1,42 @@
-import Verge
 import UserDefaultsSnapshotLib
-
-@Tracking
-public struct RootState {
-  
-  @PrimitiveTrackingProperty
-  public var tokens: Tokens
-  
-  @PrimitiveTrackingProperty
-  public fileprivate(set) var openAIService: OpenAIService?
-  
-}
+import StateGraph
 
 @MainActor
-public final class RootDriver: StoreDriverType {
-    
-  public let store: Store<RootState, Never>
+public final class RootDriver {
   
+  @GraphStored
+  public var tokens: Tokens
+  
+  public var openAIService: OpenAIService? {
+    _openAIService
+  }
+  
+  @GraphStored
+  private /*fileprivate(set)*/ var _openAIService: OpenAIService?
+      
   public let service: Service
   
-  public init(openAIAPIToken: String?) {
-    self.store = .init(initialState: .init(tokens: .init(openAI: openAIAPIToken.map { 
-      .init(value: $0)
-    })))
+  public init(openAIAPIToken: String?) {      
+    self.tokens = .init(openAI: openAIAPIToken.map { .init(value: $0) })
+    self._openAIService = openAIAPIToken.map { .init(apiKey: $0) }
     self.service = .init()
   }
 
   public func setOpenAIAPIToken(_ token: String) {
     
     guard token.isEmpty == false else {
-      store.commit { state in
-        state.openAIService = nil
-        state.tokens.openAI = nil
-      }
+      _openAIService = nil
+      tokens.openAI = nil      
       return
     }
     
-    store.commit { state in
-      state.openAIService = .init(apiKey: token)
-      state.tokens.openAI = .init(value: token)
-    }
+    _openAIService = .init(apiKey: token)
+    tokens.openAI = .init(value: token)    
   }
 }
 
-@Tracking
 public struct Tokens {
 
-  @Tracking
   public struct OpenAI {
     public let value: String
     

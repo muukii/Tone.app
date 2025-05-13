@@ -1,9 +1,9 @@
 import AppService
 import FunctionalViewComponent
 import HexColorMacro
+import StateGraph
 import SwiftUI
 import SwiftUIPersistentControl
-import Verge
 import WebKit
 import os.lock
 
@@ -19,27 +19,23 @@ struct MainTabView: View {
 
   @State private var isCompact: Bool = true
 
-  @Reading<RootDriver> var rootState: RootDriver.TargetStore.State
-
-  @ReadingObject<MainViewModel> var state: MainViewModel.State
+  let rootDriver: RootDriver
+  @ObjectEdge var mainViewModel = MainViewModel()
 
   init(
     rootDriver: RootDriver
   ) {
-    self._state = .init({
-      .init()
-    })
-    self._rootState = .init(rootDriver)
+    self.rootDriver = rootDriver
   }
 
   var body: some View {
     TabView {
       AudioListView(
-        service: $rootState.driver.service,
-        openAIService: rootState.openAIService,
+        service: rootDriver.service,
+        openAIService: rootDriver.openAIService,
         onSelect: { item in
           do {
-            try $state.driver.setPlayerController(for: item)
+            try mainViewModel.setPlayerController(for: item)
             isCompact = false
           } catch {
             assertionFailure()
@@ -50,7 +46,7 @@ struct MainTabView: View {
         Label("List", systemImage: "list.bullet")
       }
       .tint(#hexColor("5A31FF", colorSpace: .displayP3))
-      .modelContainer($rootState.driver.service.modelContainer)
+      .modelContainer(rootDriver.service.modelContainer)
 
       // Add the AnkiView tab
       AnkiView()
@@ -75,23 +71,24 @@ struct MainTabView: View {
     .onChange(
       of: openAIAPIKey, initial: true,
       { oldValue, newValue in
-        $rootState.driver.setOpenAIAPIToken(newValue)
+        rootDriver.setOpenAIAPIToken(newValue)
       }
     )
     .tint(.primary)
     .overlay(
       Container(
-        isCompact: state.currentController?.object?.object == nil ? .constant(true) : $isCompact,
+        isCompact: mainViewModel.currentController == nil
+          ? .constant(true) : $isCompact,
         namespace: namespace,
         marginToBottom: 54,
         compactContent: {
           Group {
-            if let player = state.currentController?.object?.object {
+            if let player = mainViewModel.currentController {
               CompactPlayerBar(
                 controller: player,
                 namespace: namespace,
                 onDiscard: {
-                  $state.driver.discardPlayerController()
+                  mainViewModel.discardPlayerController()
                 })
             } else {
               Text("Not playing")
@@ -100,7 +97,7 @@ struct MainTabView: View {
           .frame(height: 60)
         },
         detailContent: {
-          if let player = state.currentController?.object?.object {
+          if let player = mainViewModel.currentController {
             detailContent(player: player, namespace: namespace)
           }
         },
@@ -167,7 +164,7 @@ struct MainTabView: View {
     namespace: Namespace.ID
   ) -> some View {
 
-    let service = $rootState.driver.service
+    let service = rootDriver.service
 
     if case .entity(let entity) = player.source {
       return PinEntitiesProvider(targetItem: entity) { pins in
@@ -210,48 +207,37 @@ struct WebView: UIViewRepresentable {
   }
 }
 
-final class MainViewModel: StoreDriverType {
+final class MainViewModel {
 
-  @Tracking
-  struct State {
-
-    @PrimitiveTrackingProperty
-    fileprivate(set) var currentController: ReferenceHolder<MainIsolated<PlayerController>>?
-  }
-
-  let store: Store<State, Never> = .init(initialState: .init())
+  @GraphStored
+  var currentController: PlayerController?
 
   init() {
-
+    self.currentController = nil
   }
 
   @MainActor
   func setPlayerController(for item: ItemEntity) throws {
 
-    try commit {
-
-      if let controller = $0.currentController?.object?.object {
-        if controller.source == .entity(item) {
-          return
-        }
+    if let controller = currentController {
+      if controller.source == .entity(item) {
+        return
       }
-
-      let newController = try PlayerController(item: item)
-
-      $0.currentController?.dispose()
-      $0.currentController = .init(.init(newController))
     }
 
+    let newController = try PlayerController(item: item)
+
+    currentController = newController
   }
 
   @MainActor
   func discardPlayerController() {
+    
     try? AudioSessionManager.shared.deactivate()
-    commit {
-      $0.currentController?.object?.object.pause()
-      $0.currentController?.dispose()
-      $0.currentController = nil
-    }
+
+    currentController?.pause()
+    currentController = nil
+
   }
 
 }

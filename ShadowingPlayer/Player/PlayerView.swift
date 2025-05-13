@@ -5,7 +5,6 @@ import SwiftUI
 import SwiftUIRingSlider
 import SwiftUISupport
 import SteppedSlider
-import Verge
 
 @MainActor
 protocol PlayerDisplay: View {
@@ -30,7 +29,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
     var value: String
   }
 
-  let controller: PlayerController
+  unowned let controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) async -> Void
   @State private var controllerForDetail: PlayerController?
   @State private var isDisplayingPinList: Bool = false
@@ -230,7 +229,7 @@ enum PlayerDisplayAction {
 
 struct PlayerControlPanel: View {
   
-  let controller: PlayerController
+  unowned let controller: PlayerController
   private let onTapPin: @MainActor () -> Void
   private let onTapDetail: @MainActor () -> Void
 

@@ -1,13 +1,12 @@
 import AppService
 import SwiftUI
 import SwiftUISupport
-import Verge
 
 struct RepeatingView: View {
 
   private let range: PlayingRange
   
-  let controller: PlayerController
+  unowned let controller: PlayerController
   @Namespace var namespace
 
   @MainActor

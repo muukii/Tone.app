@@ -31,14 +31,6 @@ public final class PlayerController: NSObject {
   @GraphStored
   public var pin: [PinEntity] = []
 
-  //  nonisolated public static func == (lhs: PlayerController, rhs: PlayerController) -> Bool {
-  //    lhs === rhs
-  //  }
-  //
-  //  public nonisolated func hash(into hasher: inout Hasher) {
-  //    hasher.combine(ObjectIdentifier(self))
-  //  }
-
   private var currentTimeObservation: NSKeyValueObservation?
 
   private var currentTimer: Timer?
@@ -103,8 +95,8 @@ public final class PlayerController: NSObject {
 
     super.init()
 
-    withContinuousStateGraphTracking {
-      _ = self.rate
+    withContinuousStateGraphTracking { [weak self] in
+      _ = self?.rate
     } didChange: { [weak self] in
       guard let self else { return .stop }
       self.controller.setSpeed(speed: self.rate)
