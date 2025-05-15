@@ -7,7 +7,6 @@
 
 import AVFoundation
 import AppService
-import Atomics
 import SwiftData
 import SwiftUI
 import TipKit

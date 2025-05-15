@@ -49,6 +49,7 @@ public final class PlayerController: NSObject {
   }
 
   let source: Source
+  private var subscription: AnyCancellable?
 
   public convenience init(item: Item) throws {
 
@@ -94,21 +95,14 @@ public final class PlayerController: NSObject {
     self.controller.repeating = .atEnd
 
     super.init()
-
-    withContinuousStateGraphTracking { [weak self] in
-      _ = self?.rate
-    } didChange: { [weak self] in
-      guard let self else { return .stop }
-      self.controller.setSpeed(speed: self.rate)
-      return .next
-    }
-
-    withContinuousStateGraphTracking { [controller] in
-      _ = controller.isPlaying
-    } didChange: { [weak self] in
-      guard let self else { return .stop }
-      self.isPlaying = self.controller.isPlaying
-      return .next
+    
+    subscription = withGraphTracking { 
+      $rate.onChange { [weak self] value in
+        self?.controller.setSpeed(speed: value)
+      }
+      controller.$isPlaying.onChange { [weak self] value in
+        self?.isPlaying = value
+      }
     }
 
     NotificationCenter.default.addObserver(
