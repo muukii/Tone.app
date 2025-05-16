@@ -41,6 +41,17 @@ final class AnkiService {
       Log.error("\(error)")
     }
   }
+
+  func delete(item: AnkiModels.ExpressionItem) {
+    let context = modelContainer.mainContext
+    do {
+      try context.transaction {
+        context.delete(item)
+      }
+    } catch {
+      Log.error("\(error)")
+    }
+  }
 }
 
 enum AnkiModels {

@@ -3,145 +3,85 @@ import AppService
 import SwiftData
 import SwiftUI
 
-struct AnkiView: View {
-  @Environment(\.modelContext) private var modelContext
-  @Query(sort: \AnkiModels.Tag.name) private var tags: [AnkiModels.Tag]
+struct ItemsHeaderView: View {
+
+  var body: some View {
+    VStack {
+      
+      Button("Start") {
+        
+      }
+      .buttonStyle(.borderedProminent)
+    }
+  }
+}
+
+struct AllItemsView: View {
+
   @Query(sort: \AnkiModels.ExpressionItem.front) private var allItems: [AnkiModels.ExpressionItem]
-  
-  @State private var showingAddView: Bool = false
-  @State private var editingItem: AnkiModels.ExpressionItem?
-  
+
   let ankiService: AnkiService
-  
+
   init(ankiService: AnkiService) {
     self.ankiService = ankiService
   }
-
+  
   var body: some View {
-    NavigationStack {
-
-      Group {
-        if allItems.isEmpty {
-          ContentUnavailableView {
-            Text("No Items")
-          } description: {
-            Text("Add some expressions to start.")
-          } actions: {
-            Button(action: { showingAddView = true }) {
-              Text("Add items")
-            }
-            .buttonStyle(.borderedProminent)
+    List {
+      Section(header: ItemsHeaderView()) {         
+        ForEach(allItems) { item in
+          NavigationLink(value: item) {
+            Text(item.front)
           }
-        } else {
-          List {
-
-            if tags.isEmpty == false {
-
-              // Tagごとのセクション
-              Section(header: Text("Tags")) {
-                ForEach(tags) { tag in
-                  NavigationLink(value: tag) {
-                    Text(tag.name)
-                  }
-                  .contextMenu {
-                    Button("Delete", role: .destructive) {
-                      ankiService.delete(tag: tag)
-                    }
-                  }
-                }
-              }
+          .contextMenu {
+            Button("Delete", role: .destructive) {
+              ankiService.delete(item: item)
             }
-            // Allセクション
-            Section(header: Text("All")) {
-              ForEach(allItems) { item in
-                NavigationLink(value: item) {
-                  Text(item.front)
-                }
-                .contextMenu { 
-                  Button("Edit") {
-                    editingItem = item
-                  }
-                }
-              }
-            }
-
           }
         }
       }
-      .navigationTitle("Vocabulary")
-      .toolbar {
-        ToolbarItem(placement: .primaryAction) {
-          Button(action: { showingAddView = true }) {
-            Label("Add", systemImage: "plus")
-          }
-        }
-      }
-      .sheet(isPresented: $showingAddView) {
-        VocabularyEditView { draft in
-          let newItem = AnkiModels.ExpressionItem(front: draft.front, back: draft.back)
-          modelContext.insert(newItem)
-          showingAddView = false
-        } onCancel: {
-          showingAddView = false
-        }
-      }
-      .sheet(item: $editingItem) { item in
-        VocabularyEditView(item: item) { draft in
-          item.front = draft.front
-          item.back = draft.back
-          item.tags = .init(draft.tags)
-          editingItem = nil
-        } onCancel: {
-          editingItem = nil
-        }
-      }
-      .navigationDestination(
-        for: AnkiModels.ExpressionItem.self,
-        destination: { item in
-          ExpressionDetail(item: item, speechClient: SpeechClient())
-        }
-      )
-      .navigationDestination(
-        for: AnkiModels.Tag.self,
-        destination: { tag in
-          TagDetailView(tag: tag)
-        }
-      )
     }
+    .navigationTitle("All Items")   
   }
+
 }
 
 struct TagDetailView: View {
   let tag: AnkiModels.Tag
 
-  @Query private var items: [AnkiModels.ExpressionItem]
+  @Query private var dueItems: [AnkiModels.ExpressionItem]
+  @Query private var notDueItems: [AnkiModels.ExpressionItem]
 
   init(tag: AnkiModels.Tag) {
-    let tagID = tag.persistentModelID
-    let name = tag.name
-    let predicate = #Predicate<AnkiModels.ExpressionItem> { item in
-      item.tags.contains(where: { $0.name == name })
-    }
-    self._items = Query(
-      filter: predicate,
-      sort: [SortDescriptor(\.nextReviewAt, order: .forward), SortDescriptor(\.repetition, order: .forward)]
+    let tagID = tag.id
+    let today = Date()
+    // 復習対象
+    self._dueItems = Query(
+      filter: #Predicate<AnkiModels.ExpressionItem> { item in
+        item.tags.contains(where: { $0.id == tagID }) &&
+        (item.nextReviewAt == nil || item.nextReviewAt! <= today)
+      },
+      sort: [
+        SortDescriptor(\.repetition, order: .forward)
+      ]
+    )
+    // 復習不要
+    self._notDueItems = Query(
+      filter: #Predicate<AnkiModels.ExpressionItem> { item in
+        item.tags.contains(where: { $0.id == tagID }) &&
+        (item.nextReviewAt != nil && item.nextReviewAt! > today)
+      },
+      sort: [
+        SortDescriptor(\.nextReviewAt, order: .forward),
+        SortDescriptor(\.repetition, order: .forward)
+      ]
     )
     self.tag = tag
   }
 
   var body: some View {
-    let today = Date()
-    let sortedItems = items.sorted {
-      let lhsDue = $0.nextReviewAt == nil || $0.nextReviewAt! <= today
-      let rhsDue = $1.nextReviewAt == nil || $1.nextReviewAt! <= today
-      if lhsDue != rhsDue {
-        return lhsDue
-      }
-      return $0.repetition < $1.repetition
-    }
-
-    return List {
-      ForEach(sortedItems) { item in
+    List {
+      ForEach(dueItems + notDueItems) { item in
         NavigationLink(value: item) {
           Text(item.front)
         }
@@ -342,4 +282,3 @@ struct AnkiCardStackView: View {
     }
   }
 }
-
