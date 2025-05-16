@@ -50,6 +50,7 @@ enum PlayerChunkAction {
   case copy(text: String)
   case addMark(identifier: String)
   case removeMark(identifier: String)
+  case addToFlashcard(identifier: String)
 }
 
 @MainActor
@@ -144,7 +145,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
           //        }
 
           return context.cell { cellState, customState in
-            makeChunk(
+            ChunkView(
               text: cue.backed.text,
               hasMark: customState.hasMark,
               identifier: cue.id,
@@ -216,102 +217,11 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
       break
     case .removeMark(let identifier):
       break
+    case .addToFlashcard(let identifier):
+      break
     }
   }
 
-}
-
-@MainActor
-func makeChunk(
-  text: String,
-  hasMark: Bool,
-  identifier: some Hashable,
-  isFocusing: Bool,
-  isInRange: Bool,
-  onSelect: @escaping () -> Void,
-  onAction: @escaping (PlayerChunkAction) -> Void = { _ in }
-)
-  -> some View
-{
-  VStack(spacing: 4) {
-
-    HStack {
-
-      if hasMark {
-        VStack {
-          Circle()
-            .frame(width: 6, height: 6)
-            .foregroundStyle(.secondary)
-          Spacer()
-        }
-      }
-
-      Text(text).font(.system(size: 24, weight: .bold, design: .default))
-        .modifier(
-          condition: isFocusing == false,
-          identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
-          active: StyleModifier(opacity: 0.2)
-        )
-        .id(identifier)
-        .contextMenu {
-          Button {
-            onAction(.copy(text: text))
-          } label: {
-            Label("Copy", systemImage: "doc.on.doc")
-          }
-          
-          Divider()
-          
-          if hasMark {
-            Button {
-              onAction(.removeMark(identifier: String(describing: identifier)))
-            } label: {
-              Label("Remove Mark", systemImage: "bookmark.slash")
-            }
-          } else {
-            Button {
-              onAction(.addMark(identifier: String(describing: identifier)))
-            } label: {
-              Label("Add Mark", systemImage: "bookmark")
-            }
-          }
-        }
-    }
-
-    // Indicator
-    RoundedRectangle(cornerRadius: 8, style: .continuous)
-      .fill(
-        { () -> Color in
-          if isInRange {
-            return Color.accentColor
-          }
-
-          if isFocusing {
-            return Color.primary
-          }
-
-          return Color.secondary
-
-        }()
-      )
-      .frame(height: 4)
-      .padding(.horizontal, isFocusing ? 0 : 2)
-  }
-  .animation(.bouncy, value: isFocusing)
-  .transaction(
-    value: identifier,
-    { t in
-      // prevent animation while reusing
-      t.disablesAnimations = true
-    }
-  )
-  .padding(.horizontal, 2)
-  ._onButtonGesture(
-    pressing: { isPressing in },
-    perform: {
-      onSelect()
-    }
-  )
 }
 
 #if DEBUG
@@ -325,26 +235,6 @@ func makeChunk(
   .buttonStyle(.bordered)
   .buttonBorderShape(.roundedRectangle)
   .tint(.purple)
-}
-
-#Preview("Cell") {
-  HStack {
-    Spacer()
-    makeChunk(
-      text: "Hello",
-      hasMark: true,
-      identifier: "foo",
-      isFocusing: false,
-      isInRange: false,
-      onSelect: {
-
-      },
-      onAction: { action in
-        print("Action: \(action)")
-      }
-    )
-    Spacer()
-  }
 }
 
 #endif

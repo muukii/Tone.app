@@ -20,6 +20,7 @@ struct MainTabView: View {
   @State private var isCompact: Bool = true
 
   let rootDriver: RootDriver
+  @ObjectEdge var ankiService = AnkiService()
   @ObjectEdge var mainViewModel = MainViewModel()
 
   init(
@@ -47,17 +48,14 @@ struct MainTabView: View {
       }
       .tint(#hexColor("5A31FF", colorSpace: .displayP3))
       .modelContainer(rootDriver.service.modelContainer)
-
+      
       // Add the AnkiView tab
       AnkiView()
         .tabItem {
           Label("Vocabulary", systemImage: "textformat.abc")
         }
         .tint(#hexColor("FF5722", colorSpace: .displayP3))
-        .modelContainer(for: [
-          ExpressionTag.self,
-          ExpressionItem.self,
-        ])
+        .modelContainer(ankiService.modelContainer)
 
       PlaygroundPanel()
 
@@ -167,30 +165,66 @@ struct MainTabView: View {
     let service = rootDriver.service
 
     if case .entity(let entity) = player.source {
-      return PinEntitiesProvider(targetItem: entity) { pins in
-        PlayerView<PlayerListFlowLayoutView>(
-          playerController: player,
-          pins: pins,
-          namespace: namespace,
-          actionHandler: { action in
-            do {
-              switch action {
-              case .onPin(let range):
-                try await service.makePinned(range: range, for: entity)
-              case .onTranscribeAgain:
-                try await service.updateTranscribe(for: entity)
-              case .onRename(let title):
-                try await service.renameItem(item: entity, newTitle: title)
-              }
-            } catch {
-              Log.error("\(error.localizedDescription)")
-            }
-          }
-        )
-      }
+      return EntityPlayerView(
+        service: service,
+        item: entity,
+        player: player,
+        namespace: namespace
+      )
     } else {
       fatalError()
     }
+  }
+}
+
+import SwiftData
+
+struct EntityPlayerView: View {
+  
+  @Query var pins: [PinEntity]
+
+  let item: ItemEntity
+  let namespace: Namespace.ID
+  let player: PlayerController
+  let service: Service
+  init(
+    service: Service,
+    item: ItemEntity,
+    player: PlayerController,
+    namespace: Namespace.ID
+  ) {
+    self.service = service
+    self.item = item
+    self.player = player
+    self.namespace = namespace
+    
+    let predicate = #Predicate<PinEntity> { [identifier = item.persistentModelID] in
+      $0.item?.persistentModelID == identifier
+    }
+    
+    self._pins = Query.init(filter: predicate, sort: \.createdAt)
+  }
+
+  var body: some View {
+    PlayerView<PlayerListFlowLayoutView>(
+      playerController: player,
+      pins: pins,
+      namespace: namespace,
+      actionHandler: { action in
+        do {
+          switch action {
+          case .onPin(let range):
+            try await service.makePinned(range: range, for: item)
+          case .onTranscribeAgain:
+            try await service.updateTranscribe(for: item)
+          case .onRename(let title):
+            try await service.renameItem(item: item, newTitle: title)
+          }
+        } catch {
+          Log.error("\(error.localizedDescription)")
+        }
+      }
+    )
   }
 }
 

@@ -11,18 +11,19 @@ import Foundation
 
 extension Schemas.V2 {
   @Model
-  public final class ItemTag: Hashable {
-    
+  public final class Tag: Hashable {
+        
     @Attribute(.unique)
-    public var identifier: String?
-    
     public var name: String
-    
-    @Relationship(inverse: \Item.tags)
-    public var items: [Item] = []
+        
+    public var lastUsedAt: Date?
     
     public init(name: String) {
       self.name = name
+    }
+    
+    public func markAsUsed() {
+      self.lastUsedAt = .init()
     }
   }
 }

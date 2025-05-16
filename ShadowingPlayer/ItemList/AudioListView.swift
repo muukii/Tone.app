@@ -32,6 +32,7 @@ struct AudioListView: View {
   @State private var isImportingAudioAndSRT: Bool = false
   @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
+  @State private var tagEditingItem: ItemEntity?
 
   private let onSelect: (ItemEntity) -> Void
 
@@ -61,6 +62,9 @@ struct AudioListView: View {
                 // TODO: too direct
                 modelContext.delete(item)
               }
+              Button("Tags") {
+                tagEditingItem = item
+              }
               if let openAIService {
                 Menu("Cloud Transcription") {
                   ForEach(OpenAIService.TranscriptionModel.allCases, id: \.rawValue) { model in
@@ -83,6 +87,7 @@ struct AudioListView: View {
         }
 
       }
+      .safeAreaPadding(.bottom, 50)
       .overlay {
         if itemEntities.isEmpty {
           emptyView()
@@ -164,6 +169,9 @@ struct AudioListView: View {
           )
         }
       )
+      .sheet(item: $tagEditingItem, content: { item in
+        TagEditorView(item: item)
+      })
       .sheet(
         isPresented: $isImportingYouTube,
         content: {
@@ -292,29 +300,6 @@ private struct ItemCell: View {
       Text("\(title)")
     }
   }
-}
-
-struct PinEntitiesProvider<Content: View>: View {
-
-  @Query var pinEntities: [PinEntity]
-
-  private let content: ([PinEntity]) -> Content
-
-  init(targetItem: ItemEntity, @ViewBuilder content: @escaping ([PinEntity]) -> Content) {
-
-    self.content = content
-
-    let predicate = #Predicate<PinEntity> { [identifier = targetItem.persistentModelID] in
-      $0.item?.persistentModelID == identifier
-    }
-
-    self._pinEntities = Query.init(filter: predicate, sort: \.createdAt)
-  }
-
-  var body: some View {
-    content(pinEntities)
-  }
-
 }
 
 #Preview(

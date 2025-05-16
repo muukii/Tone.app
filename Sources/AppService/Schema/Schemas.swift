@@ -6,6 +6,7 @@ public enum Schemas {}
 public typealias ActiveSchema = Schemas.V2
 
 public typealias ItemEntity = ActiveSchema.Item
+public typealias TagEntity = ActiveSchema.Tag
 public typealias PinEntity = ActiveSchema.Pin
 
 @MainActor

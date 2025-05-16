@@ -7,7 +7,7 @@ extension Schemas {
       [
         Self.Pin.self,
         Self.Item.self,
-        Self.ItemTag.self,
+        Self.Tag.self,
       ]
     }
   }
