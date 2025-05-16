@@ -1,6 +1,7 @@
 import Foundation
 import StateGraph
 import SwiftData
+import AppService
 
 final class AnkiService {
 
@@ -51,7 +52,7 @@ enum AnkiModels {
     }
     
     @Model
-    public final class Tag: Hashable {
+    public final class Tag: Hashable, TagType {
       
       @Attribute(.unique)
       public var name: String

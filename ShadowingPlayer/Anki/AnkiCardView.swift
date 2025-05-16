@@ -7,42 +7,71 @@ struct AnkiView: View {
   @Environment(\.modelContext) private var modelContext
   @Query(sort: \AnkiModels.Tag.name) private var tags: [AnkiModels.Tag]
   @Query(sort: \AnkiModels.ExpressionItem.front) private var allItems: [AnkiModels.ExpressionItem]
+  
   @State private var showingAddView: Bool = false
+  @State private var editingItem: AnkiModels.ExpressionItem?
 
   var body: some View {
     NavigationStack {
-      List {
-        if tags.isEmpty == false {
-          
-          // Tagごとのセクション
-          Section(header: Text("Tags")) {
-            ForEach(tags) { tag in
-              NavigationLink(value: tag) {
-                Text(tag.name)
+
+      Group {
+        if allItems.isEmpty {
+          ContentUnavailableView {
+            Text("No Items")
+          } description: {
+            Text("Add some expressions to start.")
+          } actions: {
+            Button(action: { showingAddView = true }) {
+              Text("Add items")
+            }
+            .buttonStyle(.borderedProminent)
+          }
+        } else {
+          List {
+
+            if tags.isEmpty == false {
+
+              // Tagごとのセクション
+              Section(header: Text("Tags")) {
+                ForEach(tags) { tag in
+                  NavigationLink(value: tag) {
+                    Text(tag.name)
+                  }
+                  .contextMenu {                      
+                    Button("Delete", role: .destructive) {
+                      // TODO:
+                    }
+                  }
+                }
               }
             }
-          }
-        }
-        // Allセクション
-        Section(header: Text("All")) {
-          ForEach(allItems) { item in
-            NavigationLink(value: item) {
-              Text(item.front)
+            // Allセクション
+            Section(header: Text("All")) {
+              ForEach(allItems) { item in
+                NavigationLink(value: item) {
+                  Text(item.front)
+                }
+                .contextMenu { 
+                  Button("Edit") {
+                    editingItem = item
+                  }
+                }
+              }
             }
+
           }
         }
-
       }
       .navigationTitle("Vocabulary")
       .toolbar {
         ToolbarItem(placement: .primaryAction) {
           Button(action: { showingAddView = true }) {
-            Label("新しい表現を追加", systemImage: "plus")
+            Label("Add", systemImage: "plus")
           }
         }
       }
       .sheet(isPresented: $showingAddView) {
-        VocabularyAddView { draft in
+        VocabularyEditView { draft in
           let newItem = AnkiModels.ExpressionItem(front: draft.front, back: draft.back)
           modelContext.insert(newItem)
           showingAddView = false
@@ -50,12 +79,68 @@ struct AnkiView: View {
           showingAddView = false
         }
       }
+      .sheet(item: $editingItem) { item in
+        VocabularyEditView(item: item) { draft in
+          item.front = draft.front
+          item.back = draft.back
+          item.tags = draft.tags
+          editingItem = nil
+        } onCancel: {
+          editingItem = nil
+        }
+      }
       .navigationDestination(
         for: AnkiModels.ExpressionItem.self,
         destination: { item in
           ExpressionDetail(item: item, speechClient: SpeechClient())
-        })
+        }
+      )
+      .navigationDestination(
+        for: AnkiModels.Tag.self,
+        destination: { tag in
+          TagDetailView(tag: tag)
+        }
+      )
     }
+  }
+}
+
+struct TagDetailView: View {
+  let tag: AnkiModels.Tag
+
+  @Query private var items: [AnkiModels.ExpressionItem]
+
+  init(tag: AnkiModels.Tag) {
+    let tagID = tag.id
+    let predicate = #Predicate<AnkiModels.ExpressionItem> { item in
+      item.tags.contains(where: { $0.id == tagID })
+    }
+    self._items = Query(
+      filter: predicate,
+      sort: [SortDescriptor(\.nextReviewAt, order: .forward), SortDescriptor(\.repetition, order: .forward)]
+    )
+    self.tag = tag
+  }
+
+  var body: some View {
+    let today = Date()
+    let sortedItems = items.sorted {
+      let lhsDue = $0.nextReviewAt == nil || $0.nextReviewAt! <= today
+      let rhsDue = $1.nextReviewAt == nil || $1.nextReviewAt! <= today
+      if lhsDue != rhsDue {
+        return lhsDue
+      }
+      return $0.repetition < $1.repetition
+    }
+
+    return List {
+      ForEach(sortedItems) { item in
+        NavigationLink(value: item) {
+          Text(item.front)
+        }
+      }
+    }
+    .navigationTitle(tag.name)
   }
 }
 
@@ -87,13 +172,19 @@ struct ExpressionDetail: View {
   }
 }
 
-struct AnkiCardView: View {
+struct AnkiCardStackView: View {
+
   @Environment(\.modelContext) private var modelContext
   @State private var reviewItems: [AnkiModels.ExpressionItem] = []
   @State private var currentIndex = 0
   @State private var showingAnswer = false
   @State private var isReviewCompleted = false
   @State private var errorMessage: String? = nil
+  @State private var showingTagEditor = false
+
+  init(items: [AnkiModels.ExpressionItem]) {
+    self.reviewItems = items
+  }
 
   var body: some View {
     VStack {
@@ -114,6 +205,19 @@ struct AnkiCardView: View {
     .onAppear {
       loadReviewItems()
     }
+    .toolbar {
+      ToolbarItem(placement: .primaryAction) {
+        Button(action: { showingTagEditor = true }) {
+          Label("Edit Tags", systemImage: "tag")
+        }
+        .disabled(reviewItems.isEmpty)
+      }
+    }
+    //    .sheet(isPresented: $showingTagEditor) {
+    //      if !reviewItems.isEmpty {
+    //        TagEditorView(tags: $reviewItems[currentIndex].tags)
+    //      }
+    //    }
   }
 
   private var completionView: some View {
@@ -180,7 +284,9 @@ struct AnkiCardView: View {
     .padding()
   }
 
-  private func difficultyButton(title: String, color: Color, grade: AnkiModels.ReviewGrade) -> some View {
+  private func difficultyButton(title: String, color: Color, grade: AnkiModels.ReviewGrade)
+    -> some View
+  {
     Button(action: {
       answer(grade)
     }) {

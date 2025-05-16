@@ -2,22 +2,29 @@ import SwiftUI
 import SwiftData
 import AppService
 
-struct TagEditorView<Target: TaggedItem>: View {
+struct TagEditorView<Tag: TagType>: View {
   
-  let item: Target
-
-  private var tags: [TagEntity] {
-    item.tags.sorted { $0.name < $1.name }
-  }
+  private var tags: [Tag]
 
   @State private var newTagText: String = ""
 
-  @Query var allTags: [TagEntity]
+  private var allTags: [Tag]
+    
+  private let onAddTag: (Tag) -> Void
+  private let onRemoveTag: (Tag) -> Void
   
   @Environment(\.modelContext) private var modelContext
 
-  init(item: Target) {
-    self.item = item
+  init(
+    currentTags: [Tag],
+    allTags: [Tag],
+    onAddTag: @escaping (Tag) -> Void,
+    onRemoveTag: @escaping (Tag) -> Void
+  ) {
+    self.tags = currentTags
+    self.allTags = allTags
+    self.onAddTag = onAddTag
+    self.onRemoveTag = onRemoveTag
   }
 
   var body: some View {
@@ -33,9 +40,7 @@ struct TagEditorView<Target: TaggedItem>: View {
                 .cornerRadius(8)
               Spacer()
               Button(role: .destructive) {
-                item.tags.removeAll {
-                  $0 === tag
-                }
+                onRemoveTag(tag)
               } label: {
                 Image(systemName: "trash")
               }
@@ -62,13 +67,13 @@ struct TagEditorView<Target: TaggedItem>: View {
     if !newTagText.isEmpty {
       let filtered = allTags.filter { tag in
         tag.name.localizedCaseInsensitiveContains(newTagText) &&
-        !item.tags.contains(where: { $0.name == tag.name })
+        !tags.contains(where: { $0.name == tag.name })
       }
       if !filtered.isEmpty {
         VStack(alignment: .leading, spacing: 0) {
           ForEach(filtered, id: \.name) { tag in
             Button {
-              item.tags.append(tag)
+              onAddTag(tag)
               newTagText = ""
             } label: {
               Text(tag.name)
@@ -92,7 +97,11 @@ struct TagEditorView<Target: TaggedItem>: View {
       TextField("Set tag", text: $newTagText)
         .padding(.horizontal, 4)
       Button("Add") {
-        addTag(rawText: newTagText)
+        
+        let tag = fetchTag(for: newTagText)
+        
+        onAddTag(tag)
+        
         newTagText = ""
       }
       .buttonStyle(.borderedProminent)
@@ -105,37 +114,22 @@ struct TagEditorView<Target: TaggedItem>: View {
     )
   }
   
-  private func addTag(rawText: String) {
+  private func fetchTag(for name: String) -> Tag {
     
-    let trimmed = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !trimmed.isEmpty else { return }
+    let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
     
-    do {
+    let currentTag = allTags.first { $0.name == trimmed }
+    
+    guard let currentTag else {
       
-      let tags = try modelContext.fetch(.init(predicate: #Predicate<TagEntity> { $0.name == trimmed }))            
-      
-      if tags.isEmpty {
-        let newTag = TagEntity(name: trimmed)
-        modelContext.insert(newTag)
-        newTag.markAsUsed()
-        item.tags.append(newTag)
-      } else {
-        
-        assert(tags.count == 1)
-        
-        let tag = tags.first!
-        
-        if item.tags.contains(where: { $0 === tag }) {
-          return
-        }
-        
-        tag.markAsUsed()
-        item.tags.append(tag)
-      }
-      
-    } catch {
-      assertionFailure("Failed to fetch tags: \(error)")
+      let newTag = Tag(name: trimmed)
+      modelContext.insert(newTag)
+      newTag.markAsUsed()
+      return newTag
     }
+    
+    return currentTag
   }
+  
 }
 
