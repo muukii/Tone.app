@@ -32,6 +32,7 @@ struct VocabularyCardView: View {
 
   let front: String
   let back: String
+  let tags: [String]
 
   let speechClient: SpeechClient
 
@@ -42,9 +43,13 @@ struct VocabularyCardView: View {
     DictionarySite(name: "Dictionary.com", url: "https://www.dictionary.com/browse/"),
   ]
 
-  init(item: AnkiModels.ExpressionItem, speechClient: SpeechClient) {
+  init(
+    item: AnkiModels.ExpressionItem,    
+    speechClient: SpeechClient
+  ) {
     self.front = item.front
     self.back = item.back
+    self.tags = item.tags.map { $0.name }
     self.speechClient = speechClient
   }
 
@@ -96,7 +101,14 @@ struct VocabularyCardView: View {
         Divider()
 
         Text(back)
-          .font(.title2)      
+          .font(.title2)   
+        
+        ForEach(tags, id: \.self) { tag in
+          Text(tag)
+            .padding(4)
+            .background(Color.gray.opacity(0.2))
+            .cornerRadius(8)
+        }
       }
       .padding()
     }

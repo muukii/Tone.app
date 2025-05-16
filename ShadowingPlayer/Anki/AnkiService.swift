@@ -3,6 +3,7 @@ import StateGraph
 import SwiftData
 import AppService
 
+@MainActor
 final class AnkiService {
 
   public let modelContainer: ModelContainer
@@ -27,6 +28,17 @@ final class AnkiService {
       // TODO: delete database if schema mismatches or consider migration
       Log.error("\(error)")
       fatalError()
+    }
+  }
+  
+  func delete(tag: AnkiModels.Tag) {
+    let context = modelContainer.mainContext
+    do {
+      try context.transaction {      
+        context.delete(tag)
+      }
+    } catch {
+      Log.error("\(error)")
     }
   }
 }
@@ -59,6 +71,8 @@ enum AnkiModels {
       
       public var lastUsedAt: Date?
       
+      public var items: [ExpressionItem] = []
+      
       public init(name: String) {
         self.name = name
       }
@@ -74,6 +88,7 @@ enum AnkiModels {
       @Attribute(.unique)
       public var identifier: String
       
+      @Relationship(deleteRule: .nullify, inverse: \Tag.items)
       public var tags: [Tag] = []
       
       public var front: String

@@ -50,7 +50,7 @@ struct MainTabView: View {
       .modelContainer(rootDriver.service.modelContainer)
       
       // Add the AnkiView tab
-      AnkiView()
+      AnkiView(ankiService: ankiService)
         .tabItem {
           Label("Vocabulary", systemImage: "textformat.abc")
         }

@@ -10,6 +10,12 @@ struct AnkiView: View {
   
   @State private var showingAddView: Bool = false
   @State private var editingItem: AnkiModels.ExpressionItem?
+  
+  let ankiService: AnkiService
+  
+  init(ankiService: AnkiService) {
+    self.ankiService = ankiService
+  }
 
   var body: some View {
     NavigationStack {
@@ -37,9 +43,9 @@ struct AnkiView: View {
                   NavigationLink(value: tag) {
                     Text(tag.name)
                   }
-                  .contextMenu {                      
+                  .contextMenu {
                     Button("Delete", role: .destructive) {
-                      // TODO:
+                      ankiService.delete(tag: tag)
                     }
                   }
                 }
@@ -83,7 +89,7 @@ struct AnkiView: View {
         VocabularyEditView(item: item) { draft in
           item.front = draft.front
           item.back = draft.back
-          item.tags = draft.tags
+          item.tags = .init(draft.tags)
           editingItem = nil
         } onCancel: {
           editingItem = nil
@@ -111,9 +117,10 @@ struct TagDetailView: View {
   @Query private var items: [AnkiModels.ExpressionItem]
 
   init(tag: AnkiModels.Tag) {
-    let tagID = tag.id
+    let tagID = tag.persistentModelID
+    let name = tag.name
     let predicate = #Predicate<AnkiModels.ExpressionItem> { item in
-      item.tags.contains(where: { $0.id == tagID })
+      item.tags.contains(where: { $0.name == name })
     }
     self._items = Query(
       filter: predicate,
@@ -336,7 +343,3 @@ struct AnkiCardStackView: View {
   }
 }
 
-#Preview {
-  AnkiView()
-    .modelContainer(for: [AnkiModels.Tag.self, AnkiModels.ExpressionItem.self])
-}
