@@ -11,5 +11,6 @@ struct ExpressionDetail: View {
       showingAnswer: true,
       onTap: {}
     )     
+    .padding(.horizontal)
   }
 } 

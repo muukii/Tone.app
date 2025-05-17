@@ -14,6 +14,7 @@ struct AnkiView: View {
   @State private var showingAddView: Bool = false
   @State private var showingImportView: Bool = false
   @State private var editingItem: AnkiModels.ExpressionItem?
+  @Namespace private var namespace
   
   let ankiService: AnkiService
   
@@ -50,6 +51,7 @@ struct AnkiView: View {
       }
       
     }
+    
   }
   
   private var emptyView: some View {
@@ -116,12 +118,13 @@ struct AnkiView: View {
         for: AnkiModels.ExpressionItem.self,
         destination: { item in
           ExpressionDetail(item: item, speechClient: SpeechClient())
+            .navigationTransition(.zoom(sourceID: item, in: namespace))
         }
       )
       .navigationDestination(
         for: ShowAllItems.self,
         destination: { _ in
-          AllItemsView(ankiService: ankiService)
+          AllItemsView(ankiService: ankiService, namespace: namespace)            
         }
       )
       .navigationDestination(

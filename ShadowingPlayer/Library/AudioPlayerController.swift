@@ -224,6 +224,10 @@ final class AudioPlayerController: NSObject {
   }
 
   private func _seek(frame: AVAudioFramePosition) {
+    
+    guard isPlaying else {
+      return
+    }
 
     print("seek \(frame)")
 

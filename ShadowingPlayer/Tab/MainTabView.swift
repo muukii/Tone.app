@@ -185,7 +185,7 @@ struct EntityPlayerView: View {
 
   let item: ItemEntity
   let namespace: Namespace.ID
-  let player: PlayerController
+  unowned let player: PlayerController
   let service: Service
   init(
     service: Service,

@@ -183,12 +183,34 @@ struct AnkiCardView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 16) {
-      HStack(alignment: .top) {
-        VStack(alignment: .leading) {
-          Text(front)
-            .font(.largeTitle.bold())
-            .textSelection(.enabled)
-            .onTapGesture { onTap() }
+
+      VStack(alignment: .leading) {
+          HStack {
+            Text(front)
+              .font(.largeTitle.bold())
+              .textSelection(.enabled)             
+            Spacer()
+            HStack(spacing: 8) {
+              Button(action: {
+                speechClient.speak(text: front)
+              }) {
+                Image(systemName: "speaker.wave.2")
+                  .font(.title)
+              }
+              .buttonStyle(.bordered)
+              Menu {
+                ForEach(dictionarySites, id: \.name) { site in
+                  Button(site.name) {
+                    openDictionary(site: site)
+                  }
+                }
+              } label: {
+                Image(systemName: "book")
+                  .font(.title)
+              }
+              .buttonStyle(.bordered)
+            }
+          }
 
           if showingAnswer, !back.isEmpty {
             Divider()
@@ -198,29 +220,10 @@ struct AnkiCardView: View {
                 .multilineTextAlignment(.center)
             }
           }
-        }
-        Spacer()
-        HStack(spacing: 8) {
-          Button(action: {
-            speechClient.speak(text: front)
-          }) {
-            Image(systemName: "speaker.wave.2")
-              .font(.title)
-          }
-          .buttonStyle(.bordered)
-          Menu {
-            ForEach(dictionarySites, id: \.name) { site in
-              Button(site.name) {
-                openDictionary(site: site)
-              }
-            }
-          } label: {
-            Image(systemName: "book")
-              .font(.title)
-          }
-          .buttonStyle(.bordered)
-        }
-      }
+        }        
+      
+      Spacer()
+
       if !tags.isEmpty {
         HStack {
           ForEach(tags, id: \.self) { tag in
@@ -232,6 +235,8 @@ struct AnkiCardView: View {
         }
       }
     }
+    .contentShape(Rectangle())
+    .onTapGesture { onTap() }
     .sheet(item: $browsingItem) { item in
       SafariView(url: item.url)
     }
