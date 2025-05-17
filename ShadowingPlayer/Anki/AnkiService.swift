@@ -196,6 +196,38 @@ enum AnkiModels {
         // 次回復習日
         nextReviewAt = Calendar.current.date(byAdding: .day, value: interval, to: now)
       }
+      
+      /// 習得度（0.0〜1.0） repetitionとeaseFactorの合成
+      public var mastery: Double {
+        let repScore = min(Double(repetition) / 10.0, 1.0)
+        let efScore = (easeFactor - 1.3) / (3.0 - 1.3)
+        return (repScore + efScore) / 2.0
+      }
+      
+      /// 習得度レベル（5段階）
+      public enum MasteryLevel: String {
+        case level1 // 覚えていない
+        case level2 // 初級
+        case level3 // 中級
+        case level4 // 上級
+        case level5 // マスター
+      }
+
+      /// mastery値から5段階のMasteryLevelを返す
+      public var masteryLevel: MasteryLevel {
+        switch mastery {
+        case 0.0..<0.2:
+          return .level1 // 覚えていない
+        case 0.2..<0.4:
+          return .level2 // 初級
+        case 0.4..<0.6:
+          return .level3 // 中級
+        case 0.6..<0.8:
+          return .level4 // 上級
+        default:
+          return .level5 // マスター
+        }
+      }
           
     }
     

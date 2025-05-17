@@ -15,7 +15,7 @@ struct AnkiItemCell: View {
 
       // 次回レビュー日
       if let nextReviewAt = item.nextReviewAt {
-        Text("次回レビュー: \(dateString(from: nextReviewAt))")
+        Text("次回レビュー: \(nextReviewAt, format: .dateTime)")
           .font(.caption)
           .foregroundColor(.blue)
       } else {
@@ -24,28 +24,25 @@ struct AnkiItemCell: View {
           .foregroundColor(.gray)
       }
 
-      // 覚えている度合い（repetition回数とeaseFactorで表示）
-      HStack(spacing: 12) {
-        Text("連続正解: \(item.repetition)回")
-          .font(.caption2)
-          .foregroundColor(.green)
-        Text(String(format: "E-Factor: %.2f", item.easeFactor))
-          .font(.caption2)
-          .foregroundColor(.orange)
-      }
+      // 覚えている度合い（masteryLevelで表示）
+      Text("習得度: \(masteryLevelLabel(for: item.masteryLevel))")
+        .font(.caption2)
+        .foregroundColor(.purple)
     }
-    .padding()
-    .background(
-      RoundedRectangle(cornerRadius: 12)
-        .stroke(Color.gray, lineWidth: 1)
-    )
-    .padding(.horizontal)
   }
 
-  private func dateString(from date: Date) -> String {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .none
-    return formatter.string(from: date)
+  private func masteryLevelLabel(for level: AnkiModels.V1.ExpressionItem.MasteryLevel) -> String {
+    switch level {
+    case .level1:
+      return "覚えていない"
+    case .level2:
+      return "初級"
+    case .level3:
+      return "中級"
+    case .level4:
+      return "上級"
+    case .level5:
+      return "マスター"
+    }
   }
 }
