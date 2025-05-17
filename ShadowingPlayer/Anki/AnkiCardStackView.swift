@@ -1,3 +1,4 @@
+import SafariServices
 import SwiftData
 import SwiftUI
 
@@ -11,6 +12,7 @@ struct AnkiCardStackView: View {
   @State private var showingAnswer = false
   @State private var isReviewCompleted = false
   @State private var errorMessage: String? = nil
+  @ObjectEdge var speechClient: SpeechClient = .init()
 
   init(
     items: [AnkiModels.ExpressionItem],
@@ -62,6 +64,8 @@ struct AnkiCardStackView: View {
       AnkiCardView(
         front: item.front,
         back: item.back,
+        tags: item.tags?.compactMap { $0.name } ?? [],
+        speechClient: speechClient,
         showingAnswer: showingAnswer,
         onTap: { showingAnswer.toggle() }
       )
@@ -118,30 +122,118 @@ struct AnkiCardStackView: View {
 }
 
 struct AnkiCardView: View {
-  let front: String?
-  let back: String?
+
+  struct BrowserItem: Identifiable {
+
+    var id: String {
+      url.absoluteString
+    }
+
+    let url: URL
+  }
+
+  let front: String
+  let back: String
+  let tags: [String]
+  let speechClient: SpeechClient
   let showingAnswer: Bool
   let onTap: () -> Void
 
+  @State private var browsingItem: BrowserItem?
+
+  private let dictionarySites = [
+    DictionarySite(name: "Thesaurus", url: "https://www.thesaurus.com/browse/"),
+    DictionarySite(name: "Dictionary.com", url: "https://www.dictionary.com/browse/"),
+  ]
+
+  init(
+    item: AnkiModels.ExpressionItem,
+    speechClient: SpeechClient,
+    showingAnswer: Bool,
+    onTap: @escaping () -> Void
+  ) {
+    self.front = item.front ?? ""
+    self.back = item.back ?? ""
+    self.tags = item.tags?.compactMap { $0.name } ?? []
+    self.speechClient = speechClient
+    self.showingAnswer = showingAnswer
+    self.onTap = onTap
+  }
+
+  init(
+    front: String?,
+    back: String?,
+    tags: [String] = [],
+    speechClient: SpeechClient,
+    showingAnswer: Bool,
+    onTap: @escaping () -> Void
+  ) {
+    self.front = front ?? ""
+    self.back = back ?? ""
+    self.tags = tags
+    self.speechClient = speechClient
+    self.showingAnswer = showingAnswer
+    self.onTap = onTap
+  }
+
+  private func openDictionary(site: DictionarySite) {
+    let encodedWord = front.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+    browsingItem = .init(url: URL(string: site.url + encodedWord)!)
+  }
+
   var body: some View {
-    VStack(spacing: 20) {
-      Text(front ?? "")
-        .font(.system(size: 38, weight: .bold))
-        .multilineTextAlignment(.center)
-        .padding(.top)
-      if showingAnswer {
-        Divider()
-        ScrollView {
-          Text(back ?? "")
-            .font(.title2)
-            .multilineTextAlignment(.center)
+    VStack(alignment: .leading, spacing: 16) {
+      HStack(alignment: .top) {
+        VStack(alignment: .leading) {
+          Text(front)
+            .font(.largeTitle.bold())
+            .textSelection(.enabled)
+            .onTapGesture { onTap() }
+
+          if showingAnswer, !back.isEmpty {
+            Divider()
+            ScrollView {
+              Text(back)
+                .font(.title2)
+                .multilineTextAlignment(.center)
+            }
+          }
+        }
+        Spacer()
+        HStack(spacing: 8) {
+          Button(action: {
+            speechClient.speak(text: front)
+          }) {
+            Image(systemName: "speaker.wave.2")
+              .font(.title)
+          }
+          .buttonStyle(.bordered)
+          Menu {
+            ForEach(dictionarySites, id: \.name) { site in
+              Button(site.name) {
+                openDictionary(site: site)
+              }
+            }
+          } label: {
+            Image(systemName: "book")
+              .font(.title)
+          }
+          .buttonStyle(.bordered)
         }
       }
-      Spacer()
+      if !tags.isEmpty {
+        HStack {
+          ForEach(tags, id: \.self) { tag in
+            Text(tag)
+              .padding(4)
+              .background(Color.gray.opacity(0.2))
+              .cornerRadius(8)
+          }
+        }
+      }
     }
-    .contentShape(Rectangle())
-    .onTapGesture {
-      onTap()
+    .sheet(item: $browsingItem) { item in
+      SafariView(url: item.url)
     }
   }
 }
@@ -151,6 +243,8 @@ struct AnkiCardView: View {
   AnkiCardView(
     front: "こんにちは",
     back: "Hello",
+    tags: [],
+    speechClient: .init(),
     showingAnswer: showingAnswer,
     onTap: {
       showingAnswer.toggle()
@@ -164,6 +258,8 @@ struct AnkiCardView: View {
   AnkiCardView(
     front: "こんにちは",
     back: "Hello",
+    tags: [],
+    speechClient: .init(),
     showingAnswer: false,
     onTap: {}
   )
@@ -175,6 +271,8 @@ struct AnkiCardView: View {
   AnkiCardView(
     front: "こんにちは",
     back: "Hello",
+    tags: [],
+    speechClient: .init(),
     showingAnswer: true,
     onTap: {}
   )
