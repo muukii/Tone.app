@@ -11,7 +11,6 @@ final class AnkiService {
   private let currentSchema: Schema = .init(versionedSchema: AnkiModels.ActiveSchema.self)
 
   public init() {
-    let databasePath = URL.documentsDirectory.appending(path: "anki-database")
     do {
       // got an error in migration plan
       //      let container = try ModelContainer(
@@ -19,9 +18,12 @@ final class AnkiService {
       //        migrationPlan: ServiceSchemaMigrationPlan.self,
       //        configurations: .init(url: databasePath)
       //      )
+      
+      let configuration = ModelConfiguration("anki-database", cloudKitDatabase: .private("anki"))
+      
       let container = try ModelContainer(
         for: currentSchema,
-        configurations: .init(url: databasePath)
+        configurations: configuration
       )
       self.modelContainer = container
     } catch {
@@ -77,12 +79,11 @@ enum AnkiModels {
     @Model
     public final class Tag: Hashable, TagType {
       
-      @Attribute(.unique)
-      public var name: String
+      public var name: String?
       
       public var lastUsedAt: Date?
       
-      public var items: [ExpressionItem] = []
+      public var items: [ExpressionItem]?
       
       public init(name: String) {
         self.name = name
@@ -96,14 +97,13 @@ enum AnkiModels {
     @Model
     public final class ExpressionItem {
       
-      @Attribute(.unique)
-      public var identifier: String
+      public var identifier: String?
       
       @Relationship(deleteRule: .nullify, inverse: \Tag.items)
-      public var tags: [Tag] = []
+      public var tags: [Tag]?
       
-      public var front: String
-      public var back: String
+      public var front: String?
+      public var back: String?
       
       // https://super-memory.com/english/ol/sm2.htm
       // spaced repetition用プロパティ

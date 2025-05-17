@@ -21,48 +21,58 @@ struct AnkiView: View {
     self.ankiService = ankiService
   }
   
+  private var list: some View {
+    List {
+      
+      if tags.isEmpty == false {
+        
+        // Tagごとのセクション
+        Section(header: Text("Tags")) {
+          ForEach(tags) { tag in
+            if let name = tag.name {
+              NavigationLink(value: tag) {
+                Text(name)
+              }
+              .contextMenu {
+                Button("Delete", role: .destructive) {
+                  ankiService.delete(tag: tag)
+                }
+              }
+            }
+          }
+        }
+      } 
+      // Allセクション
+      Section(header: Text("All")) {
+        NavigationLink(value: ShowAllItems()) { 
+          Text("All Items")
+        }
+      }
+      
+    }
+  }
+  
+  private var emptyView: some View {
+    ContentUnavailableView {
+      Text("No Items")
+    } description: {
+      Text("Add some expressions to start.")
+    } actions: {
+      Button(action: { showingAddView = true }) {
+        Text("Add items")
+      }
+      .buttonStyle(.borderedProminent)
+    }    
+  }
+  
   var body: some View {
     NavigationStack {
       
       Group {
         if allItems.isEmpty {
-          ContentUnavailableView {
-            Text("No Items")
-          } description: {
-            Text("Add some expressions to start.")
-          } actions: {
-            Button(action: { showingAddView = true }) {
-              Text("Add items")
-            }
-            .buttonStyle(.borderedProminent)
-          }
-        } else {
-          List {
-            
-            if tags.isEmpty == false {
-              
-              // Tagごとのセクション
-              Section(header: Text("Tags")) {
-                ForEach(tags) { tag in
-                  NavigationLink(value: tag) {
-                    Text(tag.name)
-                  }
-                  .contextMenu {
-                    Button("Delete", role: .destructive) {
-                      ankiService.delete(tag: tag)
-                    }
-                  }
-                }
-              }
-            } 
-            // Allセクション
-            Section(header: Text("All")) {
-              NavigationLink(value: ShowAllItems()) { 
-                Text("All Items")
-              }
-            }
-            
-          }
+          emptyView
+       } else {
+          list
         }
       }
       .navigationTitle("Vocabulary")

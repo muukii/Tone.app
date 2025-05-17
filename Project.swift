@@ -17,13 +17,12 @@ let project = Project(
     ),
     xcodeProjectName: "Tone"
   ),
-  packages: [
-  ],
+  packages: [],
   settings: .settings(
     base: [
       "CURRENT_PROJECT_VERSION": "1",
       "MARKETING_VERSION": "$(APP_SHORT_VERSION)",
-      "SWIFT_VERSION" : "6.0"
+      "SWIFT_VERSION": "6.0",
     ],
     configurations: [
       .debug(name: "Debug", settings: [:], xcconfig: "./xcconfigs/Project.xcconfig"),
@@ -45,7 +44,7 @@ let project = Project(
           "UIApplicationSupportsMultipleScenes": "YES",
           "UISceneConfigurations": [:],
         ],
-        "NSSupportsLiveActivities" : "YES",
+        "NSSupportsLiveActivities": "YES",
         "UILaunchScreen": ["UILaunchScreen": [:]],
         "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
         "NSMicrophoneUsageDescription":
@@ -57,7 +56,9 @@ let project = Project(
         "ShadowingPlayer/Preview Content/**",
         "ShadowingPlayer/PrivacyInfo.xcprivacy",
       ],
-      entitlements: .dictionary([:]),
+      entitlements: .dictionary([
+        "com.apple.developer.icloud-services": ["CloudKit"]
+      ]),
       dependencies: [
         .external(name: "YouTubeKit"),
         .external(name: "AudioKit"),
@@ -68,7 +69,7 @@ let project = Project(
         .external(name: "SteppedSlider"),
         .external(name: "ObjectEdge"),
         .external(name: "Alamofire"),
-                
+
         .target(name: "AppService"),
         .target(name: "ActivityContent"),
         .target(name: "LiveActivity"),
@@ -93,30 +94,30 @@ let project = Project(
       ])
     ),
 
-      .target(
-        name: "LiveActivity",
-        destinations: .iOS,
-        product: .appExtension,
-        bundleId: "app.muukii.tone.LiveActivity",
-        infoPlist: .dictionary([
-          "CFBundleName": "$(PRODUCT_NAME)",
-          "CFBundleDisplayName": "Tone Widget",
-          "CFBundleShortVersionString": "$(APP_SHORT_VERSION)",
-          "CFBundleIdentifier": "$PRODUCT_BUNDLE_IDENTIFIER",
-          "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
-          "CFBundleExecutable": "$(EXECUTABLE_NAME)",
-          "NSExtension": [
-            "NSExtensionPointIdentifier": "com.apple.widgetkit-extension"
-          ],
-        ]),
-        sources: ["Sources/LiveActivity/**"],
-        dependencies: [
-          .target(name: "ActivityContent"),
+    .target(
+      name: "LiveActivity",
+      destinations: .iOS,
+      product: .appExtension,
+      bundleId: "app.muukii.tone.LiveActivity",
+      infoPlist: .dictionary([
+        "CFBundleName": "$(PRODUCT_NAME)",
+        "CFBundleDisplayName": "Tone Widget",
+        "CFBundleShortVersionString": "$(APP_SHORT_VERSION)",
+        "CFBundleIdentifier": "$PRODUCT_BUNDLE_IDENTIFIER",
+        "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
+        "CFBundleExecutable": "$(EXECUTABLE_NAME)",
+        "NSExtension": [
+          "NSExtensionPointIdentifier": "com.apple.widgetkit-extension"
         ],
-        settings: .settings(base: [
-          "DEVELOPMENT_TEAM": "KU2QEJ9K3Z",
-        ])
-      ),
+      ]),
+      sources: ["Sources/LiveActivity/**"],
+      dependencies: [
+        .target(name: "ActivityContent")
+      ],
+      settings: .settings(base: [
+        "DEVELOPMENT_TEAM": "KU2QEJ9K3Z"
+      ])
+    ),
 
     .target(
       name: "AppService",
@@ -143,8 +144,7 @@ let project = Project(
       bundleId: "app.muukii.Speaking.ActivityContent",
       deploymentTargets: .iOS("17.0"),
       sources: ["Sources/ActivityContent/**"],
-      dependencies: [
-      ]
+      dependencies: []
     ),
   ],
   schemes: [

@@ -30,12 +30,14 @@ struct AllItemsView: View {
     List {
       Section(header: ItemsHeaderView()) {         
         ForEach(allItems) { item in
-          NavigationLink(value: item) {
-            Text(item.front)
-          }
-          .contextMenu {
-            Button("Delete", role: .destructive) {
-              ankiService.delete(item: item)
+          if let front = item.front {            
+            NavigationLink(value: item) {
+              Text(front)
+            }
+            .contextMenu {
+              Button("Delete", role: .destructive) {
+                ankiService.delete(item: item)
+              }
             }
           }
         }
@@ -53,12 +55,12 @@ struct TagDetailView: View {
   @Query private var notDueItems: [AnkiModels.ExpressionItem]
 
   init(tag: AnkiModels.Tag) {
-    let tagID = tag.id
+    let tagName = tag.name
     let today = Date()
     // 復習対象
     self._dueItems = Query(
       filter: #Predicate<AnkiModels.ExpressionItem> { item in
-        item.tags.contains(where: { $0.id == tagID }) &&
+        item.tags!.contains(where: { $0.name == tagName }) == true &&
         (item.nextReviewAt == nil || item.nextReviewAt! <= today)
       },
       sort: [
@@ -68,7 +70,7 @@ struct TagDetailView: View {
     // 復習不要
     self._notDueItems = Query(
       filter: #Predicate<AnkiModels.ExpressionItem> { item in
-        item.tags.contains(where: { $0.id == tagID }) &&
+        item.tags!.contains(where: { $0.name == tagName }) == true &&
         (item.nextReviewAt != nil && item.nextReviewAt! > today)
       },
       sort: [
@@ -83,11 +85,11 @@ struct TagDetailView: View {
     List {
       ForEach(dueItems + notDueItems) { item in
         NavigationLink(value: item) {
-          Text(item.front)
+          Text(item.front!)
         }
       }
     }
-    .navigationTitle(tag.name)
+    .navigationTitle(tag.name ?? "")
   }
 }
 
@@ -197,13 +199,13 @@ struct AnkiCardStackView: View {
           .cornerRadius(16)
           .shadow(radius: 5)
         VStack(spacing: 20) {
-          Text(item.front)
+          Text(item.front!)
             .font(.system(size: 38, weight: .bold))
             .multilineTextAlignment(.center)
             .padding(.top)
           if showingAnswer {
             Divider()
-            Text(item.back)
+            Text(item.back!)
               .font(.title2)
               .multilineTextAlignment(.center)
           }

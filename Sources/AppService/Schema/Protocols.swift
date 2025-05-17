@@ -6,7 +6,7 @@ public protocol TaggedItem: SwiftData.PersistentModel {
 
 public protocol TagType: SwiftData.PersistentModel {
   
-  var name: String { get set }  
+  var name: String? { get set }  
   
   func markAsUsed()
   

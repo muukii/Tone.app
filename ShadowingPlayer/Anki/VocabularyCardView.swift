@@ -47,9 +47,9 @@ struct VocabularyCardView: View {
     item: AnkiModels.ExpressionItem,    
     speechClient: SpeechClient
   ) {
-    self.front = item.front
-    self.back = item.back
-    self.tags = item.tags.map { $0.name }
+    self.front = item.front ?? ""
+    self.back = item.back ?? ""
+    self.tags = item.tags?.map { $0.name ?? "" } ?? []
     self.speechClient = speechClient
   }
 

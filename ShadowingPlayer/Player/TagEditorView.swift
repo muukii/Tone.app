@@ -32,17 +32,19 @@ struct TagEditorView<Tag: TagType>: View {
       VStack(alignment: .leading, spacing: 12) {
         List {
           ForEach(tags, id: \.name) { tag in
-            HStack {
-              Text(tag.name)
-                .padding(.vertical, 4)
-                .padding(.horizontal, 8)
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(8)
-              Spacer()
-              Button(role: .destructive) {
-                onRemoveTag(tag)
-              } label: {
-                Image(systemName: "trash")
+            if let name = tag.name {
+              HStack {
+                Text(name)
+                  .padding(.vertical, 4)
+                  .padding(.horizontal, 8)
+                  .background(Color.gray.opacity(0.2))
+                  .cornerRadius(8)
+                Spacer()
+                Button(role: .destructive) {
+                  onRemoveTag(tag)
+                } label: {
+                  Image(systemName: "trash")
+                }
               }
             }
           }
@@ -66,22 +68,24 @@ struct TagEditorView<Tag: TagType>: View {
   private var suggestionView: some View {
     if !newTagText.isEmpty {
       let filtered = allTags.filter { tag in
-        tag.name.localizedCaseInsensitiveContains(newTagText) &&
+        tag.name?.localizedCaseInsensitiveContains(newTagText) == true &&
         !tags.contains(where: { $0.name == tag.name })
       }
       if !filtered.isEmpty {
         VStack(alignment: .leading, spacing: 0) {
           ForEach(filtered, id: \.name) { tag in
-            Button {
-              onAddTag(tag)
-              newTagText = ""
-            } label: {
-              Text(tag.name)
-                .padding(.vertical, 4)
-                .padding(.horizontal, 8)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            if let name = tag.name {
+              Button {
+                onAddTag(tag)
+                newTagText = ""
+              } label: {
+                Text(name)
+                  .padding(.vertical, 4)
+                  .padding(.horizontal, 8)
+                  .frame(maxWidth: .infinity, alignment: .leading)
+              }
+              .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
           }
         }
         .background(Color(.systemBackground))

@@ -30,7 +30,7 @@ struct VocabularyEditView: View {
   ) {
 
     if let item {
-      self.tags = .init(item.tags)
+      self.tags = .init(item.tags ?? [])
     } else {
       self.tags = []
     }
@@ -69,7 +69,7 @@ struct VocabularyEditView: View {
       .navigationBarTitleDisplayMode(.inline)
       .sheet(isPresented: $isSelectingTag) {
         TagEditorView(
-          currentTags: tags.sorted { $0.name < $1.name },
+          currentTags: tags.sorted { ($0.name ?? "") < ($1.name ?? "") },
           allTags: allTags,
           onAddTag: { tag in
             tags.insert(tag)
