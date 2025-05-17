@@ -54,6 +54,46 @@ final class AnkiService {
       Log.error("\(error)")
     }
   }
+
+  /// 本日レビューすべきアイテムを（必要ならタグで絞って）返す
+  func itemsForReviewToday(tags: Set<AnkiModels.Tag>? = nil, referenceDate: Date = Date()) -> [AnkiModels.ExpressionItem] {
+    let context = modelContainer.mainContext
+    let allItems: [AnkiModels.ExpressionItem]
+    do {
+      let descriptor = FetchDescriptor<AnkiModels.ExpressionItem>()
+      allItems = try context.fetch(descriptor)
+    } catch {
+      Log.error("fetch error: \(error)")
+      return []
+    }
+    
+    let filtered = allItems.filter { item in
+      let isDue = item.nextReviewAt == nil || item.nextReviewAt! <= referenceDate
+      let matchesTag: Bool = {
+        guard let tags = tags, !tags.isEmpty else { return true }
+        guard let itemTags = item.tags else { return false }
+        return itemTags.contains(where: { tags.contains($0) })
+      }()
+      return isDue && matchesTag
+    }
+    
+    let sorted = filtered.sorted { (a, b) in
+      (a.nextReviewAt ?? .distantPast) < (b.nextReviewAt ?? .distantPast)
+    }
+    
+    return sorted
+  }
+  
+  func answer(grade: AnkiModels.ReviewGrade, for item: AnkiModels.ExpressionItem) {    
+    do {
+      let context = modelContainer.mainContext    
+      item.updateReview(grade: grade)
+      try context.save()
+    } catch {
+      assertionFailure("Failed to save: \(error)")
+    }
+  }
+  
 }
 
 enum AnkiModels {
@@ -110,8 +150,17 @@ enum AnkiModels {
       public var easeFactor: Double = 2.5  // E-Factor（最小1.3）
       public var interval: Int = 0  // 次回までの間隔（日数）
       public var repetition: Int = 0  // 連続正解回数
+      
       public var lastReviewedAt: Date?  // 最終復習日
       public var nextReviewAt: Date?  // 次回復習予定日
+      
+      public var wrappedLastReviewedAt: Date {
+        lastReviewedAt ?? Date.init(timeIntervalSince1970: 0)
+      }
+       
+      public var wrappedNextReviewAt: Date {
+        nextReviewAt ?? Date.init(timeIntervalSince1970: 0)
+      }
       
       public init(front: String, back: String) {
         self.identifier = UUID().uuidString
@@ -147,21 +196,7 @@ enum AnkiModels {
         // 次回復習日
         nextReviewAt = Calendar.current.date(byAdding: .day, value: interval, to: now)
       }
-      
-      /// SwiftDataで本日レビューすべきアイテムを取得する
-      public static func fetchItemsToReviewToday(
-        context: ModelContext, referenceDate: Date = Date()
-      ) throws -> [ExpressionItem] {
-        let descriptor = FetchDescriptor<ExpressionItem>(
-          predicate: #Predicate { item in
-            item.nextReviewAt == nil || item.nextReviewAt! <= referenceDate
-          },
-          sortBy: [
-            SortDescriptor(\.nextReviewAt, order: .forward)
-          ]
-        )
-        return try context.fetch(descriptor)
-      }
+          
     }
     
   }
