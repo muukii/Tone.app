@@ -1,18 +1,18 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct AnkiCardStackView: View {
 
   @Environment(\.modelContext) private var modelContext
-  
+
   let reviewItems: [AnkiModels.ExpressionItem]
   let service: AnkiService
   @State private var currentIndex = 0
   @State private var showingAnswer = false
   @State private var isReviewCompleted = false
-  @State private var errorMessage: String? = nil  
+  @State private var errorMessage: String? = nil
 
-  init(    
+  init(
     items: [AnkiModels.ExpressionItem],
     service: AnkiService
   ) {
@@ -35,7 +35,7 @@ struct AnkiCardStackView: View {
           .foregroundColor(.secondary)
       }
     }
-    .padding()      
+    .padding()
   }
 
   private var completionView: some View {
@@ -45,8 +45,8 @@ struct AnkiCardStackView: View {
         .fontWeight(.bold)
       Text("全てのカードを確認しました。")
         .font(.title2)
-      .buttonStyle(.borderedProminent)
-      .padding(.top)
+        .buttonStyle(.borderedProminent)
+        .padding(.top)
     }
   }
 
@@ -59,32 +59,13 @@ struct AnkiCardStackView: View {
         .padding()
       Spacer()
       // カード表示
-      ZStack {
-        Rectangle()
-          .fill(Color(.systemBackground))
-          .cornerRadius(16)
-          .shadow(radius: 5)
-        VStack(spacing: 20) {
-          Text(item.front!)
-            .font(.system(size: 38, weight: .bold))
-            .multilineTextAlignment(.center)
-            .padding(.top)
-          if showingAnswer {
-            Divider()
-            Text(item.back!)
-              .font(.title2)
-              .multilineTextAlignment(.center)
-          }
-        }
-        .padding()
-        .frame(maxWidth: .infinity)
-      }
-      .frame(height: 300)
-      .padding()
-      .onTapGesture {
-        showingAnswer.toggle()
-      }
-      Spacer()
+      AnkiCardView(
+        front: item.front,
+        back: item.back,
+        showingAnswer: showingAnswer,
+        onTap: { showingAnswer.toggle() }
+      )
+      .frame(maxHeight: .infinity)
       // 3択ボタン
       difficultyButtons
     }
@@ -120,9 +101,9 @@ struct AnkiCardStackView: View {
       }
     }
   }
-  
-  private func answer(_ grade: AnkiModels.ReviewGrade) {        
-    let item = reviewItems[currentIndex]    
+
+  private func answer(_ grade: AnkiModels.ReviewGrade) {
+    let item = reviewItems[currentIndex]
     service.answer(grade: grade, for: item)
     moveToNextCard()
   }
@@ -134,4 +115,69 @@ struct AnkiCardStackView: View {
       isReviewCompleted = true
     }
   }
-} 
+}
+
+struct AnkiCardView: View {
+  let front: String?
+  let back: String?
+  let showingAnswer: Bool
+  let onTap: () -> Void
+
+  var body: some View {
+    VStack(spacing: 20) {
+      Text(front ?? "")
+        .font(.system(size: 38, weight: .bold))
+        .multilineTextAlignment(.center)
+        .padding(.top)
+      if showingAnswer {
+        Divider()
+        ScrollView {
+          Text(back ?? "")
+            .font(.title2)
+            .multilineTextAlignment(.center)
+        }
+      }
+      Spacer()
+    }
+    .contentShape(Rectangle())
+    .onTapGesture {
+      onTap()
+    }
+  }
+}
+
+#Preview {
+  @Previewable @State var showingAnswer = false
+  AnkiCardView(
+    front: "こんにちは",
+    back: "Hello",
+    showingAnswer: showingAnswer,
+    onTap: {
+      showingAnswer.toggle()
+    }
+  )
+  .padding()
+  .background(Color.gray.opacity(0.1))
+}
+
+#Preview("表のみ") {
+  AnkiCardView(
+    front: "こんにちは",
+    back: "Hello",
+    showingAnswer: false,
+    onTap: {}
+  )
+  .padding()
+  .background(Color.gray.opacity(0.1))
+}
+
+#Preview("表＋裏") {
+  AnkiCardView(
+    front: "こんにちは",
+    back: "Hello",
+    showingAnswer: true,
+    onTap: {}
+  )
+  .padding()
+  .background(Color.gray.opacity(0.1))
+}

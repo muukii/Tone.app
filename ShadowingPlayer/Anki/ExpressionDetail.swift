@@ -9,6 +9,5 @@ struct ExpressionDetail: View {
       item: item,
       speechClient: speechClient
     )
-    .navigationTitle("Vocabulary Detail")
   }
 } 
