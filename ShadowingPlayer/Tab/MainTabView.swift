@@ -59,8 +59,8 @@ struct MainTabView: View {
         .modelContainer(ankiService.modelContainer)
 
 //      PlaygroundPanel()
-      PlayAndRecordTestView()
-      VoiceRecorderView()
+//      PlayAndRecordTestView()
+//      VoiceRecorderView()
 
       WebView(url: URL(string: "https://www.thesaurus.com/browse/apple")!)
         .tabItem {

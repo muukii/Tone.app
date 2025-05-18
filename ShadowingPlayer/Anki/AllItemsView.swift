@@ -25,6 +25,14 @@ struct AllItemsView: View {
 
   var body: some View {
     List {
+      Section(
+        header: ItemsHeaderView(
+          isPlaying: $isPlaying,
+          namespace: namespace
+        )
+      ) {
+
+      }
       Section(header: Text("本日復習対象")) {
         ForEach(reviewItems) { item in
           NavigationLink(value: item) {
@@ -62,10 +70,12 @@ struct AllItemsView: View {
     }
     .onChange(of: allItems, initial: true) { _, newItems in
       let todayItems = Set(ankiService.itemsForReviewToday())
-      reviewItems = newItems
+      reviewItems =
+        newItems
         .filter { todayItems.contains($0) }
         .sorted { ($0.nextReviewAt ?? .distantPast) < ($1.nextReviewAt ?? .distantPast) }
-      nonReviewItems = newItems
+      nonReviewItems =
+        newItems
         .filter { !todayItems.contains($0) }
         .sorted { ($0.nextReviewAt ?? .distantPast) < ($1.nextReviewAt ?? .distantPast) }
     }
