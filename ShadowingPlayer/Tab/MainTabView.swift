@@ -2,6 +2,7 @@ import AppService
 import FunctionalViewComponent
 import HexColorMacro
 import StateGraph
+import SwiftData
 import SwiftUI
 import SwiftUIPersistentControl
 import WebKit
@@ -48,7 +49,7 @@ struct MainTabView: View {
       }
       .tint(#hexColor("5A31FF", colorSpace: .displayP3))
       .modelContainer(rootDriver.service.modelContainer)
-      
+
       // Add the AnkiView tab
       AnkiView(ankiService: ankiService)
         .tabItem {
@@ -177,10 +178,8 @@ struct MainTabView: View {
   }
 }
 
-import SwiftData
-
 struct EntityPlayerView: View {
-  
+
   @Query var pins: [PinEntity]
 
   let item: ItemEntity
@@ -197,11 +196,11 @@ struct EntityPlayerView: View {
     self.item = item
     self.player = player
     self.namespace = namespace
-    
+
     let predicate = #Predicate<PinEntity> { [identifier = item.persistentModelID] in
       $0.item?.persistentModelID == identifier
     }
-    
+
     self._pins = Query.init(filter: predicate, sort: \.createdAt)
   }
 
@@ -266,7 +265,7 @@ final class MainViewModel {
 
   @MainActor
   func discardPlayerController() {
-    
+
     try? AudioSessionManager.shared.deactivate()
 
     currentController?.pause()

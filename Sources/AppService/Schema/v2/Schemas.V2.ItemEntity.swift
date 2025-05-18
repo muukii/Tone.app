@@ -3,7 +3,7 @@ import Foundation
 
 extension Schemas.V2 {
   @Model
-  public final class Item: Hashable, TaggedItem {
+  public final class Item: Hashable {
     
     @Attribute(.unique)
     public var identifier: String?
@@ -18,7 +18,7 @@ extension Schemas.V2 {
     @Relationship(deleteRule: .cascade, inverse: \Pin.item)
     public var pinItems: [Pin] = []
     
-    public var tags: [Tag] = []
+    public var tags: [Tag]?
     
     public var audioFileRelativePath: RelativePath? {
       audioFilePath.map { .init($0) }

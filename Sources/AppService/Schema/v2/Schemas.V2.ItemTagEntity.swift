@@ -11,10 +11,9 @@ import Foundation
 
 extension Schemas.V2 {
   @Model
-  public final class Tag: Hashable {
+  public final class Tag: Hashable, TagType {
         
-    @Attribute(.unique)
-    public var name: String
+    public var name: String?
         
     public var lastUsedAt: Date?
     

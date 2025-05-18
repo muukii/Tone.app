@@ -51,16 +51,35 @@ struct PlayerView<Display: PlayerDisplay>: View {
     self.pins = pins
     self.namespace = namespace
   }
+  
+  private var header: some View {
+    HStack {
+      Text("Player")
+        .font(.title)
+        .bold()
+        .foregroundStyle(.primary)
+      Spacer()
+      Button {
+        controllerForDetail = nil
+      } label: {
+        Image(systemName: "xmark")
+          .foregroundStyle(.primary)
+      }
+    }
+  }
 
   var body: some View {
 
     //
     ZStack {
-      Display(
-        controller: controller,
-        pins: pins,
-        actionHandler: actionHandler
-      )
+      VStack {
+        header
+        Display(
+          controller: controller,
+          pins: pins,
+          actionHandler: actionHandler
+        )
+      }
     }
     .safeAreaInset(
       edge: .bottom,

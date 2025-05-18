@@ -33,6 +33,8 @@ struct AudioListView: View {
   @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
   @State private var tagEditingItem: ItemEntity?
+  
+  @Query var allTags: [TagEntity]
 
   private let onSelect: (ItemEntity) -> Void
 
@@ -55,7 +57,7 @@ struct AudioListView: View {
             Button {
               onSelect(item)
             } label: {
-              ItemCell(item: item)
+              AudioItemCell(item: item)
             }
             .contextMenu(menuItems: {
               Button("Delete", role: .destructive) {
@@ -169,9 +171,20 @@ struct AudioListView: View {
           )
         }
       )
-//      .sheet(item: $tagEditingItem, content: { item in
-//        TagEditorView(item: item)
-//      })
+      .sheet(
+        item: $tagEditingItem,
+        content: { item in
+          TagEditorView(
+            currentTags: item.tags ?? [],
+            allTags: allTags,
+            onAddTag: { tag in
+              item.tags?.append(tag)
+            },
+            onRemoveTag: { tag in
+              item.tags?.removeAll(where: { $0 == tag })
+            }
+          )
+      })
       .sheet(
         isPresented: $isImportingYouTube,
         content: {
@@ -280,36 +293,5 @@ private func emptyView() -> some View {
     Text("You can add your own contents from the import button on the top right corner.")
   } actions: {
     // No Actions for now
-  }
-}
-
-private struct ItemCell: View {
-
-  let title: String
-
-  init(item: ItemEntity) {
-    self.title = item.title
-  }
-
-  init(title: String) {
-    self.title = title
-  }
-
-  var body: some View {
-    VStack(alignment: .leading) {
-      Text("\(title)")
-    }
-  }
-}
-
-#Preview(
-  "Empty",
-  body: {
-    emptyView()
-  })
-
-#Preview {
-  Form {
-    ItemCell(title: "Hello, Tone.")
   }
 }
