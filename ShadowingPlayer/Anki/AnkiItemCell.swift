@@ -1,31 +1,44 @@
 import SwiftUI
 
 struct AnkiItemCell: View {
-  let item: AnkiModels.ExpressionItem
+  
+  let front: String?
+  let nextReviewAt: Date?
+  let masteryLevel: AnkiModels.ExpressionItem.MasteryLevel
 
   init(item: AnkiModels.ExpressionItem) {
-    self.item = item
+    self.front = item.front
+    self.nextReviewAt = item.nextReviewAt
+    self.masteryLevel = item.masteryLevel    
+  }
+  
+  init(
+    front: String?,
+    nextReviewAt: Date?,
+    masteryLevel: AnkiModels.V1.ExpressionItem.MasteryLevel
+  ) {
+    self.front = front
+    self.nextReviewAt = nextReviewAt
+    self.masteryLevel = masteryLevel
   }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       // Front
-      Text(item.front ?? "")
+      Text(front ?? "")
         .font(.headline)
 
       // 次回レビュー日
-      if let nextReviewAt = item.nextReviewAt {
-        Text("次回レビュー: \(nextReviewAt, format: .dateTime)")
-          .font(.caption)
-          .foregroundColor(.blue)
-      } else {
-        Text("次回レビュー: 未定")
-          .font(.caption)
-          .foregroundColor(.gray)
+      if let nextReviewAt = nextReviewAt {       
+//        TagView(tag: "\(duration(for: nextReviewAt)) h")
+        Text(
+          timerInterval: Date.now...nextReviewAt,
+          showsHours: true
+        )
       }
 
       // 覚えている度合い（masteryLevelで表示）
-      Text("習得度: \(masteryLevelLabel(for: item.masteryLevel))")
+      Text("習得度: \(masteryLevelLabel(for: masteryLevel))")
         .font(.caption2)
         .foregroundColor(.purple)
     }
@@ -45,4 +58,27 @@ struct AnkiItemCell: View {
       return "マスター"
     }
   }
+  
+  private func duration(for date: Date) -> Int {
+    let now = Date()
+    let calendar = Calendar.current
+    let components = calendar.dateComponents([.hour], from: now, to: date)
+    return components.hour ?? 0
+  }
+}
+
+#Preview("Level3") {
+  AnkiItemCell(
+    front: "Hello",
+    nextReviewAt: Date().addingTimeInterval(3600),
+    masteryLevel: .level3
+  )
+}
+
+#Preview("No Review Date") {
+  AnkiItemCell(
+    front: "World",
+    nextReviewAt: nil,
+    masteryLevel: .level1
+  )
 }

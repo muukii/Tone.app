@@ -1,0 +1,42 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# AnkiItemCell Viewのリファクタリングルール
+
+[ShadowingPlayer/Anki/AnkiItemCell.swift](mdc:ShadowingPlayer/Anki/AnkiItemCell.swift) では、SwiftUIのViewでモデル（item）をそのままプロパティとして保持せず、イニシャライザで必要なプロパティだけを個別に取り出してViewのプロパティとして保持するリファクタリングを行っています。
+
+## ポイント
+- Viewのイニシャライザは `init(item: AnkiModels.ExpressionItem)` のまま。
+- Viewのプロパティとして `item` を持たず、`item` から必要な値だけを各プロパティ（例: front, nextReviewAt, masteryLevel）として保持する。
+- bodyや他のメソッドでは、これらの個別プロパティを使う。
+- これにより、Viewのモックやプレビューが容易になる。
+- プレビューには `#Preview` マクロを活用し、直接プロパティを渡して様々な状態を確認できるようにする。
+
+## 例
+```swift
+struct AnkiItemCell: View {
+  let front: String?
+  let nextReviewAt: Date?
+  let masteryLevel: AnkiModels.V1.ExpressionItem.MasteryLevel
+
+  init(item: AnkiModels.ExpressionItem) {
+    self.front = item.front
+    self.nextReviewAt = item.nextReviewAt
+    self.masteryLevel = item.masteryLevel
+  }
+  // ...
+}
+```
+
+#Previewマクロの例：
+```swift
+#Preview("Level3") {
+    AnkiItemCell(
+        front: "Hello",
+        nextReviewAt: Date().addingTimeInterval(3600),
+        masteryLevel: .level3
+    )
+}
+```
