@@ -140,6 +140,10 @@ public final class PlayerController: NSObject {
     range.select(cue: cue)
     setRepeat(range: range)
   }
+  
+  public func startRecording() {
+    controller.startRecording()
+  }
 
   private func resetCommandCenter() {
 

@@ -58,7 +58,9 @@ struct MainTabView: View {
         .tint(#hexColor("FF5722", colorSpace: .displayP3))
         .modelContainer(ankiService.modelContainer)
 
-      PlaygroundPanel()
+//      PlaygroundPanel()
+      PlayAndRecordTestView()
+      VoiceRecorderView()
 
       WebView(url: URL(string: "https://www.thesaurus.com/browse/apple")!)
         .tabItem {

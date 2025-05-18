@@ -118,10 +118,10 @@ struct VoiceRecorderView: View {
 
     }
     .onAppear {
-//      controller.activate()
+      controller.activate()
     }
     .onDisappear {
-//      controller.deactivate()
+      controller.deactivate()
     }
 
   }

@@ -2,10 +2,16 @@ import AVFoundation
 
 @MainActor
 public final class AudioSessionManager {
+
+  public enum Mode {
+    case playback
+    case playAndRecord
+    case disabled
+  }
   
   public static let shared = AudioSessionManager()
   
-  private var isActivated: Bool = false
+  private var mode: Mode = .disabled
   
   private var instance: AVAudioSession {
     AVAudioSession.sharedInstance()
@@ -25,10 +31,12 @@ public final class AudioSessionManager {
     } catch {
       Log.error("Failed to set audio session category: \(error)")
     }
+    mode = .playback
+
   }
   
-  public func activate() throws {
-    guard !isActivated else { return }
+  public func activate() throws {    
+    guard mode != .disabled else { return }
     
     try instance.setActive(false, options: [])
 
@@ -41,15 +49,35 @@ public final class AudioSessionManager {
     
     try instance.setActive(true, options: [])
     
-    isActivated = true
+    mode = .playback
+  }
+  
+  public func activateForRecording() throws {
+    
+    guard mode != .disabled else {
+      return
+    }
+    
+    try instance.setActive(false, options: [])
+    
+    try instance.setCategory(
+      .playAndRecord,
+      mode: .spokenAudio,
+      policy: .default,
+      options: []
+    )
+    
+    try instance.setActive(true, options: [])
+    
+    mode = .playAndRecord
   }
   
   public func deactivate() throws {
-    guard isActivated else { return }
+    guard mode != .disabled else { return }
     
     setInitialState()
     
-    isActivated = false
+    mode = .disabled
   }
   
 } 

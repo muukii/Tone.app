@@ -39,9 +39,11 @@ struct RepeatingView: View {
       PlayerControlPanel(
         controller: controller,
         namespace: namespace,
-        onTapPin: {
-        },
-        onTapDetail: {})
+        onAction: { action in
+          print(action)
+        }
+      )
+
     }
 
   }

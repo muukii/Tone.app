@@ -87,20 +87,22 @@ struct PlayerView<Display: PlayerDisplay>: View {
         PlayerControlPanel(
           controller: controller,
           namespace: namespace,
-          onTapPin: {
-
-            guard let range = controller.playingRange else {
-              return
+          onAction: { action in
+            switch action {
+            case .onTapPin:
+              guard let range = controller.playingRange else {
+                return
+              }
+              
+              Task {
+                await actionHandler(.onPin(range: range))
+              }
+            case .onTapDetail:
+              controllerForDetail = controller
+            case .onTapRecord:
+              controller.startRecording()
             }
-
-            Task {
-              await actionHandler(.onPin(range: range))
-            }
-
-          },
-          onTapDetail: {
-            controllerForDetail = controller
-          }
+          }         
         )
       }
     )
@@ -247,23 +249,26 @@ enum PlayerDisplayAction {
 }
 
 struct PlayerControlPanel: View {
+
+  enum Action {
+    case onTapPin
+    case onTapDetail
+    case onTapRecord
+  }
   
   unowned let controller: PlayerController
-  private let onTapPin: @MainActor () -> Void
-  private let onTapDetail: @MainActor () -> Void
+  private let onAction: @MainActor (Action) -> Void
 
   let namespace: Namespace.ID
 
   init(
     controller: PlayerController,
     namespace: Namespace.ID,
-    onTapPin: @escaping @MainActor () -> Void,
-    onTapDetail: @escaping @MainActor () -> Void
+    onAction: @escaping @MainActor (Action) -> Void
   ) {
     self.controller = controller
     self.namespace = namespace
-    self.onTapPin = onTapPin
-    self.onTapDetail = onTapDetail
+    self.onAction = onAction
   }
 
   private static func fractionLabel(fraction: CGFloat) -> String {
@@ -338,7 +343,7 @@ struct PlayerControlPanel: View {
 
         // pin
         Button {
-          onTapPin()
+          onAction(.onTapPin)
         } label: {
           Image(systemName: "pin.fill")
             .resizable()
@@ -352,7 +357,7 @@ struct PlayerControlPanel: View {
 
         // detail
         Button {
-          onTapDetail()
+          onAction(.onTapDetail)
         } label: {
           Image(systemName: "rectangle.portrait.and.arrow.forward")
             .resizable()
@@ -363,6 +368,12 @@ struct PlayerControlPanel: View {
         .frame(square: 50)
         .buttonStyle(PlainButtonStyle())
         .disabled(controller.isRepeating == false)
+        
+        Button("Record") {
+          onAction(.onTapRecord)
+        }
+        .frame(square: 50)
+        .buttonStyle(PlainButtonStyle())
 
       }
 

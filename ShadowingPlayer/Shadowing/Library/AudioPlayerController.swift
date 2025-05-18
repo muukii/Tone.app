@@ -1,4 +1,4 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import MediaPlayer
 import StateGraph
 
@@ -9,6 +9,33 @@ enum AudioPlayerControllerError: Error {
 @MainActor
 final class AudioPlayerController: NSObject {
 
+  struct Recording {
+
+    let startFrame: AVAudioFramePosition
+
+    let filePath: URL
+
+    let writingFile: AVAudioFile
+
+    init(
+      startFrame: AVAudioFramePosition,
+      destination: URL,
+      format: AVAudioFormat
+    ) throws {
+
+      self.startFrame = startFrame
+
+      let outputFile = try AVAudioFile(
+        forWriting: destination,
+        settings: format.settings
+      )
+
+      self.writingFile = outputFile
+      self.filePath = destination
+
+    }
+  }
+
   enum Repeating {
     case atEnd
     case range(start: Double, end: Double)
@@ -16,14 +43,26 @@ final class AudioPlayerController: NSObject {
 
   @GraphStored
   var isPlaying: Bool = false
-  var isAppInBackground: Bool = false
 
-  private var engine: AVAudioEngine?
+  var isRecording: Bool {
+    currentRecording != nil
+  }
+
+  @GraphStored
+  var recordings: [Recording] = []
+
+  private var currentRecording: Recording? = nil
+
+  //  var isAppInBackground: Bool = false
+
+  private var currentActiveEngine: AVAudioEngine?
+
   private let audioPlayer = AVAudioPlayerNode()
 
   private let pitchControl = AVAudioUnitTimePitch()
 
   private let file: AVAudioFile
+
   private var currentTimerForLoop: Timer?
 
   var repeating: Repeating? = nil
@@ -35,7 +74,7 @@ final class AudioPlayerController: NSObject {
     guard file.length > 0 else {
       throw AudioPlayerControllerError.fileLengthIsZero
     }
-    
+
     super.init()
 
     // Listen for audio session interruptions (e.g., incoming call)
@@ -63,20 +102,84 @@ final class AudioPlayerController: NSObject {
   @objc private func handleInterruption() {
     pause()
   }
-  
+
   /// Handle audio route changes, such as headphones being unplugged or Bluetooth device removed
   @objc private func handleRouteChange(_ notification: Notification) {
     guard let info = notification.userInfo,
-          let reasonValue = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
-          let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue),
-          reason == .oldDeviceUnavailable else {
+      let reasonValue = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
+      let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue),
+      reason == .oldDeviceUnavailable
+    else {
       return
     }
     pause()
   }
 
   func prepare() throws {
-    try engine?.start()
+    try currentActiveEngine?.start()
+  }
+
+  func stopRecording() {
+
+    guard let currentRecording, let currentActiveEngine else {
+      return
+    }
+
+    currentActiveEngine.inputNode.removeTap(onBus: 0)
+    currentRecording.writingFile.close()
+
+    recordings.append(currentRecording)
+
+    self.currentRecording = nil
+
+  }
+
+  func startRecording() {
+
+    guard isPlaying, let currentActiveEngine else {
+      return
+    }
+
+    guard isRecording == false else {
+      return
+    }
+
+    pause()
+
+    try! AudioSessionManager.shared.activateForRecording()
+
+    do {
+      let format = currentActiveEngine.inputNode.outputFormat(forBus: 0)
+
+      let recording = try Recording.init(
+        startFrame: currentFrame ?? 0,
+        destination: URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf"),
+        format: format
+      )
+
+      self.currentRecording = recording
+
+      let outputFile = recording.writingFile
+
+      print("outputFile: \(recording.filePath)")
+
+      currentActiveEngine.inputNode.installTap(
+        onBus: 0,
+        bufferSize: 1024,
+        format: format
+      ) { @Sendable (buffer, time) in
+        do {
+          try outputFile.write(from: buffer)
+        } catch {
+          print("録音エラー: \(error)")
+        }
+      }
+
+      try play()
+    } catch {
+      assertionFailure()
+    }
+
   }
 
   func setSpeed(speed: Double) {
@@ -85,35 +188,35 @@ final class AudioPlayerController: NSObject {
 
     pitchControl.rate = Float(speed)
   }
-  
+
   private func createEngine() {
-    
+
     // making AVAudioEngine triggers AVAudioSession to start
-    
+
     let format = file.processingFormat
 
     let newEngine = AVAudioEngine()
-    self.engine = newEngine
-    
+    self.currentActiveEngine = newEngine
+
     newEngine.attach(pitchControl)
     newEngine.attach(audioPlayer)
-    
+
     let mainMixer = newEngine.mainMixerNode
-    
+
     newEngine.connect(audioPlayer, to: pitchControl, format: format)
-    newEngine.connect(pitchControl, to: mainMixer, format: format)    
+    newEngine.connect(pitchControl, to: mainMixer, format: format)
   }
 
   func play() throws {
-    
-    if engine == nil {
+
+    if currentActiveEngine == nil {
       createEngine()
     }
 
     isPlaying = true
 
-    if engine?.isRunning == false {
-      try engine?.start()
+    if currentActiveEngine?.isRunning == false {
+      try currentActiveEngine?.start()
     }
 
     audioPlayer.stop()
@@ -172,6 +275,7 @@ final class AudioPlayerController: NSObject {
     currentTimerForLoop = nil
     offsetSampleTime = (currentFrame ?? 0) + offsetSampleTime
     audioPlayer.stop()
+    currentActiveEngine?.stop()
   }
 
   private var currentPlayerTime: AVAudioTime? {
@@ -224,7 +328,7 @@ final class AudioPlayerController: NSObject {
   }
 
   private func _seek(frame: AVAudioFramePosition) {
-    
+
     guard isPlaying else {
       return
     }
@@ -282,32 +386,28 @@ extension AVAudioFile {
 
 #if DEBUG && canImport(SwiftUI)
 
-import SwiftUI
-import AppService
-
-@MainActor
-private struct AudioPlayerControllerPreview: View {
-
-  let player: AudioPlayerController = try! .init(
-    file: .init(forReading: Item.social.audioFileURL)  //,
-    //    overlappingFile: .init(forReading: Item.overwhelmed.audioFileURL)
-  )
-
-  var body: some View {
-    VStack {
-      Button("Play") {
-        try? player.play()
-      }
-      Button("Stop") {
-        player.pause()
-      }
-    }
-  }
-
-}
-
-#Preview {
-  AudioPlayerControllerPreview()
-}
+  import SwiftUI
+  import AppService
+//
+//@MainActor
+//private struct AudioPlayerControllerPreview: View {
+//
+//  let player: AudioPlayerController = try! .init(
+//    file: .init(forReading: Item.social.audioFileURL)  //,
+//    //    overlappingFile: .init(forReading: Item.overwhelmed.audioFileURL)
+//  )
+//
+//  var body: some View {
+//    VStack {
+//      Button("Play") {
+//        try? player.play()
+//      }
+//      Button("Stop") {
+//        player.pause()
+//      }
+//    }
+//  }
+//
+//}
 
 #endif
