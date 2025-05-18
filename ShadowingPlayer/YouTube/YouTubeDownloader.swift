@@ -6,11 +6,12 @@ enum YouTubeDownloaderError: Error {
 }
 
 enum YouTubeDownloader {
+  
+  static let session = URLSession(configuration: .default)
 
   /// returns audio file in temporary dir
   static func run(url: URL) async throws -> URL {
 
-    let session = URLSession(configuration: .ephemeral)
 
     let video = YouTube(url: url)
 
@@ -31,7 +32,10 @@ enum YouTubeDownloader {
 
     let delegate = TaskDeletage()
 
-    let request = URLRequest(url: stream.url)
+    let request = URLRequest(
+      url: stream.url,
+      cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
+    )
 
     let (downloadedTempURL, _) = try await session.download(for: request, delegate: delegate)
 

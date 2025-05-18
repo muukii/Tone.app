@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/johnmai-dev/Jinja",
       "state" : {
-        "revision" : "bbddb92fc51ae420b87300298370fd1dfc308f73",
-        "version" : "1.1.1"
+        "revision" : "8879db488805122463b6521486d4c0a557fb56dc",
+        "version" : "1.2.0"
       }
     },
     {
@@ -52,24 +52,6 @@
       "state" : {
         "branch" : "main",
         "revision" : "b26edaa5a469bc5fd58f9afe37d257ca1b3771e0"
-      }
-    },
-    {
-      "identity" : "normalization",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/VergeGroup/Normalization",
-      "state" : {
-        "revision" : "6b5ebbe680da5359ae2a3fc3e53a144069bd6845",
-        "version" : "1.2.0"
-      }
-    },
-    {
-      "identity" : "rxswift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ReactiveX/RxSwift.git",
-      "state" : {
-        "revision" : "5dd1907d64f0d36f158f61a466bab75067224893",
-        "version" : "6.9.0"
       }
     },
     {
@@ -100,15 +82,6 @@
       }
     },
     {
-      "identity" : "swift-atomics",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-atomics.git",
-      "state" : {
-        "revision" : "cd142fd2f64be2100422d658e7411e39489da985",
-        "version" : "1.2.0"
-      }
-    },
-    {
       "identity" : "swift-collections",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections",
@@ -118,30 +91,12 @@
       }
     },
     {
-      "identity" : "swift-concurrency-task-manager",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/VergeGroup/swift-concurrency-task-manager",
-      "state" : {
-        "revision" : "340cf14e0282977deeeb436605d1810ce4f4fbc9",
-        "version" : "1.4.0"
-      }
-    },
-    {
       "identity" : "swift-macro-hex-color",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/muukii/swift-macro-hex-color",
       "state" : {
         "revision" : "a8b1c2ea0ef134c4047b944aefe70df232c0cefc",
         "version" : "0.2.0"
-      }
-    },
-    {
-      "identity" : "swift-macro-state-struct",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/VergeGroup/swift-macro-state-struct",
-      "state" : {
-        "revision" : "ab5621e756d40aa48a8b6a7c5f6300632c48a1d0",
-        "version" : "2.3.0"
       }
     },
     {
@@ -169,6 +124,15 @@
       "state" : {
         "revision" : "8a83416cc00ab07a5de9991e6ad817a9b8588d20",
         "version" : "0.1.15"
+      }
+    },
+    {
+      "identity" : "swift-typed-identifier",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/swift-typed-identifier.git",
+      "state" : {
+        "revision" : "284340409ba47858a1b3c353dcef9c21303953db",
+        "version" : "2.0.3"
       }
     },
     {
@@ -235,24 +199,6 @@
       }
     },
     {
-      "identity" : "typedcomparator",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/VergeGroup/TypedComparator",
-      "state" : {
-        "revision" : "337ce0e573e7637ddd29392cb88c3b852f042c8e",
-        "version" : "1.0.0"
-      }
-    },
-    {
-      "identity" : "typedidentifier",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/VergeGroup/TypedIdentifier",
-      "state" : {
-        "revision" : "284340409ba47858a1b3c353dcef9c21303953db",
-        "version" : "2.0.3"
-      }
-    },
-    {
       "identity" : "userdefaultssnapshot",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/VergeGroup/UserDefaultsSnapshot",
@@ -284,8 +230,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/alexeichhorn/YouTubeKit",
       "state" : {
-        "revision" : "e7dbaa332ff190e85241bb90e9a26f3ce4993458",
-        "version" : "0.2.6"
+        "revision" : "e1895c72f0edff9acd6b41977d2ad9c6245e8306",
+        "version" : "0.2.7"
       }
     }
   ],

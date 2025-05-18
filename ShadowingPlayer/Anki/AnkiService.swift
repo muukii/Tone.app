@@ -19,7 +19,7 @@ final class AnkiService {
       //        configurations: .init(url: databasePath)
       //      )
       
-      let configuration = ModelConfiguration("anki-database", cloudKitDatabase: .private("anki"))
+      let configuration = ModelConfiguration.init("anki-database", cloudKitDatabase: .private("iCloud.app.muukii.anki"))
       
       let container = try ModelContainer(
         for: currentSchema,

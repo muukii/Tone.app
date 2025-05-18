@@ -4,7 +4,7 @@ import SwiftSubtitles
 
 @MainActor
 public final class Service {
-
+  
   public let modelContainer: ModelContainer
 
   public init() {
@@ -17,9 +17,13 @@ public final class Service {
 //        migrationPlan: ServiceSchemaMigrationPlan.self,
 //        configurations: .init(url: databasePath)
 //      )
+      let configuration = ModelConfiguration.init(
+        url: databasePath,
+        cloudKitDatabase: .none
+      )
       let container = try ModelContainer(
         for: currentSchema,
-        configurations: .init(url: databasePath)
+        configurations: configuration
       )
       self.modelContainer = container
     } catch {

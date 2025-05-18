@@ -57,7 +57,8 @@ let project = Project(
         "ShadowingPlayer/PrivacyInfo.xcprivacy",
       ],
       entitlements: .dictionary([
-        "com.apple.developer.icloud-services": ["CloudKit"]
+        "com.apple.developer.icloud-services": ["CloudKit"],
+        "com.apple.developer.icloud-container-identifiers": ["iCloud.app.muukii.tone"],
       ]),
       dependencies: [
         .external(name: "YouTubeKit"),
@@ -69,6 +70,7 @@ let project = Project(
         .external(name: "SteppedSlider"),
         .external(name: "ObjectEdge"),
         .external(name: "Alamofire"),
+        .sdk(name: "CloudKit", type: .framework),
 
         .target(name: "AppService"),
         .target(name: "ActivityContent"),
