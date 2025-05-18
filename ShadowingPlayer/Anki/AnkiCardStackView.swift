@@ -1,12 +1,13 @@
 import SafariServices
 import SwiftData
 import SwiftUI
+import ObjectEdge
 
 struct AnkiCardStackView: View {
 
   @Environment(\.modelContext) private var modelContext
 
-  let reviewItems: [AnkiModels.ExpressionItem]
+  @ObjectEdge var reviewItems: [AnkiModels.ExpressionItem]
   let service: AnkiService
   @State private var currentIndex = 0
   @State private var showingAnswer = false
@@ -15,10 +16,10 @@ struct AnkiCardStackView: View {
   @ObjectEdge var speechClient: SpeechClient = .init()
 
   init(
-    items: [AnkiModels.ExpressionItem],
+    items: @escaping () -> [AnkiModels.ExpressionItem],
     service: AnkiService
   ) {
-    self.reviewItems = items
+    self._reviewItems = .init(wrappedValue: items())
     self.service = service
   }
 

@@ -48,7 +48,7 @@ struct AllItemsView: View {
     .navigationTitle("All Items")
     .sheet(isPresented: $isPlaying) {
       AnkiCardStackView(
-        items: ankiService.itemsForReviewToday(),
+        items: { ankiService.itemsForReviewToday() },
         service: ankiService
       )
       .navigationTransition(.zoom(sourceID: "A", in: namespace))
