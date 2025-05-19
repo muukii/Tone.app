@@ -8,8 +8,10 @@ enum AudioPlayerControllerError: Error {
 
 @MainActor
 final class AudioPlayerController: NSObject {
-
-  struct Recording {
+  
+ 
+    
+  final class Recording {
 
     let startFrame: AVAudioFramePosition
 
@@ -33,6 +35,10 @@ final class AudioPlayerController: NSObject {
       self.writingFile = outputFile
       self.filePath = destination
 
+    }
+    
+    func makeReadingFile() throws -> AVAudioFile {
+      try AVAudioFile(forReading: filePath)
     }
   }
 
@@ -66,6 +72,8 @@ final class AudioPlayerController: NSObject {
   private var currentTimerForLoop: Timer?
 
   var repeating: Repeating? = nil
+  
+  var cancellables: Set<AnyCancellable> = .init()
 
   init(file: AVAudioFile) throws {
 
@@ -91,6 +99,13 @@ final class AudioPlayerController: NSObject {
       name: AVAudioSession.routeChangeNotification,
       object: AVAudioSession.sharedInstance()
     )
+    
+    withGraphTracking {
+      $recordings.onChange { value in
+        print("recordings", value)
+      }
+    }
+    .store(in: &cancellables)
   }
 
   deinit {
@@ -133,6 +148,42 @@ final class AudioPlayerController: NSObject {
     self.currentRecording = nil
 
   }
+  
+  private func addRecordingToPlay(recording: Recording) {
+    
+    guard let currentActiveEngine else {
+      return
+    }
+    
+    do {
+      let file = try recording.makeReadingFile()
+                  
+      let audioPlayer = AVAudioPlayerNode()
+      
+      currentActiveEngine.attach(audioPlayer)
+      
+      currentActiveEngine.connect(
+        audioPlayer,
+        to: currentActiveEngine.mainMixerNode,
+        format: file.processingFormat
+      )
+      
+      audioPlayer
+        .scheduleFile(
+          recording.writingFile,
+          at: .init(
+            sampleTime: file.framePosition,
+            atRate: file.processingFormat.sampleRate
+          )
+        )
+      
+      audioPlayer.play()
+    } catch {
+      assertionFailure()
+    }
+    
+  }
+    
 
   func startRecording() {
 
@@ -143,6 +194,9 @@ final class AudioPlayerController: NSObject {
     guard isRecording == false else {
       return
     }
+
+    // take a value before pause   
+    let currentFrame = self.currentFrame
 
     pause()
 
@@ -363,16 +417,16 @@ final class AudioPlayerController: NSObject {
 
 extension AVAudioFile {
 
-  fileprivate var duration: TimeInterval {
+  var duration: TimeInterval {
     Double(length) / processingFormat.sampleRate
   }
 
-  fileprivate func frame(at position: TimeInterval) -> AVAudioFramePosition {
+  func frame(at position: TimeInterval) -> AVAudioFramePosition {
     let sampleRate = processingFormat.sampleRate
     return AVAudioFramePosition(sampleRate * position)
   }
 
-  fileprivate func frames(from position: TimeInterval) -> AVAudioFrameCount {
+  func frames(from position: TimeInterval) -> AVAudioFrameCount {
     let sampleRate = processingFormat.sampleRate
 
     let startFrame = AVAudioFramePosition(sampleRate * position)

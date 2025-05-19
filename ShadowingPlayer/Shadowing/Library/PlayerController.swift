@@ -16,6 +16,10 @@ public final class PlayerController: NSObject {
   public var isRepeating: Bool {
     playingRange != nil
   }
+  
+  public var isRecording: Bool {
+    controller.isRecording
+  }
 
   @GraphStored
   public var isPlaying: Bool = false
@@ -139,6 +143,10 @@ public final class PlayerController: NSObject {
     var range = makeRepeatingRange()
     range.select(cue: cue)
     setRepeat(range: range)
+  }
+  
+  public func stopRecording() {
+    controller.stopRecording()
   }
   
   public func startRecording() {
