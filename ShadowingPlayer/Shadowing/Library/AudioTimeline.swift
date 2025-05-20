@@ -1,64 +1,214 @@
 import AVFoundation
+import Foundation
+
+struct HostTime: CustomDebugStringConvertible {
+  
+  let value: UInt64
+  
+  static var zero: HostTime {
+    HostTime(value: 0)
+  }
+  
+  /// 現在のhostTimeを取得
+  static var now: HostTime {
+    HostTime(value: mach_absolute_time())
+  }
+  
+  /// 秒からhostTimeへ変換
+  static func from(seconds: TimeInterval) -> HostTime {
+    var timebase = mach_timebase_info_data_t()
+    mach_timebase_info(&timebase)
+    let nanos = seconds * 1_000_000_000.0
+    let hostTime = UInt64(nanos * Double(timebase.denom) / Double(timebase.numer))
+    return HostTime(value: hostTime)
+  }
+  
+  /// hostTimeを秒に変換
+  var seconds: TimeInterval {
+    var timebase = mach_timebase_info_data_t()
+    mach_timebase_info(&timebase)
+    let nanos = Double(value) * Double(timebase.numer) / Double(timebase.denom)
+    return nanos / 1_000_000_000.0
+  }
+  
+  /// AVAudioTimeへの変換
+  var avAudioTime: AVAudioTime {
+    AVAudioTime(hostTime: value)
+  }
+  
+  func adding(by duration: Duration) -> HostTime {
+    let seconds = duration.timeInterval
+    let added = HostTime.from(seconds: seconds)
+    return HostTime(
+      value: self.value + added.value
+    )
+  }
+  
+  var debugDescription: String {
+    self.seconds.description
+  }
+}
+
+extension HostTime {
+  
+  static func + (lhs: HostTime, rhs: HostTime) -> HostTime {
+    HostTime(value: lhs.value + rhs.value)
+  }
+  
+  static func - (lhs: HostTime, rhs: HostTime) -> HostTime {
+    HostTime(value: lhs.value - rhs.value)
+  }
+  
+  /// HostTimeの差分をDurationで取得
+  func durationSince(_ other: HostTime) -> Duration {
+    let seconds = self.seconds - other.seconds
+    return .seconds(seconds)
+  }
+  
+  /// HostTimeの差分をTimeIntervalで取得
+  func timeIntervalSince(_ other: HostTime) -> TimeInterval {
+    self.seconds - other.seconds
+  }
+}
+
+extension Duration {
+  var timeInterval: TimeInterval {
+    Double(components.seconds) + Double(components.attoseconds) / 1_000_000_000_000_000_000.0
+  }
+}
+
 
 final class AudioTimeline {
   
+
+  
   final class Track {
     
+    enum Offset {
+      case time(TimeInterval)
+    }
+    
     var name: String
-    let node: AVAudioPlayerNode
+    let player: AVAudioPlayerNode
+    let pitchControl: AVAudioUnitTimePitch = AVAudioUnitTimePitch()
     let file: AVAudioFile
     
-    var offset: TimeInterval
+    var offset: Offset?
     
     var duration: TimeInterval {
       Double(file.length) / file.processingFormat.sampleRate
     }
     
+    private var pausedTime: AVAudioTime?
+    
     init(
       name: String,
       file: AVAudioFile,
-      offset: TimeInterval
+      offset: Offset?
     ) {
       self.name = name
-      self.node = .init()
+      self.player = .init()
       self.file = file
       self.offset = offset
     }
     
     func pause() {     
-      node.stop()
+      self.pausedTime = playerTime
+      player.stop()
     }
     
     func play() {                  
-      node.play()
+      player.play()
+    }
+    
+    func set(rate: Float) {
+      assert(rate >= (1 / 32) && rate <= 32)
+      pitchControl.rate = rate
     }
     
     var playerTime: AVAudioTime? {
-      guard let nodeTime = node.lastRenderTime else {
+      guard let nodeTime = player.lastRenderTime else {
         return nil
       }
       
-      guard let playerTime = node.playerTime(forNodeTime: nodeTime) else {
+      guard let playerTime = player.playerTime(forNodeTime: nodeTime) else {
         return nil
       }
       
       return playerTime
     }
+    
+    func seek(wallTime: HostTime) {
+      
+      let rate = pitchControl.rate
+
+      let seconds = wallTime.seconds * Double(rate)
+      
+      let adjustedSeconds = {
+        switch self.offset {
+        case .time(let offset):
+          return seconds - offset
+        case .none:
+          return seconds
+        }
+      }()
+      
+      if adjustedSeconds < 0 {
+       
+      } else {
+        // 即時再生: 途中から再生
+        let startSeconds = abs(adjustedSeconds * Double(rate))
+        let startingFrame = max(0, AVAudioFramePosition(startSeconds * file.processingFormat.sampleRate))
+        let frameCount = max(0, AVAudioFrameCount(file.length - startingFrame))
+        player.scheduleSegment(
+          file,
+          startingFrame: startingFrame,
+          frameCount: frameCount,
+          at: nil
+        )
+      }
+      
+//      if adjustedOffset > 0 {
+//        // 遅延再生: 指定時刻から再生
+//        let frameCount = AVAudioFrameCount(file.length)
+//        let timing = AVAudioTime(
+//          sampleTime: AVAudioFramePosition(adjustedOffset * file.processingFormat.sampleRate),
+//          atRate: file.processingFormat.sampleRate
+//        )
+//        player.scheduleSegment(
+//          file,
+//          startingFrame: 0,
+//          frameCount: frameCount,
+//          at: timing
+//        )
+//      } else {
+//        
+//      }
+    }
+    
+    func add(to engine: AVAudioEngine) {
+      engine.attach(player)
+      engine.attach(pitchControl)
+      engine.connect(player, to: pitchControl, format: file.processingFormat)
+      engine.connect(pitchControl, to: engine.mainMixerNode, format: file.processingFormat)
+    }
   }
   
   private var tracks: [Track] = []
   
+  @discardableResult
   func addTrack(
     name: String,
     file: AVAudioFile,
-    offset: TimeInterval = 0
-  ) {
+    offset: Track.Offset? = nil
+  ) -> Track {
     let track = Track(
       name: name,
       file: file,
       offset: offset
     )
     tracks.append(track)
+    return track
   }
   
   var totalDuration: TimeInterval {
@@ -72,30 +222,43 @@ final class AudioTimeline {
   private var masterTrack: Track {
     assert(tracks.count > 0, "No tracks available")
     return tracks.filter {
-      $0.offset == 0
+      $0.offset == nil
     }
     .first!
   }
   
   var pausedRenderTime: AVAudioFramePosition = 0
   
+  func seek(wallTime: HostTime) {
+    for track in tracks {
+      track.seek(wallTime: wallTime)
+    }    
+  }
+  
+  /*
   func seek(position: TimeInterval) {
     
     let masterTrack = self.masterTrack
     
     for track in tracks {
       
-      let adjustedPosition = max(0, position - track.offset)
       
-      if adjustedPosition < track.duration {
+      if position < track.duration {
         
         if track === masterTrack {
           // record the paused point
-          pausedRenderTime = track.file.frame(at: adjustedPosition)          
+          pausedRenderTime = track.file.frame(at: position)          
         }
         
         // Calculate the offset in time
-        let _offset = track.offset - position
+        let _offset = {
+          switch track.offset {
+          case .time(let offset):
+            return offset - position
+          case .none:
+            return 0
+          }
+        }()
         
         // For tracks that start after the current position
         if _offset > 0 {
@@ -108,22 +271,29 @@ final class AudioTimeline {
             atRate: track.file.processingFormat.sampleRate
           )
           
-          track.node.scheduleSegment(
+          track.player.scheduleSegment(
             track.file,
             startingFrame: 0,
             frameCount: frameCount,
             at: timing
           )
         } else {
-          
-          let frame = track.file.frame(at: adjustedPosition + track.offset)
+                    
+          let frame = {
+            switch track.offset {
+            case .time(let offset):
+              return track.file.frame(at: position + offset)
+            case .none:
+              return track.file.frame(at: position)
+            }
+          }()
           
           // For tracks that have already started or start at the current position
           let startingFrame = frame
           let frameCount = AVAudioFrameCount(track.file.length - startingFrame)
           
           // Immediate playback with no delay
-          track.node.scheduleSegment(
+          track.player.scheduleSegment(
             track.file,
             startingFrame: startingFrame,
             frameCount: frameCount,
@@ -133,16 +303,21 @@ final class AudioTimeline {
       }
     }
   }
+  */
   
   func playAll(at position: TimeInterval? = nil) {
     
-    if let position = position {
-      seek(position: position)
-    } else {
-      if let pausedTime {
-        seek(position: pausedTime)
-      }
-    }
+    seek(wallTime: pausedWallTime)
+        
+    startedWallTime = .now        
+    
+//    if let position = position {
+//      seek(position: position)
+//    } else {
+//      if let pausedTime {
+//        seek(position: pausedTime)
+//      }
+//    }
     
     for track in tracks {
       track.play()
@@ -154,10 +329,12 @@ final class AudioTimeline {
     let time = masterTrack.playerTime?.sampleTime
     assert(time != nil)
     
-    self.pausedTime = currentTime
+//    self.pausedTime = currentTimeInMasterTrack    
+    self.pausedWallTime = wallTime
+    self.elapsedWallTime = .now - startedWallTime
     //    pausedRenderTime = (time ?? 0) + (pausedRenderTime)
     
-    print("Paused", self.pausedTime ?? 0)
+    print("Paused", self.pausedWallTime.seconds, self.elapsedWallTime.seconds)
     
     for track in tracks {
       track.pause()
@@ -166,30 +343,34 @@ final class AudioTimeline {
   
   func stop() {
     for track in tracks {
-      track.node.stop()
+      track.player.stop()
     }
   }
   
   func attach(to engine: AVAudioEngine) {
     for track in tracks {
-      engine.attach(track.node)
-      engine.connect(
-        track.node,
-        to: engine.mainMixerNode,
-        format: track.file.processingFormat
-      )
+      track.add(to: engine)
     }
   }
   
   func debug() {
     
-    print(currentTime)
+    print(currentTimeInMasterTrack, wallTime)
     
   }
   
+  private var startedWallTime: HostTime = .now
+  private var pausedWallTime: HostTime = .now
+  private var elapsedWallTime: HostTime = .from(seconds: 0)
   private var pausedTime: TimeInterval?
   
-  private var currentTime: TimeInterval? {
+  
+  var wallTime: HostTime {
+    let elapsedTime = HostTime.now - startedWallTime    
+    return elapsedTime
+  }
+  
+  var currentTimeInMasterTrack: TimeInterval? {
     
     guard let payerTime = masterTrack.playerTime else {
       return nil
@@ -202,8 +383,7 @@ final class AudioTimeline {
     
   }
   
-  
-  
+
 }
 
 extension AVAudioPlayerNode {
@@ -252,23 +432,25 @@ private final class Controller: ObservableObject {
     do {
       try AudioSessionManager.shared.activate()
       
-      timeline.addTrack(
+      let aTrack = timeline.addTrack(
         name: "A",
         file: .test1(),
-        offset: 0
+        offset: nil
       )
       
-      timeline.addTrack(
-        name: "B",
-        file: .test2(),
-        offset: 5
-      )
+      aTrack.set(rate: 1)
+      
+//      timeline.addTrack(
+//        name: "B",
+//        file: .test2(),
+//        offset: .time(5)
+//      )
       
       timeline.attach(to: engine)
       
       try engine.start()
       
-      timeline.seek(position: 0)
+//      timeline.seek(position: 0)
     } catch {
       assertionFailure()
     }
@@ -308,6 +490,80 @@ extension AVAudioFile {
     let url = Bundle.main.url(forResource: "overwhelmed - Peter Mckinnon", withExtension: "mp3")!
     return try! AVAudioFile(forReading: url)
   }
+}
+
+struct Clock {
+  
+  private var isRunning: Bool = false
+  
+  private var elapsed: HostTime {
+    let elapsedTime = HostTime.now - started    
+    return elapsedTime
+  }
+  
+  var started: HostTime = .now  
+  var offset: HostTime = .zero
+  
+  var current: HostTime {
+    if isRunning {
+      let elapsedTime = HostTime.now - started
+      return offset + elapsedTime
+    } else {      
+      return offset
+    }
+  }
+  
+  init() {
+    
+  }
+  
+  mutating func seek(offset: HostTime) {
+    self.offset = offset
+  }
+  
+  mutating func start() {
+    self.isRunning = true
+    self.started = .now
+  }
+  
+  mutating func pause() {
+    self.isRunning = false
+    offset = offset + elapsed
+  }
+}
+
+#Preview {
+  
+  struct ClockView: View {
+    
+    @State var clock = Clock()
+    @State var isPlaying = false
+    
+    var body: some View {
+      Button("Hit") {
+        if isPlaying {
+          clock.pause()
+        } else {
+          clock.start()
+        }
+        isPlaying.toggle()
+        print(clock.offset.seconds)
+      }
+      Text("IsPlaying: \(isPlaying.description)")
+        .padding()
+        
+      Text("Elapsed: \(clock.offset.seconds)")
+        .padding()
+      
+      TimelineView(.animation) { _ in
+        Text("Current: \(clock.current.seconds)")
+          .padding()
+      }
+    }
+  }
+  
+  return ClockView()
+  
 }
 
 #Preview {
