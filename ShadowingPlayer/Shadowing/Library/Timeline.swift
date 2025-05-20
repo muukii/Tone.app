@@ -1,20 +1,19 @@
 import AVFoundation
 
 final class Timeline {
-
+  
   final class Track {
-
-    var pausedRenderTime: AVAudioFramePosition?
+    
     var name: String
     let node: AVAudioPlayerNode
     let file: AVAudioFile
-
+    
     var offset: TimeInterval
-
+    
     var duration: TimeInterval {
       Double(file.length) / file.processingFormat.sampleRate
     }
-
+    
     init(
       name: String,
       file: AVAudioFile,
@@ -26,36 +25,29 @@ final class Timeline {
       self.offset = offset
     }
     
-    func pause() {
-      let time = node.playerTime?.sampleTime
-      assert(time != nil)
-      pausedRenderTime = (time ?? 0) + (pausedRenderTime ?? 0)
-      print(pausedRenderTime, file.processingFormat.sampleRate)
+    func pause() {     
       node.stop()
     }
-
+    
     func play() {                  
-      _seek(frame: pausedRenderTime ?? 0)
       node.play()
     }
     
-    private func _seek(frame: AVAudioFramePosition) {
-      print("seek", frame)
-      let remainingFrameCount = file.length - frame
+    var playerTime: AVAudioTime? {
+      guard let nodeTime = node.lastRenderTime else {
+        return nil
+      }
       
+      guard let playerTime = node.playerTime(forNodeTime: nodeTime) else {
+        return nil
+      }
       
-      node.scheduleSegment(
-        file,
-        startingFrame: frame,
-        frameCount: AVAudioFrameCount(remainingFrameCount),
-        at: nil
-      )
+      return playerTime
     }
-    
   }
-
+  
   private var tracks: [Track] = []
-
+  
   func addTrack(
     name: String,
     file: AVAudioFile,
@@ -68,7 +60,7 @@ final class Timeline {
     )
     tracks.append(track)
   }
-
+  
   var totalDuration: TimeInterval {
     var duration: TimeInterval = 0
     for player in tracks {
@@ -77,58 +69,100 @@ final class Timeline {
     return duration
   }
   
-  private var masterTrack: Track? {
+  private var masterTrack: Track {
     tracks.filter {
       $0.offset == 0
     }
-    .first
+    .first!
   }
-
+  
+  var pausedRenderTime: AVAudioFramePosition = 0
+  
   func seek(position: TimeInterval) {
+    
+    let masterTrack = self.masterTrack
+    
     for track in tracks {
-//      
-//      track.node.scheduleSegment(
-//        track.file,
-//        startingFrame: nil,
-//        frameCount: track.file.frames(from: adjustedPosition),
-//        at: nil
-//      )
-//      track.node.scheduleFile(track.file, at: nil, completionHandler: nil)
-
+      
       let adjustedPosition = max(0, position - track.offset)
-
+      
       if adjustedPosition < track.duration {
-        let frame = track.file.frame(at: adjustedPosition)
-        track.node.scheduleSegment(
-          track.file,
-          startingFrame: frame,
-          frameCount: track.file.frames(from: adjustedPosition),
-          at: .init(
-            sampleTime: AVAudioFramePosition(track.offset * track.file.processingFormat.sampleRate),
+                
+        if track === masterTrack {
+          // record the paused point
+          pausedRenderTime = track.file.frame(at: adjustedPosition)          
+        }
+        
+        // Calculate the offset in time
+        let _offset = track.offset - position
+        
+        // For tracks that start after the current position
+        if _offset > 0 {
+          // Schedule from beginning of the track
+          let frameCount = AVAudioFrameCount(track.file.length)
+          
+          // Create timing for delayed start
+          let timing = AVAudioTime(
+            sampleTime: AVAudioFramePosition(_offset * track.file.processingFormat.sampleRate),
             atRate: track.file.processingFormat.sampleRate
           )
-        )
+          
+          track.node.scheduleSegment(
+            track.file,
+            startingFrame: 0,
+            frameCount: frameCount,
+            at: timing
+          )
+        } else {
+          
+          let frame = track.file.frame(at: adjustedPosition + track.offset)
+
+          // For tracks that have already started or start at the current position
+          let startingFrame = frame
+          let frameCount = AVAudioFrameCount(track.file.length - startingFrame)
+          
+          // Immediate playback with no delay
+          track.node.scheduleSegment(
+            track.file,
+            startingFrame: startingFrame,
+            frameCount: frameCount,
+            at: nil
+          )
+        }
       }
     }
   }
-
+  
   func playAll(at position: TimeInterval? = nil) {
-
+    
     if let position = position {
       seek(position: position)
+    } else {
+      if let pausedTime {
+        seek(position: pausedTime)
+      }
     }
-
+    
     for track in tracks {
       track.play()
     }
   }
-
+  
   func pause() {
+    
+    let time = masterTrack.playerTime?.sampleTime
+    assert(time != nil)
+    
+    self.pausedTime = currentTime
+    //    pausedRenderTime = (time ?? 0) + (pausedRenderTime)
+    
+    print("Paused", self.pausedTime ?? 0)
+    
     for track in tracks {
       track.pause()
     }    
   }
-
+  
   func stop() {
     for track in tracks {
       track.node.stop()
@@ -148,12 +182,27 @@ final class Timeline {
   
   func debug() {
     
-    for track in tracks {
-//      print("Track: \(track.name) - time: \(track.node.playerTime)")
-    }
+    print(currentTime)
     
   }
+  
+  private var pausedTime: TimeInterval?
+  
+  private var currentTime: TimeInterval? {
     
+    guard let payerTime = masterTrack.playerTime else {
+      return nil
+    }
+    
+    let currentTime =
+    (Double(payerTime.sampleTime + pausedRenderTime) / payerTime.sampleRate)
+    
+    return currentTime
+    
+  }
+  
+  
+  
 }
 
 extension AVAudioPlayerNode {
@@ -213,7 +262,7 @@ private final class Controller: ObservableObject {
         file: .test2(),
         offset: 5
       )
-            
+      
       timeline.attach(to: engine)
       
       try engine.start()
@@ -230,8 +279,8 @@ struct TimelineWrapper: View {
   
   @StateObject private var object = Controller()
   @State private var isPlaying = false
-
-    
+  
+  
   var body: some View {
     VStack {
       Button("Play") {
@@ -262,7 +311,7 @@ extension AVAudioFile {
 
 #Preview {
   
- 
+  
   
   return TimelineWrapper()
 }
