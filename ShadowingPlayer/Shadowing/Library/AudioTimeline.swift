@@ -70,7 +70,8 @@ final class AudioTimeline {
   }
   
   private var masterTrack: Track {
-    tracks.filter {
+    assert(tracks.count > 0, "No tracks available")
+    return tracks.filter {
       $0.offset == 0
     }
     .first!
@@ -87,7 +88,7 @@ final class AudioTimeline {
       let adjustedPosition = max(0, position - track.offset)
       
       if adjustedPosition < track.duration {
-                
+        
         if track === masterTrack {
           // record the paused point
           pausedRenderTime = track.file.frame(at: adjustedPosition)          
@@ -116,7 +117,7 @@ final class AudioTimeline {
         } else {
           
           let frame = track.file.frame(at: adjustedPosition + track.offset)
-
+          
           // For tracks that have already started or start at the current position
           let startingFrame = frame
           let frameCount = AVAudioFrameCount(track.file.length - startingFrame)
