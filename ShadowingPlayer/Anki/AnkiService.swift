@@ -5,6 +5,13 @@ import AppService
 
 @MainActor
 final class AnkiService {
+  
+  struct ItemDraft {
+    var front: String
+    var back: String
+    var tags: Set<AnkiModels.Tag> = []
+  }
+
 
   public let modelContainer: ModelContainer
 
@@ -55,6 +62,32 @@ final class AnkiService {
     }
   }
 
+  func editItem(item: AnkiModels.ExpressionItem, draft: ItemDraft) {
+    do {
+      let context = modelContainer.mainContext
+      item.front = draft.front
+      item.back = draft.back
+      item.tags = .init(draft.tags)
+      try context.save()
+    } catch {
+      Log.error("\(error)")
+    }
+  }
+  
+  func addItem(draft: ItemDraft) {
+    do {
+      let newItem = AnkiModels.ExpressionItem(
+        front: draft.front,
+        back: draft.back
+      )
+      newItem.tags = .init(draft.tags)
+      modelContainer.mainContext.insert(newItem)
+      try modelContainer.mainContext.save()
+    } catch {
+      Log.error("\(error)")
+    }
+  }
+  
   /// 本日レビューすべきアイテムを（必要ならタグで絞って）返す
   func itemsForReviewToday(tags: Set<AnkiModels.Tag>? = nil, referenceDate: Date = Date()) -> [AnkiModels.ExpressionItem] {
     let context = modelContainer.mainContext

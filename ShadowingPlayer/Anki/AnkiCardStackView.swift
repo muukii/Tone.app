@@ -13,7 +13,12 @@ struct AnkiCardStackView: View {
   @State private var showingAnswer = false
   @State private var isReviewCompleted = false
   @State private var errorMessage: String? = nil
+  @State private var isEditing: Bool = false
   @ObjectEdge var speechClient: SpeechClient = .init()
+  
+  private var currentItem: AnkiModels.ExpressionItem {
+    reviewItems[currentIndex]
+  }
 
   init(
     items: @escaping () -> [AnkiModels.ExpressionItem],
@@ -41,6 +46,14 @@ struct AnkiCardStackView: View {
       }
       .padding()
     }
+    .sheet(isPresented: $isEditing) { 
+      AnkiCardEditView(
+        editing: currentItem,
+        service: service,
+        onCancel: {
+          isEditing = false        
+        })
+    }
   }
 
   private var completionView: some View {
@@ -65,6 +78,7 @@ struct AnkiCardStackView: View {
       Spacer()
       // カード表示
       AnkiCardView(
+        isEditing: $isEditing,
         front: item.front,
         back: item.back,
         tags: item.tags?.compactMap { $0.name } ?? [],

@@ -19,8 +19,8 @@ struct AnkiCardView: View {
   let onTap: () -> Void
 
   @State private var browsingItem: BrowserItem?
-  @State private var isEditing: Bool = false
-
+  @Binding private var isEditing: Bool
+  
   private let dictionarySites = [
     DictionarySite(name: "Thesaurus", url: "https://www.thesaurus.com/browse/"),
     DictionarySite(name: "Dictionary.com", url: "https://www.dictionary.com/browse/"),
@@ -28,10 +28,12 @@ struct AnkiCardView: View {
 
   init(
     item: AnkiModels.ExpressionItem,
+    isEditing: Binding<Bool>,
     speechClient: SpeechClient,
     showingAnswer: Bool,
     onTap: @escaping () -> Void
   ) {
+    self._isEditing = isEditing
     self.front = item.front ?? ""
     self.back = item.back ?? ""
     self.tags = item.tags?.compactMap { $0.name } ?? []
@@ -41,6 +43,7 @@ struct AnkiCardView: View {
   }
 
   init(
+    isEditing: Binding<Bool>,
     front: String?,
     back: String?,
     tags: [String] = [],
@@ -48,7 +51,8 @@ struct AnkiCardView: View {
     showingAnswer: Bool,
     onTap: @escaping () -> Void
   ) {
-    self.front = front ?? ""
+    self._isEditing = isEditing
+    self.front = front ?? ""    
     self.back = back ?? ""
     self.tags = tags
     self.speechClient = speechClient
@@ -135,6 +139,7 @@ struct AnkiCardView: View {
 #Preview {
   @Previewable @State var showingAnswer = false
   AnkiCardView(
+    isEditing: .constant(false),
     front: "こんにちは",
     back: "Hello",
     tags: [],
@@ -150,6 +155,7 @@ struct AnkiCardView: View {
 
 #Preview("表のみ") {
   AnkiCardView(
+    isEditing: .constant(false),
     front: "こんにちは",
     back: "Hello",
     tags: [],
@@ -163,6 +169,7 @@ struct AnkiCardView: View {
 
 #Preview("表＋裏") {
   AnkiCardView(
+    isEditing: .constant(false),
     front: "こんにちは",
     back: "Hello",
     tags: [],

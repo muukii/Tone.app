@@ -4,6 +4,7 @@ final class Timeline {
 
   final class Track {
 
+    var pausedRenderTime: AVAudioFramePosition?
     var name: String
     let node: AVAudioPlayerNode
     let file: AVAudioFile
@@ -24,7 +25,33 @@ final class Timeline {
       self.file = file
       self.offset = offset
     }
+    
+    func pause() {
+      let time = node.playerTime?.sampleTime
+      assert(time != nil)
+      pausedRenderTime = (time ?? 0) + (pausedRenderTime ?? 0)
+      print(pausedRenderTime, file.processingFormat.sampleRate)
+      node.stop()
+    }
 
+    func play() {                  
+      _seek(frame: pausedRenderTime ?? 0)
+      node.play()
+    }
+    
+    private func _seek(frame: AVAudioFramePosition) {
+      print("seek", frame)
+      let remainingFrameCount = file.length - frame
+      
+      
+      node.scheduleSegment(
+        file,
+        startingFrame: frame,
+        frameCount: AVAudioFrameCount(remainingFrameCount),
+        at: nil
+      )
+    }
+    
   }
 
   private var tracks: [Track] = []
@@ -48,6 +75,13 @@ final class Timeline {
       duration = max(player.duration, duration)
     }
     return duration
+  }
+  
+  private var masterTrack: Track? {
+    tracks.filter {
+      $0.offset == 0
+    }
+    .first
   }
 
   func seek(position: TimeInterval) {
@@ -85,14 +119,14 @@ final class Timeline {
     }
 
     for track in tracks {
-      track.node.play()
+      track.play()
     }
   }
 
   func pause() {
     for track in tracks {
-      track.node.pause()
-    }
+      track.pause()
+    }    
   }
 
   func stop() {
@@ -111,6 +145,26 @@ final class Timeline {
       )
     }
   }
+  
+  func debug() {
+    
+    for track in tracks {
+//      print("Track: \(track.name) - time: \(track.node.playerTime)")
+    }
+    
+  }
+    
+}
+
+extension AVAudioPlayerNode {
+  var playerTime: AVAudioTime? {
+    
+    guard let nodeTime = self.lastRenderTime else {
+      return nil
+    }
+    
+    return self.playerTime(forNodeTime: nodeTime)
+  }
 }
 
 import SwiftUI
@@ -122,9 +176,11 @@ private final class Controller: ObservableObject {
   let engine: AVAudioEngine = .init()
   
   var isPrepared: Bool = false
+  var timer: Timer?
   
   func stop() {
     timeline.pause()
+    timer?.invalidate()  
   }
   
   func start() {
@@ -132,7 +188,14 @@ private final class Controller: ObservableObject {
       prepare()
       isPrepared = true
     }
-    timeline.playAll()      
+    timeline.playAll()   
+    
+    let timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak timeline] _ in
+      timeline?.debug()
+    }
+    self.timer = timer
+    
+    RunLoop.current.add(timer, forMode: .common)
   }
   
   func prepare() {
@@ -140,13 +203,13 @@ private final class Controller: ObservableObject {
       try AudioSessionManager.shared.activate()
       
       timeline.addTrack(
-        name: "test",
+        name: "A",
         file: .test1(),
         offset: 0
       )
       
       timeline.addTrack(
-        name: "test",
+        name: "B",
         file: .test2(),
         offset: 5
       )
