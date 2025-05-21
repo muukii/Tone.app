@@ -79,9 +79,7 @@ extension Duration {
 
 
 final class AudioTimeline {
-  
-
-  
+    
   final class Track {
     
     enum Offset {
@@ -195,6 +193,7 @@ final class AudioTimeline {
   }
   
   private var tracks: [Track] = []
+  private var clock: Clock = .init()
   
   @discardableResult
   func addTrack(
@@ -548,6 +547,9 @@ struct Clock {
         }
         isPlaying.toggle()
         print(clock.offset.seconds)
+      }
+      Button("Seek 5") {
+        clock.seek(offset: .from(seconds: 5))
       }
       Text("IsPlaying: \(isPlaying.description)")
         .padding()
