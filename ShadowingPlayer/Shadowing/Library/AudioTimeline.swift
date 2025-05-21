@@ -93,8 +93,10 @@ extension Duration {
   }
 }
 
+@MainActor
 final class AudioTimeline {
 
+  @MainActor
   final class Track {
 
     enum Offset {
@@ -113,12 +115,16 @@ final class AudioTimeline {
     }
 
     private var pausedTime: AVAudioTime?
+    
+    private let clock: @MainActor () -> Clock
 
     init(
       name: String,
       file: AVAudioFile,
-      offset: Offset?
+      offset: Offset?,
+      clock: @escaping @MainActor () -> Clock
     ) {
+      self.clock = clock
       self.name = name
       self.player = .init()
       self.file = file
@@ -138,14 +144,24 @@ final class AudioTimeline {
       pitchControl.rate = rate
     }
     
-    func position(in wallTime: HostTime) -> Duration {
-      let rate = pitchControl.rate
-      let timeInAudio = wallTime.duration * Double(rate)
-      return timeInAudio
+    private var startedFrame: AVAudioFramePosition = 0
+    
+    func currentTime() -> TimeInterval? {
+      guard let playerTime = player.playerTime else {
+        return nil
+      }
+      return Double(startedFrame + playerTime.sampleTime) / playerTime.sampleRate
     }
     
+    private func position(in wallTime: HostTime) -> Duration {
+      let wallTime = wallTime
+      let rate = pitchControl.rate
+      let timeInAudio = wallTime.duration * Double(rate)   
+      return timeInAudio
+    }
+        
     func seek(wallTime: HostTime) {
-            
+                  
       let timeInAudio = position(in: wallTime)
                   
       let adjustedSeconds = {
@@ -174,6 +190,8 @@ final class AudioTimeline {
             ).value
           )
         )
+        
+        startedFrame = 0
       } else {
 
         let startSeconds = adjustedSeconds
@@ -188,6 +206,8 @@ final class AudioTimeline {
           frameCount: frameCount,
           at: nil
         )
+        
+        startedFrame = startingFrame
       }
 
     }
@@ -202,6 +222,10 @@ final class AudioTimeline {
 
   private var tracks: [Track] = []
   private var clock: Clock = .init()
+  
+  var currentWallTime: HostTime {
+    clock.current
+  }
 
   @discardableResult
   func addTrack(
@@ -212,26 +236,13 @@ final class AudioTimeline {
     let track = Track(
       name: name,
       file: file,
-      offset: offset
+      offset: offset,
+      clock: { [unowned self] in
+        self.clock
+      }
     )
     tracks.append(track)
     return track
-  }
-
-  var totalDuration: TimeInterval {
-    var duration: TimeInterval = 0
-    for player in tracks {
-      duration = max(player.duration, duration)
-    }
-    return duration
-  }
-
-  private var masterTrack: Track {
-    assert(tracks.count > 0, "No tracks available")
-    return tracks.filter {
-      $0.offset == nil
-    }
-    .first!
   }
 
   private func seek(wallTime: HostTime) {
@@ -241,7 +252,12 @@ final class AudioTimeline {
   }
 
   func seek(position: TimeInterval) {
-    seek(wallTime: .from(seconds: position))
+    if clock.isRunning {      
+      self.pause()
+      self.playAll(at: position)
+    } else {
+      self.seek(wallTime: HostTime.from(seconds: position))
+    }
   }
 
   func playAll(at position: TimeInterval? = nil) {
@@ -308,11 +324,9 @@ private final class Controller: ObservableObject {
   let engine: AVAudioEngine = .init()
 
   var isPrepared: Bool = false
-  var timer: Timer?
 
   func stop() {
     timeline.pause()
-    timer?.invalidate()
   }
 
   func start() {
@@ -321,13 +335,6 @@ private final class Controller: ObservableObject {
       isPrepared = true
     }
     timeline.playAll()
-
-    let timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak timeline] _ in
-      timeline?.debug()
-    }
-    self.timer = timer
-
-    RunLoop.current.add(timer, forMode: .common)
   }
 
   func prepare() {
@@ -396,7 +403,7 @@ extension AVAudioFile {
 
 struct Clock {
 
-  private var isRunning: Bool = false
+  private(set) var isRunning: Bool = false
 
   private var elapsed: HostTime {
     let elapsedTime = HostTime.now - started

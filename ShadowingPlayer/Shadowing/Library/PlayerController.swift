@@ -16,7 +16,7 @@ public final class PlayerController: NSObject {
   public var isRepeating: Bool {
     playingRange != nil
   }
-  
+
   public var isRecording: Bool {
     controller.isRecording
   }
@@ -99,8 +99,8 @@ public final class PlayerController: NSObject {
     self.controller.repeating = .atEnd
 
     super.init()
-    
-    subscription = withGraphTracking { 
+
+    subscription = withGraphTracking {
       $rate.onChange { [weak self] value in
         self?.controller.setSpeed(speed: value)
       }
@@ -144,11 +144,11 @@ public final class PlayerController: NSObject {
     range.select(cue: cue)
     setRepeat(range: range)
   }
-  
+
   public func stopRecording() {
     controller.stopRecording()
   }
-  
+
   public func startRecording() {
     controller.startRecording()
   }
@@ -271,29 +271,31 @@ public final class PlayerController: NSObject {
 
     currentTimerForLoop = Timer.init(timeInterval: 0.005, repeats: true) { [weak self] _ in
 
-      MainActor.assumeIsolated { [weak self] in
+      MainActor.assumeIsolated { [weak self] () -> Void in
         guard let self else { return }
 
         guard self.isAppInBackground == false else { return }
 
-        if let currentTime = self.controller.currentTime {
-
+        if let currentTime = self.controller.mainTrack!.currentTime() {
+          
+          print(currentTime)
+          
           let currentCue = self.cues.first { cue in
-
-            if cue.backed.startTime <= currentTime, cue.backed.endTime >= currentTime {
+            
+            if cue.backed.startTime <= currentTime,
+               cue.backed.endTime >= currentTime
+            {
               return true
             } else {
               return false
             }
-
+            
           }
-
+          
           if self.currentCue != currentCue {
             self.currentCue = currentCue
           }
-
         }
-
       }
 
     }
@@ -351,7 +353,7 @@ public final class PlayerController: NSObject {
 
   public func move(to cue: DisplayCue) {
 
-    controller.seek(position: cue.backed.startTime)
+    controller.seek(positionInMain: cue.backed.startTime)
 
     self.currentCue = cue
 
@@ -395,7 +397,7 @@ public final class PlayerController: NSObject {
 
       self.playingRange = range
       controller.repeating = .range(start: range.startTime, end: range.endTime)
-      controller.seek(position: range.startTime)
+      controller.seek(positionInMain: range.startTime)
 
     } else {
 
