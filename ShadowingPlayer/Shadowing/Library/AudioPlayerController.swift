@@ -80,6 +80,14 @@ final class AudioPlayerController: NSObject {
     guard file.length > 0 else {
       throw AudioPlayerControllerError.fileLengthIsZero
     }
+    
+    let mainTrack = timeline.addTrack(
+      trackType: .main,
+      name: "Main",
+      file: file
+    )
+    
+    self.mainTrack = mainTrack
 
     super.init()
 
@@ -242,16 +250,15 @@ final class AudioPlayerController: NSObject {
   }
 
   private func createEngine() {
-
+    
     // making AVAudioEngine triggers AVAudioSession to start
     
-    let mainTrack = timeline.addTrack(
-      name: "Main",
-      file: file
-    )
+    try! AudioSessionManager.shared.activate()
     
-    self.mainTrack = mainTrack
-
+    guard currentActiveEngine == nil else {
+      return
+    }
+    
     let newEngine = AVAudioEngine()
     self.currentActiveEngine = newEngine
     
@@ -270,7 +277,13 @@ final class AudioPlayerController: NSObject {
       try currentActiveEngine?.start()
     }
     
-    timeline.playAll()
+    if let mainTrackPausedTime = mainTrack!.pausedTime {
+      timeline.seek(audioTime: mainTrackPausedTime, in: .main)  
+    } else {
+      timeline.seek(position: .zero)
+    }
+        
+    timeline.resume()
 
     currentTimerForLoop = Timer.init(timeInterval: 0.005, repeats: true) { [weak self] _ in
 
@@ -323,7 +336,7 @@ final class AudioPlayerController: NSObject {
 
     isPlaying = false
     
-    timeline.pause()
+    timeline.pause()    
 
     currentTimerForLoop?.invalidate()
     currentTimerForLoop = nil
@@ -331,10 +344,13 @@ final class AudioPlayerController: NSObject {
   }
 
   func seek(positionInMain: TimeInterval) {
-    
-    timeline.seek(position: positionInMain)
+    Log.debug("Seek \(positionInMain)")
+    createEngine()
+    timeline.seek(position: positionInMain, in: .main)
 
   }
+  
+  
 
 }
 
