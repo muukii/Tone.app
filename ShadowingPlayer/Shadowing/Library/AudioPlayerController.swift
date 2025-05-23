@@ -87,6 +87,15 @@ final class AudioPlayerController: NSObject {
       file: file
     )
     
+#if DEBUG
+    let subTrack1 = timeline.addTrack(
+      trackType: .sub,
+      name: "Sub",
+      file: file,
+      offset: .timeInMain(.from(timeInterval: 8.8499999999999996))
+    )
+#endif
+    
     self.mainTrack = mainTrack
 
     super.init()
@@ -277,11 +286,7 @@ final class AudioPlayerController: NSObject {
       try currentActiveEngine?.start()
     }
     
-    if let mainTrackPausedTime = mainTrack!.pausedTime {
-      timeline.seek(audioTime: mainTrackPausedTime, in: .main)  
-    } else {
-      timeline.seek(position: .zero)
-    }
+    timeline.seek(position: mainTrack!.pausedPosition, in: .main)
         
     timeline.resume()
 

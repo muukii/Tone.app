@@ -89,12 +89,6 @@ extension HostTime {
   }
 }
 
-extension Duration {
-  var timeInterval: TimeInterval {
-    Double(components.seconds) + Double(components.attoseconds) / 1_000_000_000_000_000_000.0
-  }
-}
-
 @MainActor
 final class AudioTimeline {
 
@@ -108,6 +102,7 @@ final class AudioTimeline {
 
     enum Offset {
       case time(Duration)
+      case timeInMain(Duration)
     }
 
     var name: String
@@ -122,9 +117,10 @@ final class AudioTimeline {
     }
 
     private(set) var pausedTime: AVAudioTime?
+    private(set) var pausedPosition: TimeInterval = 0
     private var startedFrame: AVAudioFramePosition = 0
 
-    private let clock: @MainActor () -> Clock
+    private let mainTrack: @MainActor () -> Track?
 
     let trackType: TrackType
 
@@ -133,10 +129,10 @@ final class AudioTimeline {
       name: String,
       file: AVAudioFile,
       offset: Offset?,
-      clock: @escaping @MainActor () -> Clock
+      mainTrack: @escaping @MainActor () -> Track?
     ) {
       self.trackType = trackType
-      self.clock = clock
+      self.mainTrack = mainTrack
       self.name = name
       self.player = .init()
       self.file = file
@@ -145,6 +141,7 @@ final class AudioTimeline {
 
     func pause() {
       pausedTime = currentAudioTime()
+      pausedPosition = currentTime() ?? 0
       player.stop()
     }
 
@@ -184,37 +181,30 @@ final class AudioTimeline {
       let timeInAudio = wallTime.duration * Double(rate)
       return timeInAudio
     }
+    
+    private func wallTime(from position: Duration) -> HostTime {
+      let rate = pitchControl.rate
+      let wallTimeSource = position / Double(rate)
+      return .from(duration: wallTimeSource)
+    }
 
-    func seek(to timeInterval: TimeInterval) {
+    func seek(to timeInterval: TimeInterval) {      
       seek(
-        to: AVAudioTime(
-          sampleTime:
-            AVAudioFramePosition(
-              timeInterval * file.processingFormat.sampleRate
-            ),
-          atRate: file.processingFormat
-            .sampleRate)
+        wallTime: self.wallTime(
+          from: .from(timeInterval: timeInterval)
+        )
       )
+      pausedPosition = timeInterval
     }
-
-    func seek(to audioTime: AVAudioTime) {
-      
-      let startingFrame = audioTime.sampleTime
-
-      let frameCount = max(0, AVAudioFrameCount(file.length - startingFrame))
-      player.scheduleSegment(
-        file,
-        startingFrame: startingFrame,
-        frameCount: frameCount,
-        at: nil
-      )
-
-      pausedTime = audioTime
-      startedFrame = startingFrame
-
-    }
-
+   
     func seek(wallTime: HostTime) {
+      
+      switch trackType {
+      case .main:
+        break
+      case .sub:
+        break
+      }
 
       let timeInAudio = position(in: wallTime)
 
@@ -222,6 +212,17 @@ final class AudioTimeline {
         switch self.offset {
         case .time(let offset):
           return timeInAudio - offset
+        case .timeInMain(let offset):
+          if let mainTrack = mainTrack() {
+            
+            let a = timeInAudio - offset
+            let rate = mainTrack.pitchControl.rate
+            return a / Double(rate)
+            
+          } else {
+            assertionFailure("Main track not found")
+            return timeInAudio - offset
+          }
         case .none:
           return timeInAudio
         }
@@ -273,6 +274,7 @@ final class AudioTimeline {
   }
 
   private var tracks: [Track] = []
+  private weak var mainTrack: Track?
   private var clock: Clock = .init()
 
   var currentWallTime: HostTime {
@@ -291,11 +293,17 @@ final class AudioTimeline {
       name: name,
       file: file,
       offset: offset,
-      clock: { [unowned self] in
-        self.clock
+      mainTrack: { [weak self] in
+        self?.mainTrack
       }
     )
     tracks.append(track)
+    switch trackType {
+    case .main:
+      mainTrack = track
+    case .sub:
+      break
+    }
     assert(tracks.filter { $0.trackType == .main }.count <= 1)
     return track
   }
@@ -303,15 +311,6 @@ final class AudioTimeline {
   private func seek(wallTime: HostTime) {
     for track in tracks {
       track.seek(wallTime: wallTime)
-    }
-  }
-
-  func seek(
-    audioTime: AVAudioTime,
-    in trackType: Track.TrackType
-  ) {
-    for track in tracks {
-      track.seek(to: audioTime)
     }
   }
 
