@@ -87,14 +87,14 @@ final class AudioPlayerController: NSObject {
       file: file
     )
     
-#if DEBUG
-    let subTrack1 = timeline.addTrack(
-      trackType: .sub,
-      name: "Sub",
-      file: file,
-      offset: .timeInMain(.from(timeInterval: 8.8499999999999996))
-    )
-#endif
+//#if DEBUG
+//    let subTrack1 = timeline.addTrack(
+//      trackType: .sub,
+//      name: "Sub",
+//      file: file,
+//      offset: .timeInMain(.from(timeInterval: 8.8499999999999996))
+//    )
+//#endif
     
     self.mainTrack = mainTrack
 
@@ -299,33 +299,28 @@ final class AudioPlayerController: NSObject {
         switch self.repeating {
         case .atEnd:
           
-//          let current = self.mainTrack!.currentFrame()
-//          
-//          print(current)
+          if let current = self.mainTrack!.currentTime() {
+            if current >= self.file.duration {
+              self.seek(positionInMain: 0)
+            }
+          }
           
-          // FIXME:
-          
-//          if currentFrame + self.offsetSampleTime >= self.file.length {
-//            self.seek(position: 0)
-//          }
-          break
         case .range(let start, let end):
           
           if let current = self.mainTrack!.currentTime() {
             
             if current >= end {
-              //            self.seek(position: start)
+              self.seek(positionInMain: start)
             }
           }
 
         case nil:
 
-//          if currentTime >= self.file.duration {
-            // reset cursor to beginning
-//            self.offsetSampleTime = 0
-//            self.pause()
-//          }
-          break
+          if let current = self.mainTrack!.currentTime() {
+            if current >= self.file.duration {
+              self.pause()
+            }
+          }
 
         }
 
