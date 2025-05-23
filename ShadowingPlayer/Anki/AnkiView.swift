@@ -93,23 +93,19 @@ struct AnkiView: View {
         }
       }
       .sheet(isPresented: $showingAddView) {
-        VocabularyEditView { draft in
-          let newItem = AnkiModels.ExpressionItem(front: draft.front, back: draft.back)
-          modelContext.insert(newItem)
-          showingAddView = false
-        } onCancel: {
-          showingAddView = false
-        }
+        AnkiCardEditView(
+          service: ankiService,
+          onCancel: {
+          showingAddView = false        
+        })          
       }
       .sheet(item: $editingItem) { item in
-        VocabularyEditView(item: item) { draft in
-          item.front = draft.front
-          item.back = draft.back
-          item.tags = .init(draft.tags)
-          editingItem = nil
-        } onCancel: {
-          editingItem = nil
-        }
+        AnkiCardEditView(
+          editing: item,
+          service: ankiService,
+          onCancel: {
+            showingAddView = false        
+          })  
       }
       .sheet(isPresented: $showingImportView) {
         AnkiImportView.init()
@@ -117,14 +113,18 @@ struct AnkiView: View {
       .navigationDestination(
         for: AnkiModels.ExpressionItem.self,
         destination: { item in
-          ExpressionDetail(item: item, speechClient: SpeechClient())
-            .navigationTransition(.zoom(sourceID: item, in: namespace))
+          ExpressionDetail(
+            service: ankiService,
+            item: item,            
+            speechClient: SpeechClient()
+          )
+          .navigationTransition(.zoom(sourceID: item, in: namespace))
         }
       )
       .navigationDestination(
         for: ShowAllItems.self,
         destination: { _ in
-          AllItemsView(ankiService: ankiService, namespace: namespace)            
+          AllItemsView(ankiService: ankiService, namespace: namespace)
         }
       )
       .navigationDestination(

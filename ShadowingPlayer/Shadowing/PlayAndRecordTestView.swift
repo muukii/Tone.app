@@ -25,28 +25,8 @@ class PlayAndRecordViewModel: ObservableObject {
     }
     do {
       audioFile = try AVAudioFile(forReading: inputURL)
-      
-      let format =  audioFile!.processingFormat//engine.inputNode.outputFormat(forBus: 0)
-      
-      let outputURL = FileManager.default.temporaryDirectory.appendingPathComponent("recorded.m4a")
-      
-      outputFile = try AVAudioFile(
-        forWriting: outputURL,
-        settings: format.settings
-      )
-
       engine.attach(player)
       engine.connect(player, to: engine.mainMixerNode, format: audioFile?.processingFormat)
-
-      engine.inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) {
-        [weak self] (buffer, time) in
-        guard let self = self, let outputFile = self.outputFile else { return }
-        do {
-          try outputFile.write(from: buffer)
-        } catch {
-          print("録音エラー: \(error)")
-        }
-      }
 
       try engine.start()
       player.scheduleFile(audioFile!, at: nil, completionHandler: nil)

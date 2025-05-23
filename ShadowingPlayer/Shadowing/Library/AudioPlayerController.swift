@@ -8,8 +8,8 @@ enum AudioPlayerControllerError: Error {
 
 @MainActor
 final class AudioPlayerController: NSObject {
-
-  struct Recording {
+       
+  final class Recording {
 
     let startFrame: AVAudioFramePosition
 
@@ -34,6 +34,10 @@ final class AudioPlayerController: NSObject {
       self.filePath = destination
 
     }
+    
+    func makeReadingFile() throws -> AVAudioFile {
+      try AVAudioFile(forReading: filePath)
+    }
   }
 
   enum Repeating {
@@ -57,15 +61,17 @@ final class AudioPlayerController: NSObject {
 
   private var currentActiveEngine: AVAudioEngine?
 
-  private let audioPlayer = AVAudioPlayerNode()
-
-  private let pitchControl = AVAudioUnitTimePitch()
-
   private let file: AVAudioFile
 
   private var currentTimerForLoop: Timer?
 
   var repeating: Repeating? = nil
+  
+  var cancellables: Set<AnyCancellable> = .init()
+  
+  private let timeline: AudioTimeline = .init()
+  
+  private(set) var mainTrack: AudioTimeline.Track?
 
   init(file: AVAudioFile) throws {
 
@@ -74,6 +80,23 @@ final class AudioPlayerController: NSObject {
     guard file.length > 0 else {
       throw AudioPlayerControllerError.fileLengthIsZero
     }
+    
+    let mainTrack = timeline.addTrack(
+      trackType: .main,
+      name: "Main",
+      file: file
+    )
+    
+//#if DEBUG
+//    let subTrack1 = timeline.addTrack(
+//      trackType: .sub,
+//      name: "Sub",
+//      file: file,
+//      offset: .timeInMain(.from(timeInterval: 8.8499999999999996))
+//    )
+//#endif
+    
+    self.mainTrack = mainTrack
 
     super.init()
 
@@ -91,6 +114,13 @@ final class AudioPlayerController: NSObject {
       name: AVAudioSession.routeChangeNotification,
       object: AVAudioSession.sharedInstance()
     )
+    
+    withGraphTracking {
+      $recordings.onChange { value in
+        print("recordings", value)
+      }
+    }
+    .store(in: &cancellables)
   }
 
   deinit {
@@ -133,6 +163,42 @@ final class AudioPlayerController: NSObject {
     self.currentRecording = nil
 
   }
+  
+  private func addRecordingToPlay(recording: Recording) {
+    
+    guard let currentActiveEngine else {
+      return
+    }
+    
+    do {
+      let file = try recording.makeReadingFile()
+                  
+      let audioPlayer = AVAudioPlayerNode()
+      
+      currentActiveEngine.attach(audioPlayer)
+      
+      currentActiveEngine.connect(
+        audioPlayer,
+        to: currentActiveEngine.mainMixerNode,
+        format: file.processingFormat
+      )
+      
+      audioPlayer
+        .scheduleFile(
+          recording.writingFile,
+          at: .init(
+            sampleTime: file.framePosition,
+            atRate: file.processingFormat.sampleRate
+          )
+        )
+      
+      audioPlayer.play()
+    } catch {
+      assertionFailure()
+    }
+    
+  }
+    
 
   func startRecording() {
 
@@ -144,41 +210,44 @@ final class AudioPlayerController: NSObject {
       return
     }
 
+//    // take a value before pause   
+//    let currentFrame = self.currentFrame
+
     pause()
 
-    try! AudioSessionManager.shared.activateForRecording()
-
-    do {
-      let format = currentActiveEngine.inputNode.outputFormat(forBus: 0)
-
-      let recording = try Recording.init(
-        startFrame: currentFrame ?? 0,
-        destination: URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf"),
-        format: format
-      )
-
-      self.currentRecording = recording
-
-      let outputFile = recording.writingFile
-
-      print("outputFile: \(recording.filePath)")
-
-      currentActiveEngine.inputNode.installTap(
-        onBus: 0,
-        bufferSize: 1024,
-        format: format
-      ) { @Sendable (buffer, time) in
-        do {
-          try outputFile.write(from: buffer)
-        } catch {
-          print("録音エラー: \(error)")
-        }
-      }
-
-      try play()
-    } catch {
-      assertionFailure()
-    }
+//    try! AudioSessionManager.shared.activateForRecording()
+//
+//    do {
+//      let format = currentActiveEngine.inputNode.outputFormat(forBus: 0)
+//
+//      let recording = try Recording.init(
+//        startFrame: currentFrame ?? 0,
+//        destination: URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf"),
+//        format: format
+//      )
+//
+//      self.currentRecording = recording
+//
+//      let outputFile = recording.writingFile
+//
+//      print("outputFile: \(recording.filePath)")
+//
+//      currentActiveEngine.inputNode.installTap(
+//        onBus: 0,
+//        bufferSize: 1024,
+//        format: format
+//      ) { @Sendable (buffer, time) in
+//        do {
+//          try outputFile.write(from: buffer)
+//        } catch {
+//          print("録音エラー: \(error)")
+//        }
+//      }
+//
+//      try play()
+//    } catch {
+//      assertionFailure()
+//    }
 
   }
 
@@ -186,25 +255,23 @@ final class AudioPlayerController: NSObject {
 
     assert(speed >= (1 / 32) && speed <= 32)
 
-    pitchControl.rate = Float(speed)
+    mainTrack?.set(rate: Float(speed))
   }
 
   private func createEngine() {
-
+    
     // making AVAudioEngine triggers AVAudioSession to start
-
-    let format = file.processingFormat
-
+    
+    try! AudioSessionManager.shared.activate()
+    
+    guard currentActiveEngine == nil else {
+      return
+    }
+    
     let newEngine = AVAudioEngine()
     self.currentActiveEngine = newEngine
-
-    newEngine.attach(pitchControl)
-    newEngine.attach(audioPlayer)
-
-    let mainMixer = newEngine.mainMixerNode
-
-    newEngine.connect(audioPlayer, to: pitchControl, format: format)
-    newEngine.connect(pitchControl, to: mainMixer, format: format)
+    
+    timeline.attach(to: newEngine)
   }
 
   func play() throws {
@@ -218,42 +285,41 @@ final class AudioPlayerController: NSObject {
     if currentActiveEngine?.isRunning == false {
       try currentActiveEngine?.start()
     }
-
-    audioPlayer.stop()
-
-    _seek(frame: offsetSampleTime)
+    
+    timeline.seek(position: mainTrack!.pausedPosition, in: .main)
+        
+    timeline.resume()
 
     currentTimerForLoop = Timer.init(timeInterval: 0.005, repeats: true) { [weak self] _ in
 
-      MainActor.assumeIsolated { [weak self] in
+      MainActor.assumeIsolated { [weak self] () -> Void in
 
         guard let self else { return }
-
-        guard let currentFrame = self.currentFrame else {
-          return
-        }
-
-        guard let currentTime = self.currentTime else {
-          return
-        }
-
+        
         switch self.repeating {
         case .atEnd:
-          if currentFrame + self.offsetSampleTime >= self.file.length {
-            self.seek(position: 0)
+          
+          if let current = self.mainTrack!.currentTime() {
+            if current >= self.file.duration {
+              self.seek(positionInMain: 0)
+            }
           }
+          
         case .range(let start, let end):
-
-          if currentTime >= end {
-            self.seek(position: start)
+          
+          if let current = self.mainTrack!.currentTime() {
+            
+            if current >= end {
+              self.seek(positionInMain: start)
+            }
           }
 
         case nil:
 
-          if currentTime >= self.file.duration {
-            // reset cursor to beginning
-            self.offsetSampleTime = 0
-            self.pause()
+          if let current = self.mainTrack!.currentTime() {
+            if current >= self.file.duration {
+              self.pause()
+            }
           }
 
         }
@@ -264,115 +330,42 @@ final class AudioPlayerController: NSObject {
 
     RunLoop.main.add(currentTimerForLoop!, forMode: .common)
 
-    audioPlayer.play()
   }
 
   func pause() {
 
     isPlaying = false
+    
+    timeline.pause()    
 
     currentTimerForLoop?.invalidate()
     currentTimerForLoop = nil
-    offsetSampleTime = (currentFrame ?? 0) + offsetSampleTime
-    audioPlayer.stop()
-    currentActiveEngine?.stop()
-  }
-
-  private var currentPlayerTime: AVAudioTime? {
-    guard let nodeTime = audioPlayer.lastRenderTime else {
-      return nil
-    }
-
-    guard let playerTime = audioPlayer.playerTime(forNodeTime: nodeTime) else {
-      return nil
-    }
-
-    return playerTime
-  }
-
-  var currentFrame: AVAudioFramePosition? {
-    return currentPlayerTime?.sampleTime
-  }
-
-  var currentTime: TimeInterval? {
-
-    guard let currentPlayerTime = currentPlayerTime else {
-      return nil
-    }
-
-    let currentTime =
-      (Double(currentPlayerTime.sampleTime + offsetSampleTime) / currentPlayerTime.sampleRate)
-
-    return currentTime
 
   }
 
-  var offsetSampleTime: AVAudioFramePosition = 0
-
-  func seek(position: TimeInterval) {
-
-    offsetSampleTime = file.frame(at: position)
-
-    let isPlaying = audioPlayer.isPlaying
-
-    if isPlaying {
-      audioPlayer.stop()
-    }
-
-    _seek(position: position)
-
-    if isPlaying {
-      audioPlayer.play()
-    }
+  func seek(positionInMain: TimeInterval) {
+    Log.debug("Seek \(positionInMain)")
+    createEngine()
+    timeline.seek(position: positionInMain, in: .main)
 
   }
-
-  private func _seek(frame: AVAudioFramePosition) {
-
-    guard isPlaying else {
-      return
-    }
-
-    print("seek \(frame)")
-
-    var startFrame = frame
-    if startFrame < 0 {
-      Log.error("Frame must be greater than 0 or equal.")
-      startFrame = 0
-    }
-    let rawFrameCount = file.length - frame
-
-    guard rawFrameCount >= 0 else {
-      Log.error("Frame count must be greater than 0 or equal.")
-      return
-    }
-
-    let frameCount = AVAudioFrameCount(rawFrameCount)
-
-    audioPlayer.scheduleSegment(file, startingFrame: startFrame, frameCount: frameCount, at: nil)
-
-  }
-
-  private func _seek(position: TimeInterval) {
-
-    _seek(frame: file.frame(at: position))
-
-  }
+  
+  
 
 }
 
 extension AVAudioFile {
 
-  fileprivate var duration: TimeInterval {
+  var duration: TimeInterval {
     Double(length) / processingFormat.sampleRate
   }
 
-  fileprivate func frame(at position: TimeInterval) -> AVAudioFramePosition {
+  func frame(at position: TimeInterval) -> AVAudioFramePosition {
     let sampleRate = processingFormat.sampleRate
     return AVAudioFramePosition(sampleRate * position)
   }
 
-  fileprivate func frames(from position: TimeInterval) -> AVAudioFrameCount {
+  func frames(from position: TimeInterval) -> AVAudioFrameCount {
     let sampleRate = processingFormat.sampleRate
 
     let startFrame = AVAudioFramePosition(sampleRate * position)

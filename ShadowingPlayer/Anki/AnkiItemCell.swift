@@ -29,8 +29,8 @@ struct AnkiItemCell: View {
         .font(.headline)
 
       // 次回レビュー日
-      if let nextReviewAt = nextReviewAt {       
-//        TagView(tag: "\(duration(for: nextReviewAt)) h")
+      if let nextReviewAt = nextReviewAt, 
+          nextReviewAt > Date() {                  
         Text(
           timerInterval: Date.now...nextReviewAt,
           showsHours: true

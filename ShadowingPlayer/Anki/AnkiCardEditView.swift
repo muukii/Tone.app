@@ -1,13 +1,7 @@
 import SwiftUI
 import SwiftData
 
-struct VocabularyDraft {
-  var front: String
-  var back: String
-  var tags: Set<AnkiModels.Tag> = []
-}
-
-struct VocabularyEditView: View {
+struct AnkiCardEditView: View {
 
   @State private var frontText: String
   @State private var backText: String
@@ -17,15 +11,42 @@ struct VocabularyEditView: View {
   @FocusState private var isFocusedBack: Bool
 
   let itemToEdit: AnkiModels.ExpressionItem?
-  let onSave: (VocabularyDraft) -> Void
+  let onSave: (AnkiService.ItemDraft) -> Void
   let onCancel: () -> Void
 
   @Query var allTags: [AnkiModels.Tag]
   @State var tags: Set<AnkiModels.Tag>
+  
+  init(
+    editing item: AnkiModels.ExpressionItem,
+    service: AnkiService,
+    onCancel: @escaping () -> Void
+  ) {
+    self.init(
+      item: item,
+      onSave: { draft in
+        service.editItem(item: item, draft: draft)
+      },
+      onCancel: onCancel
+    )      
+  }
+  
+  init(
+    service: AnkiService,
+    onCancel: @escaping () -> Void
+  ) {
+    self.init(
+      item: nil,
+      onSave: { draft in
+        service.addItem(draft: draft)
+      },
+      onCancel: onCancel
+    )      
+  }
 
   init(
     item: AnkiModels.ExpressionItem? = nil,
-    onSave: @escaping (VocabularyDraft) -> Void,
+    onSave: @escaping (AnkiService.ItemDraft) -> Void,
     onCancel: @escaping () -> Void
   ) {
 
@@ -88,7 +109,13 @@ struct VocabularyEditView: View {
 
         ToolbarItem(placement: .confirmationAction) {
           Button(itemToEdit == nil ? "Add" : "Save") {
-            onSave(VocabularyDraft(front: frontText, back: backText, tags: tags))
+            onSave(
+              .init(
+                front: frontText,
+                back: backText,
+                tags: tags
+              )
+            )
           }
           .disabled(frontText.isEmpty || backText.isEmpty)
         }
@@ -102,7 +129,7 @@ struct VocabularyEditView: View {
 }
 
 #Preview {
-  VocabularyEditView(
+  AnkiCardEditView(
     onSave: { _ in },
     onCancel: {}
   )

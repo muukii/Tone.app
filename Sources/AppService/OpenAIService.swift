@@ -9,6 +9,7 @@
 import Alamofire
 import Foundation
 
+@MainActor
 public final class OpenAIService {
 
   public enum Error: Swift.Error {

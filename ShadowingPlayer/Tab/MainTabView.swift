@@ -58,6 +58,7 @@ struct MainTabView: View {
         .tint(#hexColor("FF5722", colorSpace: .displayP3))
         .modelContainer(ankiService.modelContainer)
 
+      TimelineWrapper()
 //      PlaygroundPanel()
 //      PlayAndRecordTestView()
 //      VoiceRecorderView()

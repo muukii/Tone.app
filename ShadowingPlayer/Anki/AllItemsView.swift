@@ -38,10 +38,10 @@ struct AllItemsView: View {
           NavigationLink(value: item) {
             AnkiItemCell(
               item: item
-            )
-            .matchedTransitionSource(id: item, in: navigationNamespace) { co in
-              co
-            }
+            )            
+          }
+          .matchedTransitionSource(id: item, in: navigationNamespace) { co in
+            co
           }
           .contextMenu {
             Button("Delete", role: .destructive) {
