@@ -278,7 +278,7 @@ public final class PlayerController: NSObject {
 
         if let currentTime = self.controller.mainTrack!.currentTime() {
           
-          Log.debug("currentTime: \(currentTime)")
+//          Log.debug("currentTime: \(currentTime)")
           
           let currentCue = self.cues.first { cue in
             

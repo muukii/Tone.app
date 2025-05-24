@@ -109,6 +109,7 @@ final class AudioTimeline {
     let player: AVAudioPlayerNode
     let pitchControl: AVAudioUnitTimePitch = AVAudioUnitTimePitch()
     let file: AVAudioFile
+    private var isAttached: Bool = false
 
     var offset: Offset?
 
@@ -181,14 +182,14 @@ final class AudioTimeline {
       let timeInAudio = wallTime.duration * Double(rate)
       return timeInAudio
     }
-    
+
     private func wallTime(from position: Duration) -> HostTime {
       let rate = pitchControl.rate
       let wallTimeSource = position / Double(rate)
       return .from(duration: wallTimeSource)
     }
 
-    func seek(to timeInterval: TimeInterval) {      
+    func seek(to timeInterval: TimeInterval) {
       seek(
         wallTime: self.wallTime(
           from: .from(timeInterval: timeInterval)
@@ -196,9 +197,14 @@ final class AudioTimeline {
       )
       pausedPosition = timeInterval
     }
-   
+
     func seek(wallTime: HostTime) {
       
+      guard file.length > 0 else {
+        Log.error("[\(self.name)] File length is zero")
+        return
+      }
+
       switch trackType {
       case .main:
         break
@@ -214,11 +220,11 @@ final class AudioTimeline {
           return timeInAudio - offset
         case .timeInMain(let offset):
           if let mainTrack = mainTrack() {
-            
+
             let a = timeInAudio - offset
             let rate = mainTrack.pitchControl.rate
             return a / Double(rate)
-            
+
           } else {
             assertionFailure("Main track not found")
             return timeInAudio - offset
@@ -235,37 +241,54 @@ final class AudioTimeline {
           attosecondsComponent: -adjustedSeconds.components.attoseconds
         )
 
+        let at = AVAudioTime.init(
+          hostTime: (HostTime.now + HostTime.from(duration: flipped)).value
+        )
+
+        Log.debug("[\(self.name)] Schedule at: \(at)")
+
         player.scheduleSegment(
           file,
           startingFrame: 0,
           frameCount: AVAudioFrameCount(file.length),
-          at: .init(
-            hostTime: (HostTime.now + HostTime.from(duration: flipped)).value
-          )
+          at: at
         )
 
         startedFrame = 0
       } else {
-
+        
         let startSeconds = adjustedSeconds
         let startingFrame = max(
           0, AVAudioFramePosition(startSeconds.timeInterval * file.processingFormat.sampleRate)
         )
-
-        let frameCount = max(0, AVAudioFrameCount(file.length - startingFrame))
-        player.scheduleSegment(
-          file,
-          startingFrame: startingFrame,
-          frameCount: frameCount,
-          at: nil
-        )
-
-        startedFrame = startingFrame
+        
+        Log.debug("[\(self.name)] Schedule startFrame: \(startingFrame)")
+        
+        let remainingFrameCount = file.length - startingFrame
+        
+        if remainingFrameCount < 0 {
+          Log.debug("[\(self.name)] Remaining frame count is negative")          
+        } else {        
+          player.scheduleSegment(
+            file,
+            startingFrame: startingFrame,
+            frameCount: AVAudioFrameCount(remainingFrameCount),
+            at: nil
+          )
+          
+          startedFrame = startingFrame
+        }
       }
 
     }
 
     func add(to engine: AVAudioEngine) {
+
+      guard !isAttached else {
+        return
+      }
+      isAttached = true
+
       engine.attach(player)
       engine.attach(pitchControl)
       engine.connect(player, to: pitchControl, format: file.processingFormat)
@@ -331,7 +354,7 @@ final class AudioTimeline {
       }
     }
   }
-  
+
   enum SeekPosition {
     case currentWallTime
     case wallTime(TimeInterval)
@@ -339,10 +362,10 @@ final class AudioTimeline {
   }
 
   func seek(position: SeekPosition) {
-    
+
     func _seek(to position: SeekPosition) {
       switch position {
-      case .currentWallTime:        
+      case .currentWallTime:
         self.seek(wallTime: clock.current)
       case .wallTime(let timeInterval):
         self.seek(wallTime: HostTime.from(seconds: timeInterval))
@@ -350,7 +373,7 @@ final class AudioTimeline {
         self.seek(wallTime: .zero)
       }
     }
-    
+
     if clock.isRunning {
       self.pause()
       _seek(to: position)
@@ -359,7 +382,6 @@ final class AudioTimeline {
       _seek(to: position)
     }
   }
-  
 
   /**
    make sure seek to proper position before calling this
@@ -394,7 +416,6 @@ final class AudioTimeline {
     for track in tracks {
       track.add(to: engine)
     }
-    seek(wallTime: clock.current)
   }
 
   func debug() {

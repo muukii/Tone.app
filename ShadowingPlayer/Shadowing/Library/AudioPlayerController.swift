@@ -11,19 +11,19 @@ final class AudioPlayerController: NSObject {
        
   final class Recording {
 
-    let startFrame: AVAudioFramePosition
+    let offsetToMain: TimeInterval
 
     let filePath: URL
 
     let writingFile: AVAudioFile
 
     init(
-      startFrame: AVAudioFramePosition,
+      offsetToMain: TimeInterval,
       destination: URL,
       format: AVAudioFormat
     ) throws {
 
-      self.startFrame = startFrame
+      self.offsetToMain = offsetToMain
 
       let outputFile = try AVAudioFile(
         forWriting: destination,
@@ -154,52 +154,36 @@ final class AudioPlayerController: NSObject {
     guard let currentRecording, let currentActiveEngine else {
       return
     }
+    
+    try! AudioSessionManager.shared.activate()
+    
+    Log.debug("Stop recording")
 
     currentActiveEngine.inputNode.removeTap(onBus: 0)
     currentRecording.writingFile.close()
 
     recordings.append(currentRecording)
+    
+    addRecordingToPlay(recording: currentRecording)
 
     self.currentRecording = nil
 
   }
   
   private func addRecordingToPlay(recording: Recording) {
-    
-    guard let currentActiveEngine else {
-      return
-    }
-    
     do {
-      let file = try recording.makeReadingFile()
-                  
-      let audioPlayer = AVAudioPlayerNode()
-      
-      currentActiveEngine.attach(audioPlayer)
-      
-      currentActiveEngine.connect(
-        audioPlayer,
-        to: currentActiveEngine.mainMixerNode,
-        format: file.processingFormat
+      timeline.addTrack(
+        trackType: .sub,
+        name: "Recording",
+        file: try recording.makeReadingFile(),
+        offset: .timeInMain(.from(timeInterval: recording.offsetToMain))
       )
-      
-      audioPlayer
-        .scheduleFile(
-          recording.writingFile,
-          at: .init(
-            sampleTime: file.framePosition,
-            atRate: file.processingFormat.sampleRate
-          )
-        )
-      
-      audioPlayer.play()
     } catch {
       assertionFailure()
     }
-    
+    timeline.attach(to: currentActiveEngine!)
   }
     
-
   func startRecording() {
 
     guard isPlaying, let currentActiveEngine else {
@@ -210,44 +194,49 @@ final class AudioPlayerController: NSObject {
       return
     }
 
-//    // take a value before pause   
-//    let currentFrame = self.currentFrame
+    // take a value before pause   
+    
+    guard let currentTimeInMain = self.mainTrack!.currentTime() else {
+      return
+    }
+    
+    Log.debug("Start recording at: \(currentTimeInMain)")
 
     pause()
 
-//    try! AudioSessionManager.shared.activateForRecording()
-//
-//    do {
-//      let format = currentActiveEngine.inputNode.outputFormat(forBus: 0)
-//
-//      let recording = try Recording.init(
-//        startFrame: currentFrame ?? 0,
-//        destination: URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf"),
-//        format: format
-//      )
-//
-//      self.currentRecording = recording
-//
-//      let outputFile = recording.writingFile
-//
-//      print("outputFile: \(recording.filePath)")
-//
-//      currentActiveEngine.inputNode.installTap(
-//        onBus: 0,
-//        bufferSize: 1024,
-//        format: format
-//      ) { @Sendable (buffer, time) in
-//        do {
-//          try outputFile.write(from: buffer)
-//        } catch {
-//          print("録音エラー: \(error)")
-//        }
-//      }
-//
-//      try play()
-//    } catch {
-//      assertionFailure()
-//    }
+    try! AudioSessionManager.shared.activateForRecording()
+
+    do {
+      let format = currentActiveEngine.inputNode.outputFormat(forBus: 0)
+
+      let recording = try Recording.init(
+        offsetToMain: currentTimeInMain,
+        destination: URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf"),
+        format: format
+      )
+
+      self.currentRecording = recording
+
+      let outputFile = recording.writingFile
+
+      print("outputFile: \(recording.filePath)")
+
+      currentActiveEngine.inputNode.installTap(
+        onBus: 0,
+        bufferSize: 1024,
+        format: format
+      ) { @Sendable (buffer, time) in
+        do {
+          try outputFile.write(from: buffer)
+        } catch {
+          print("録音エラー: \(error)")
+        }
+      }
+
+      try play()
+    } catch {
+      assertionFailure()
+    }
 
   }
 
