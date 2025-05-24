@@ -179,7 +179,9 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         switch action {
         case .didScroll:
           if scrollView.isTracking {
-            isFollowing = false
+            Task {
+              isFollowing = false
+            }
           }
         }
       }
