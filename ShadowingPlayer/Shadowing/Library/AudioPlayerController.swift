@@ -250,12 +250,12 @@ final class AudioPlayerController: NSObject {
   private func createEngine() {
     
     // making AVAudioEngine triggers AVAudioSession to start
-    
-    try! AudioSessionManager.shared.activate()
-    
+        
     guard currentActiveEngine == nil else {
       return
     }
+    
+    try! AudioSessionManager.shared.activate()
     
     let newEngine = AVAudioEngine()
     self.currentActiveEngine = newEngine
