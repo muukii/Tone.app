@@ -27,7 +27,7 @@ public final class Service {
       )
       self.modelContainer = container
     } catch {
-      // TODO: delete database if schema mismatches or consider migration
+      // TODO: delete database if schema mismatches or consider migration      
       Log.error("\(error)")
       fatalError()
     }

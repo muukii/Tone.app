@@ -67,8 +67,10 @@ struct AudioImportView: View {
 final class AudioImportViewModel {
 
   final class TargetFileState: Hashable {
-        
-    static func == (lhs: AudioImportViewModel.TargetFileState, rhs: AudioImportViewModel.TargetFileState) -> Bool {
+
+    static func == (
+      lhs: AudioImportViewModel.TargetFileState, rhs: AudioImportViewModel.TargetFileState
+    ) -> Bool {
       lhs === rhs
     }
 
@@ -152,12 +154,15 @@ final class AudioImportViewModel {
 }
 
 #Preview {
-  //  AudioImportView(
-  //    service: .mock,
-  //    urls: [
-  //      URL(string: "file://test1.mp3")!,
-  //      URL(string: "file://test2.mp3")!
-  //    ],
-  //    onComplete: {}
-  //  )
+  AudioImportView(
+    service: .init(),
+    targets: [
+      .init(
+        name: "",
+        url: .init("")!
+      )
+    ],
+    onComplete: {
+      
+    })
 }
