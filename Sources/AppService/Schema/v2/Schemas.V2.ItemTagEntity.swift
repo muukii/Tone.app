@@ -17,6 +17,12 @@ extension Schemas.V2 {
         
     public var lastUsedAt: Date?
     
+    @Relationship(
+      deleteRule: .nullify,
+      inverse: \Schemas.V2.Item.tags
+    )
+    public var items: [Schemas.V2.Item] = []
+    
     public init(name: String) {
       self.name = name
     }

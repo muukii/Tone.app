@@ -18,8 +18,8 @@ extension Schemas.V2 {
     @Relationship(deleteRule: .cascade, inverse: \Pin.item)
     public var pinItems: [Pin] = []
     
-    public var tags: [Tag]?
-    
+    public var tags: [Tag] = []
+         
     public var audioFileRelativePath: RelativePath? {
       audioFilePath.map { .init($0) }
     }

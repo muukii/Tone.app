@@ -10,7 +10,7 @@ struct AudioItemCell: View {
 
     self.init(
       title: item.title,
-      tags: item.tags?.compactMap { $0.name } ?? []
+      tags: item.tags.compactMap { $0.name }
     )
   }
 

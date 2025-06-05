@@ -51,23 +51,20 @@ struct MainTabView: View {
       .modelContainer(rootDriver.service.modelContainer)
 
       // Add the AnkiView tab
-      AnkiView(ankiService: ankiService)
-        .tabItem {
-          Label("Vocabulary", systemImage: "textformat.abc")
-        }
-        .tint(#hexColor("FF5722", colorSpace: .displayP3))
-        .modelContainer(ankiService.modelContainer)
+//      AnkiView(ankiService: ankiService)
+//        .tabItem {
+//          Label("Vocabulary", systemImage: "textformat.abc")
+//        }
+//        .tint(#hexColor("FF5722", colorSpace: .displayP3))
+//        .modelContainer(ankiService.modelContainer)
 
       TimelineWrapper()
-      //      PlaygroundPanel()
-      //      PlayAndRecordTestView()
-      //      VoiceRecorderView()
-
-      WebView(url: URL(string: "https://www.thesaurus.com/browse/apple")!)
-        .tabItem {
-          Label("Thesaurus", systemImage: "globe")
-        }
-        .tint(#hexColor("4CAF50", colorSpace: .displayP3))
+//
+//      WebView(url: URL(string: "https://www.thesaurus.com/browse/apple")!)
+//        .tabItem {
+//          Label("Thesaurus", systemImage: "globe")
+//        }
+//        .tint(#hexColor("4CAF50", colorSpace: .displayP3))
 
     }
     .onChange(
