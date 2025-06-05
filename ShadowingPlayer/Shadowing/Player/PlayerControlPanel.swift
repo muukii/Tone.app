@@ -41,7 +41,7 @@ struct PlayerControlPanel: View {
       isPlaying: controller.isPlaying,
       isRepeating: controller.isRepeating,
       isRecording: controller.isRecording,
-      rate: controller.rate,
+      rate: controller.$rate.binding,
       hasCurrentCue: controller.currentCue != nil,
       namespace: namespace,
       onAction: { action in
@@ -107,7 +107,7 @@ private struct PlayerControlPanelContent: View {
   let isPlaying: Bool
   let isRepeating: Bool
   let isRecording: Bool
-  let rate: Double
+  @Binding var rate: CGFloat
   let hasCurrentCue: Bool
   let namespace: Namespace.ID
   private let onAction: @MainActor (Action) -> Void
@@ -116,7 +116,7 @@ private struct PlayerControlPanelContent: View {
     isPlaying: Bool,
     isRepeating: Bool,
     isRecording: Bool,
-    rate: Double,
+    rate: Binding<CGFloat>,
     hasCurrentCue: Bool,
     namespace: Namespace.ID,
     onAction: @escaping @MainActor (Action) -> Void
@@ -124,7 +124,7 @@ private struct PlayerControlPanelContent: View {
     self.isPlaying = isPlaying
     self.isRepeating = isRepeating
     self.isRecording = isRecording
-    self.rate = rate
+    self._rate = rate
     self.hasCurrentCue = hasCurrentCue
     self.namespace = namespace
     self.onAction = onAction
@@ -257,7 +257,7 @@ private struct PlayerControlPanelContent: View {
       .tint(Color.accentColor)
 
       SteppedSlider(
-        value: .constant(rate),
+        value: $rate,
         range: 0.3...1,
         steps: 0.02,
         horizontalEdgeMask: .hidden,
@@ -291,7 +291,7 @@ private struct PlayerControlPanelContent: View {
     isPlaying: true,
     isRepeating: false,
     isRecording: false,
-    rate: 0.8,
+    rate: .constant(0.8),
     hasCurrentCue: true,
     namespace: namespace,
     onAction: { action in
@@ -307,7 +307,7 @@ private struct PlayerControlPanelContent: View {
     isPlaying: false,
     isRepeating: true,
     isRecording: true,
-    rate: 1.0,
+    rate: .constant(1.0),
     hasCurrentCue: true,
     namespace: namespace,
     onAction: { action in
@@ -323,7 +323,7 @@ private struct PlayerControlPanelContent: View {
     isPlaying: true,
     isRepeating: true,
     isRecording: false,
-    rate: 0.3,
+    rate: .constant(0.3),
     hasCurrentCue: false,
     namespace: namespace,
     onAction: { action in
