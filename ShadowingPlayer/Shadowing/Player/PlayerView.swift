@@ -1,10 +1,10 @@
 import AVFoundation
 import AppService
+import SteppedSlider
 import SwiftData
 import SwiftUI
 import SwiftUIRingSlider
 import SwiftUISupport
-import SteppedSlider
 
 @MainActor
 protocol PlayerDisplay: View {
@@ -51,39 +51,59 @@ struct PlayerView<Display: PlayerDisplay>: View {
     self.pins = pins
     self.namespace = namespace
   }
-  
+
   private var header: some View {
     HStack {
-      Text("Player")
-        .font(.title)
+      Text(controller.title)
+        .font(.headline)
         .bold()
         .foregroundStyle(.primary)
       Spacer()
-      Button {
-        controllerForDetail = nil
-      } label: {
-        Image(systemName: "xmark")
-          .foregroundStyle(.primary)
-      }
+//      Button {
+//        controllerForDetail = nil
+//      } label: {
+//        Image(systemName: "xmark")
+//          .foregroundStyle(.primary)
+//      }
+    }
+    .padding(.horizontal, 16)
+  }
+  
+  private var gradientMask: some View {
+    VStack(spacing: 0) {
+      Rectangle()
+        .fill(
+          LinearGradient(
+            stops: [
+              .init(color: .clear, location: 0),
+              .init(color: .black.opacity(1), location: 1),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+          )
+        )
+        .frame(height: 20)
+      Rectangle()
     }
   }
 
   var body: some View {
-
-    //
-    ZStack {
-      VStack {
-        header
-        Display(
-          controller: controller,
-          pins: pins,
-          actionHandler: actionHandler
-        )
+    VStack {
+      header
+      Display(
+        controller: controller,
+        pins: pins,
+        actionHandler: actionHandler
+      )
+      .mask {
+        gradientMask
       }
     }
     .safeAreaInset(
       edge: .bottom,
+      spacing: 0,
       content: {
+
         PlayerControlPanel(
           controller: controller,
           namespace: namespace,
@@ -93,7 +113,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
               guard let range = controller.playingRange else {
                 return
               }
-              
+
               Task {
                 await actionHandler(.onPin(range: range))
               }
@@ -104,7 +124,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
             case .onStopRecording:
               controller.stopRecording()
             }
-          }         
+          }
         )
       }
     )
@@ -156,7 +176,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
               }
             }
           }
-          
+
           Button("Rename") {
             newTitle = controller.title
             isShowingRenameDialog = true
@@ -170,7 +190,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
     .navigationBarTitleDisplayMode(.inline)
     .alert("Rename", isPresented: $isShowingRenameDialog) {
       TextField("Title", text: $newTitle)
-      Button("Cancel", role: .cancel) { }
+      Button("Cancel", role: .cancel) {}
       Button("Rename") {
         Task {
           await actionHandler(.onRename(title: newTitle))
@@ -260,34 +280,34 @@ struct DefinitionView: UIViewControllerRepresentable {
 
 #if DEBUG
 
-#Preview {
-  
-  struct Host: View {
-    
-    @Namespace private var namespace
-    
-    @ObjectEdge var playerController: PlayerController = try! .init(item: .social)
-    
-    var body: some View {
-      Group {
-        NavigationStack {
-          PlayerView<PlayerListFlowLayoutView>(
-            playerController: playerController,
-            pins: [],
-            namespace: namespace,
+  #Preview {
+
+    struct Host: View {
+
+      @Namespace private var namespace
+
+      @ObjectEdge var playerController: PlayerController = try! .init(item: .social)
+
+      var body: some View {
+        Group {
+          NavigationStack {
+            PlayerView<PlayerListFlowLayoutView>(
+              playerController: playerController,
+              pins: [],
+              namespace: namespace,
               actionHandler: { action in
               }
-          )
+            )
+          }
+
         }
-        
+        .accentColor(Color.pink)
+        .tint(Color.pink)
       }
-      .accentColor(Color.pink)
-      .tint(Color.pink)
     }
+
+    return Host()
+
   }
-  
-  return Host()
-    
-}
 
 #endif

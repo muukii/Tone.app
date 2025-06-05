@@ -59,9 +59,9 @@ struct MainTabView: View {
         .modelContainer(ankiService.modelContainer)
 
       TimelineWrapper()
-//      PlaygroundPanel()
-//      PlayAndRecordTestView()
-//      VoiceRecorderView()
+      //      PlaygroundPanel()
+      //      PlayAndRecordTestView()
+      //      VoiceRecorderView()
 
       WebView(url: URL(string: "https://www.thesaurus.com/browse/apple")!)
         .tabItem {
@@ -98,7 +98,7 @@ struct MainTabView: View {
           }
           .frame(height: 60)
         },
-        compactBackground: { 
+        compactBackground: {
           RoundedRectangle(cornerRadius: 16, style: .continuous)
             .fill(.regularMaterial)
             .shadow(
@@ -115,7 +115,7 @@ struct MainTabView: View {
         },
         detailBackground: {
           Rectangle()
-            .fill(.thinMaterial)            
+            .fill(.background)
         })
     )
   }
@@ -147,15 +147,15 @@ struct MainTabView: View {
     }
 
   }
-  
+
   struct CompactPlayerBarContent: View {
-    
+
     let namespace: Namespace.ID
     private let onDiscard: @MainActor () -> Void
     private let isPlaying: Bool
     private let onPause: @MainActor () -> Void
     private let onPlay: @MainActor () -> Void
-    
+
     init(
       namespace: Namespace.ID,
       isPlaying: Bool,
@@ -169,11 +169,11 @@ struct MainTabView: View {
       self.onPause = onPause
       self.onPlay = onPlay
     }
-    
+
     var body: some View {
-      
+
       HStack {
-        
+
         Button {
           MainActor.assumeIsolated {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -192,17 +192,17 @@ struct MainTabView: View {
             .foregroundStyle(.primary)
             .contentTransition(.symbolEffect(.replace, options: .speed(2)))
         }
-//        .background(
-//          Circle()
-//            .blur(radius: 10)          
-//        )
+        //        .background(
+        //          Circle()
+        //            .blur(radius: 10)
+        //        )
         .frame(square: 50)
-        
+
         Text("Title")
           .font(.body)
-        
+
         Spacer()
-        
+
         Button {
           onDiscard()
         } label: {
@@ -217,14 +217,12 @@ struct MainTabView: View {
         .buttonBorderShape(.circle)
 
       }
-//      .background(.thinMaterial)
+      //      .background(.thinMaterial)
       .foregroundStyle(.primary)
-      
-    }
-    
-  }
-  
 
+    }
+
+  }
 
   private func detailContent(
     player: PlayerController,
@@ -247,7 +245,7 @@ struct MainTabView: View {
 }
 
 extension View {
-  
+
 }
 
 #Preview("Bar") {
@@ -287,25 +285,27 @@ struct EntityPlayerView: View {
   }
 
   var body: some View {
-    PlayerView<PlayerListFlowLayoutView>(
-      playerController: player,
-      pins: pins,
-      namespace: namespace,
-      actionHandler: { action in
-        do {
-          switch action {
-          case .onPin(let range):
-            try await service.makePinned(range: range, for: item)
-          case .onTranscribeAgain:
-            try await service.updateTranscribe(for: item)
-          case .onRename(let title):
-            try await service.renameItem(item: item, newTitle: title)
+    NavigationStack {
+      PlayerView<PlayerListFlowLayoutView>(
+        playerController: player,
+        pins: pins,
+        namespace: namespace,
+        actionHandler: { action in
+          do {
+            switch action {
+            case .onPin(let range):
+              try await service.makePinned(range: range, for: item)
+            case .onTranscribeAgain:
+              try await service.updateTranscribe(for: item)
+            case .onRename(let title):
+              try await service.renameItem(item: item, newTitle: title)
+            }
+          } catch {
+            Log.error("\(error.localizedDescription)")
           }
-        } catch {
-          Log.error("\(error.localizedDescription)")
         }
-      }
-    )
+      )
+    }
   }
 }
 
