@@ -98,13 +98,24 @@ struct MainTabView: View {
           }
           .frame(height: 60)
         },
+        compactBackground: { 
+          RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .fill(.regularMaterial)
+            .shadow(
+              color: .black.opacity(0.1),
+              radius: 10,
+              x: 0,
+              y: 2
+            )
+        },
         detailContent: {
           if let player = mainViewModel.currentController {
             detailContent(player: player, namespace: namespace)
           }
         },
         detailBackground: {
-          Color(uiColor: .systemBackground)
+          Rectangle()
+            .fill(.thinMaterial)            
         })
     )
   }
@@ -112,13 +123,13 @@ struct MainTabView: View {
   private struct CompactPlayerBar: View {
 
     unowned let controller: PlayerController
-    let namespace: Namespace.ID
-    private let onDiscard: () -> Void
+    private let namespace: Namespace.ID
+    private let onDiscard: @MainActor () -> Void
 
     init(
       controller: PlayerController,
       namespace: Namespace.ID,
-      onDiscard: @escaping () -> Void
+      onDiscard: @escaping @MainActor () -> Void
     ) {
       self.controller = controller
       self.namespace = namespace
@@ -126,40 +137,94 @@ struct MainTabView: View {
     }
 
     var body: some View {
+      CompactPlayerBarContent(
+        namespace: namespace,
+        isPlaying: controller.isPlaying,
+        onPlay: controller.play,
+        onPause: controller.pause,
+        onDiscard: onDiscard
+      )
+    }
 
+  }
+  
+  struct CompactPlayerBarContent: View {
+    
+    let namespace: Namespace.ID
+    private let onDiscard: @MainActor () -> Void
+    private let isPlaying: Bool
+    private let onPause: @MainActor () -> Void
+    private let onPlay: @MainActor () -> Void
+    
+    init(
+      namespace: Namespace.ID,
+      isPlaying: Bool,
+      onPlay: @escaping @MainActor () -> Void,
+      onPause: @escaping @MainActor () -> Void,
+      onDiscard: @escaping @MainActor () -> Void
+    ) {
+      self.namespace = namespace
+      self.onDiscard = onDiscard
+      self.isPlaying = isPlaying
+      self.onPause = onPause
+      self.onPlay = onPlay
+    }
+    
+    var body: some View {
+      
       HStack {
+        
+        Button {
+          MainActor.assumeIsolated {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+          }
+          if isPlaying {
+            onPause()
+          } else {
+            onPlay()
+          }
+        } label: {
+          Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(square: 26)
+            .matchedGeometryEffect(id: ComponentKey.playButton, in: namespace)
+            .foregroundStyle(.primary)
+            .contentTransition(.symbolEffect(.replace, options: .speed(2)))
+        }
+//        .background(
+//          Circle()
+//            .blur(radius: 10)          
+//        )
+        .frame(square: 50)
+        
+        Text("Title")
+          .font(.body)
+        
+        Spacer()
+        
         Button {
           onDiscard()
         } label: {
           Image(systemName: "xmark")
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(square: 30)
+            .foregroundStyle(.primary)
+            .frame(square: 10)
+            .padding(2)
         }
-        Button {
-          MainActor.assumeIsolated {
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-          }
-          if controller.isPlaying {
-            controller.pause()
-          } else {
-            controller.play()
-          }
-        } label: {
-          Image(systemName: controller.isPlaying ? "pause.fill" : "play.fill")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(square: 30)
-            .matchedGeometryEffect(id: ComponentKey.playButton, in: namespace)
-            .foregroundColor(Color.primary)
-            .contentTransition(.symbolEffect(.replace, options: .speed(2)))
-        }
-        .frame(square: 50)
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.circle)
+
       }
-
+//      .background(.thinMaterial)
+      .foregroundStyle(.primary)
+      
     }
-
+    
   }
+  
+
 
   private func detailContent(
     player: PlayerController,
@@ -179,6 +244,20 @@ struct MainTabView: View {
       fatalError()
     }
   }
+}
+
+extension View {
+  
+}
+
+#Preview("Bar") {
+  MainTabView.CompactPlayerBarContent(
+    namespace: Namespace().wrappedValue,
+    isPlaying: false,
+    onPlay: {},
+    onPause: {},
+    onDiscard: {}
+  )
 }
 
 struct EntityPlayerView: View {
@@ -274,60 +353,6 @@ final class MainViewModel {
     currentController?.pause()
     currentController = nil
 
-  }
-
-}
-
-final class MainIsolated<T: AnyObject & Sendable>: Sendable {
-
-  let object: T
-
-  nonisolated init(_ object: T) {
-    self.object = object
-  }
-
-  deinit {
-    Task { @MainActor [object] in
-      _ = object
-    }
-  }
-}
-
-final class ReferenceHolder<T: AnyObject>: Sendable {
-
-  var identifier: some Hashable {
-    ObjectIdentifier(self)
-  }
-
-  nonisolated(unsafe)
-    private(set) weak var object: T?
-
-  nonisolated(unsafe)
-    private let unmanaged: Unmanaged<T>
-
-  nonisolated(unsafe)
-    private var hasDisposed: Bool = false
-
-  private let lock = OSAllocatedUnfairLock()
-
-  init(_ object: T) {
-    self.object = object
-    self.unmanaged = Unmanaged.passUnretained(object).retain()
-  }
-
-  func dispose() {
-    lock.lock()
-    defer { lock.unlock() }
-    guard !hasDisposed else { return }
-    unmanaged.release()
-    hasDisposed = true
-  }
-
-  deinit {
-    lock.lock()
-    defer { lock.unlock() }
-    guard !hasDisposed else { return }
-    unmanaged.release()
   }
 
 }
