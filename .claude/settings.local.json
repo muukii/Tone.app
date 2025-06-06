@@ -4,7 +4,19 @@
       "Bash(tuist build:*)",
       "Bash(xcodebuild:*)",
       "Bash(tuist install:*)",
-      "Bash(tuist generate:*)"
+      "Bash(tuist generate:*)",
+      "mcp__XcodeBuildMCP__list_sims",
+      "mcp__XcodeBuildMCP__discover_projs",
+      "mcp__XcodeBuildMCP__list_schems_ws",
+      "mcp__XcodeBuildMCP__build_run_ios_sim_id_ws",
+      "mcp__XcodeBuildMCP__screenshot",
+      "mcp__XcodeBuildMCP__describe_ui",
+      "mcp__XcodeBuildMCP__tap",
+      "mcp__XcodeBuildMCP__long_press",
+      "mcp__XcodeBuildMCP__touch",
+      "mcp__XcodeBuildMCP__build_ios_sim_id_ws",
+      "Bash(swift package:*)",
+      "mcp__XcodeBuildMCP__launch_app_sim"
     ],
     "deny": []
   }
