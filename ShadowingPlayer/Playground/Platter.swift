@@ -8,6 +8,9 @@ struct Platter<MainContent: View, ControlContent: View>: View {
   private let fixedHeight: CGFloat = 60
   private let isExpanded: Bool
   private let _onTapMainContent: () -> Void
+  
+  @State private var mainContentHeight: CGFloat?
+  @State private var controlHeight: CGFloat?
 
   init(
     isExpanded: Bool = false,
@@ -22,58 +25,76 @@ struct Platter<MainContent: View, ControlContent: View>: View {
   }
 
   var body: some View {
-    ZStack {
-
-      Rectangle()
-        .fill(.background)
-        .environment(\.colorScheme, .dark)
-
+    GeometryReader { proxy in 
       ZStack {
-
+        
         Rectangle()
           .fill(.background)
-          .ignoresSafeArea()
-
-        mainContent
-          .padding(.top, isExpanded ? -fixedHeight : 0)
-          .padding(.bottom, isExpanded ? -fixedHeight : 0)
-          .allowsHitTesting(isExpanded == false)
-          .overlay(
-            Color.black.opacity(isExpanded ? 0.3 : 0)
-              .ignoresSafeArea()
-              .contentShape(Rectangle())
-              .allowsHitTesting(isExpanded)
-              .gesture(
-                TapGesture().onEnded({
-                  _onTapMainContent()
-                }), 
-                isEnabled: isExpanded
-              )
+          .environment(\.colorScheme, .dark)
+        
+        ZStack {
+          
+          Rectangle()
+            .fill(.background)
+            .ignoresSafeArea()
+          
+          mainContent
+            .onGeometryChange(for: EdgeInsets.self, of: \.safeAreaInsets, action: { newValue in
+              print(newValue)
+            })
+            .onGeometryChange(for: CGFloat.self, of: \.size.height, action: { oldValue, newValue in
+              if isExpanded == false && newValue != oldValue {
+                mainContentHeight = newValue
+              }
+            })
+            .frame(
+              width: nil,
+              height: isExpanded ? proxy.size.height : nil
+            )
+            .allowsHitTesting(isExpanded == false)
+            .overlay(
+              Color.black.opacity(isExpanded ? 0.3 : 0)
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .allowsHitTesting(isExpanded)
+                .gesture(
+                  TapGesture().onEnded({
+                    _onTapMainContent()
+                  }), 
+                  isEnabled: isExpanded
+                )
+            )
+          
+        }
+        .frame(height: isExpanded ? fixedHeight : nil, alignment: .bottom)
+        .mask(
+          RoundedRectangle(
+            cornerRadius: 30
           )
-
-      }
-      .frame(height: isExpanded ? fixedHeight : nil)
-      .mask(
-        RoundedRectangle(
-          cornerRadius: 30
+          .ignoresSafeArea(edges: .top)
         )
-        .ignoresSafeArea(edges: .top)
-      )
-      .frame(maxHeight: .infinity, alignment: .top)
+        .frame(maxHeight: .infinity, alignment: .top)
+      }
+      
+      .safeAreaInset(
+        edge: .bottom,
+        spacing: 0
+      ) {
+        controlContent
+          .onGeometryChange(for: CGFloat.self, of: \.size.height, action: { newValue in
+            controlHeight = newValue
+          })
+          .padding(.top, 16)
+          .padding(.bottom, 8)
+          .frame(maxWidth: .infinity)
+          .background(.background)
+          .fixedSize(horizontal: false, vertical: isExpanded ? false : true)
+          .environment(\.colorScheme, .dark)
+          .zIndex(-1)
+      }
+//      .animation(.smooth(duration: 0.4), value: isExpanded)
+      .animation(.smooth(duration: 0.4), value: UUID())
     }
-    .safeAreaInset(
-      edge: .bottom,
-      spacing: 0
-    ) {
-      controlContent
-        .padding(.top, 16)
-        .padding(.bottom, 8)
-        .frame(maxWidth: .infinity)
-        .background(.background)
-        .fixedSize(horizontal: false, vertical: isExpanded ? false : true)
-        .environment(\.colorScheme, .dark)
-    }
-    .animation(.smooth(duration: 0.4), value: UUID())
   }
 
 }
@@ -227,4 +248,15 @@ struct Platter<MainContent: View, ControlContent: View>: View {
   }
 
   return PreviewWrapper()
+}
+
+#Preview("Shift") {
+  
+  ZStack {
+    RoundedRectangle(cornerRadius: 20)
+      .frame(width: 50, height: 200)
+  }
+  .frame(width: 100, height: 100, alignment: .bottom)
+  .background(.gray)
+  
 }

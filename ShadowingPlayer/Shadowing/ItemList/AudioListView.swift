@@ -81,13 +81,14 @@ struct AudioListView: View {
   var body: some View {
     NavigationStack(path: $path) {
 
-      List {
-
-        tagList
-
-        allItems
-
+      ScrollView {
+        
+        LazyVStack {          
+          tagList
+          allItems
+        }
       }
+      .toolbarBackgroundVisibility(.hidden, for: .navigationBar)      
       .navigationDestination(for: TagEntity.self) { tag in
         AudioListInTagView(
           tag: tag,
@@ -215,13 +216,41 @@ private struct ItemListFragment: View {
 
   var body: some View {
     ForEach(items) { item in
-      Button {
-        onSelect(item)
-      } label: {
-        AudioItemCell(item: item)
-      }
+      Cell(title: item.title)
+        .onTapGesture {
+          onSelect(item)
+        }
+//      Button {
+//        onSelect(item)
+//      } label: {
+//        AudioItemCell(item: item)
+//      }
       .modifier(ItemEditingModifier(item: item))
     }
+  }
+}
+
+private struct Cell: View {
+  
+  let title: String
+  
+  var body: some View {
+    VStack {
+      VStack(alignment: .leading) {
+        Text(title)
+          .font(.headline)
+        //      Text("Title")
+        //        .font(.subheadline)        
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.vertical, 10)
+      RoundedRectangle(cornerRadius: 1)
+        .frame(height: 1)
+        .foregroundStyle(.quinary)
+    }
+    .padding(.horizontal, 24)
+    .contentShape(Rectangle())
+    
   }
 }
 

@@ -11,7 +11,7 @@ struct PlayerControlPanel: View {
     case onStopRecording
   }
 
-  unowned let controller: PlayerController
+  let controller: PlayerController
   private let onAction: @MainActor (Action) -> Void
 
   let namespace: Namespace.ID

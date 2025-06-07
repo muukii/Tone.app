@@ -13,6 +13,8 @@ struct ContentView: View {
   let rootDriver: RootDriver
 
   var body: some View {
-    MainTabView(rootDriver: rootDriver)
+//    MainTabView(rootDriver: rootDriver)
+    PlatterRoot(rootDriver: rootDriver)
+      .modelContainer(rootDriver.service.modelContainer)
   }
 }
