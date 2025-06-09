@@ -13,3 +13,6 @@
 [submodule "submodules/VergeGroup/swift-state-graph"]
 	path = submodules/VergeGroup/swift-state-graph
 	url = https://github.com/VergeGroup/swift-state-graph
+[submodule "submodules/FluidGroup/swiftui-stack"]
+	path = submodules/FluidGroup/swiftui-stack
+	url = https://github.com/FluidGroup/swiftui-stack.git

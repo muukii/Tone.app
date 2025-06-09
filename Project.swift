@@ -70,6 +70,7 @@ let project = Project(
         .external(name: "SteppedSlider"),
         .external(name: "ObjectEdge"),
         .external(name: "Alamofire"),
+        .external(name: "SwiftUIStack"),
         .sdk(name: "CloudKit", type: .framework),
 
         .target(name: "AppService"),
@@ -79,6 +80,7 @@ let project = Project(
         .external(name: "DSWaveformImageViews"),
         .external(name: "SwiftSubtitles"),
         .external(name: "DynamicList"),
+        .external(name: "CollectionView"),
         .external(name: "SwiftUISupportLayout"),
         .external(name: "SwiftUISupport"),
         .external(name: "Wrap"),

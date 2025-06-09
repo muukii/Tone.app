@@ -91,6 +91,15 @@
       }
     },
     {
+      "identity" : "swift-indexed-collection",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swift-indexed-collection",
+      "state" : {
+        "revision" : "9b17bf06eae73fee93dae9a0fa6de2e33900d9c5",
+        "version" : "0.2.1"
+      }
+    },
+    {
       "identity" : "swift-macro-hex-color",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/muukii/swift-macro-hex-color",
@@ -106,6 +115,15 @@
       "state" : {
         "revision" : "e0ec0f5f3af6f3e4d5e7a19d2af26b481acb6ba8",
         "version" : "1.0.3"
+      }
+    },
+    {
+      "identity" : "swift-rubber-banding",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swift-rubber-banding",
+      "state" : {
+        "revision" : "f2dbd09829c6267db0a769e7c37fe332dab0b675",
+        "version" : "1.0.0"
       }
     },
     {
@@ -133,6 +151,15 @@
       "state" : {
         "revision" : "ea7afa2ce943c6bf3ef87d385c8a6e9f67fea4f3",
         "version" : "2.0.4"
+      }
+    },
+    {
+      "identity" : "swift-with-prerender",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swift-with-prerender",
+      "state" : {
+        "revision" : "83ea5d0f5a9fd0082c61e090f4b656c7b58ee0be",
+        "version" : "1.0.0"
       }
     },
     {
@@ -178,6 +205,15 @@
       "state" : {
         "revision" : "aa940c6e3b4c28ee20666f1f252982030a67b1f4",
         "version" : "0.2.2"
+      }
+    },
+    {
+      "identity" : "swiftui-snap-dragging-modifier",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/FluidGroup/swiftui-snap-dragging-modifier",
+      "state" : {
+        "revision" : "19088a4078ee15e450391323897fba838585c51c",
+        "version" : "1.3.0"
       }
     },
     {

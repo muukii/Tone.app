@@ -1,6 +1,7 @@
 import AppService
 import SwiftData
 import SwiftUI
+import SwiftUIStack
 
 struct PlatterRoot: View {
 
@@ -15,17 +16,19 @@ struct PlatterRoot: View {
         isExpanded = false
       }
     ) {
-      AudioListView(
-        service: rootDriver.service,
-        openAIService: rootDriver.openAIService,
-        onSelect: { item in
-          do {
-            try mainViewModel.setPlayerController(for: item)
-          } catch {
-            assertionFailure()
+      Stack {
+        AudioListView(
+          service: rootDriver.service,
+          openAIService: rootDriver.openAIService,
+          onSelect: { item in
+            do {
+              try mainViewModel.setPlayerController(for: item)
+            } catch {
+              assertionFailure()
+            }
           }
-        }
-      )
+        )
+      }
     } controlContent: {
       if let player = mainViewModel.currentController {
         ZStack {
