@@ -30,8 +30,6 @@ struct AudioListView: View {
 
   @State private var isInSettings: Bool = false
 
-  @State var path: NavigationPath = .init()
-
   @State private var isImportingAudioAndSRT: Bool = false
   @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
@@ -56,9 +54,13 @@ struct AudioListView: View {
       Section {
 
         ForEach(tags) { tag in
-          NavigationLink(value: tag) {
+          StackLink(
+            transition: StackTransitions.Swap(),
+            value: tag) {             
             Text(tag.name ?? "")
           }
+//          NavigationLink(value: tag) {
+//          }
         }
 
       } header: {
@@ -79,7 +81,7 @@ struct AudioListView: View {
   }
 
   var body: some View {
-    NavigationStack(path: $path) {
+    Group {
 
       ScrollView {
         

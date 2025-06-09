@@ -28,6 +28,18 @@ struct PlatterRoot: View {
             }
           }
         )
+        .stackDestination(for: TagEntity.self) { tag in
+          AudioListInTagView(
+            tag: tag,
+            onSelect: { item in
+              do {
+                try mainViewModel.setPlayerController(for: item)
+              } catch {
+                assertionFailure()
+              }
+            }
+          )
+        }
       }
     } controlContent: {
       if let player = mainViewModel.currentController {
