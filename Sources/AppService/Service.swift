@@ -42,9 +42,10 @@ public final class Service {
 
       let modelContext = ModelContext(modelContainer)
       
+      let id = itemID
       let targetItem = try modelContext.fetch(
         .init(
-          predicate: #Predicate<ItemEntity> { [id = itemID] in
+          predicate: #Predicate<ItemEntity> { 
             $0.persistentModelID == id
           }
         )
@@ -79,9 +80,10 @@ public final class Service {
       
       let modelContext = ModelContext(modelContainer)
       
+      let id = itemID
       let targetItem = try modelContext.fetch(
         .init(
-          predicate: #Predicate<ItemEntity> { [id = itemID] in
+          predicate: #Predicate<ItemEntity> {
             $0.persistentModelID == id
           }
         )
@@ -203,7 +205,8 @@ public final class Service {
 
         modelContext.insert(new)
 
-        let pins = try modelContext.fetch(.init(predicate: #Predicate<PinEntity> { [identifier = new.identifier] in $0.item?.identifier == identifier }))
+        let identifier = new.identifier
+        let pins = try modelContext.fetch(.init(predicate: #Predicate<PinEntity> { $0.item?.identifier == identifier }))
 
         for pin in pins {
           pin.item = nil

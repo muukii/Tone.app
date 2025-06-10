@@ -273,8 +273,10 @@ struct EntityPlayerView: View {
     self.item = item
     self.player = player
     self.namespace = namespace
+    
+    let identifier = item.persistentModelID
 
-    let predicate = #Predicate<PinEntity> { [identifier = item.persistentModelID] in
+    let predicate = #Predicate<PinEntity> {
       $0.item?.persistentModelID == identifier
     }
 
