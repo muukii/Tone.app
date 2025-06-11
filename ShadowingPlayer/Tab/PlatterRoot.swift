@@ -30,6 +30,7 @@ struct PlatterRoot: View {
         )
         .navigationDestination(for: TagEntity.self) { tag in
           AudioListInTagView(
+            service: rootDriver.service,
             tag: tag,
             onSelect: { item in
               do {

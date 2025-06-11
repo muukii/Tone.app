@@ -37,7 +37,7 @@ enum ListComponents {
         .font(.system(size: 20, weight: .bold, design: .default))
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
-        .padding(.vertical, 8)
+        .padding(.vertical, 18)
         .foregroundStyle(.primary)
     }
   }

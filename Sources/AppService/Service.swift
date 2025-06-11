@@ -98,6 +98,40 @@ public final class Service {
       try modelContext.save()
     }
   }
+  
+  public func renameTag(tag: TagEntity, newName: String) async throws {
+    
+    let trimmedName = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+    
+    guard !trimmedName.isEmpty else {
+      throw ServiceError.invalidInput("Tag name cannot be empty")
+    }
+    
+    let tagID = tag.id
+    
+    try await withBackground { [self] in
+      
+      let modelContext = ModelContext(modelContainer)
+      
+      let id = tagID
+      let targetTag = try modelContext.fetch(
+        .init(
+          predicate: #Predicate<TagEntity> {
+            $0.persistentModelID == id
+          }
+        )
+      ).first
+      
+      guard let targetTag else {
+        return
+      }
+      
+      targetTag.name = trimmedName
+      targetTag.markAsUsed()
+            
+      try modelContext.save()
+    }
+  }
 
   public func updateTranscribe(for item: ItemEntity) async throws {
 

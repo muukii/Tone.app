@@ -59,9 +59,13 @@ struct AudioListView: View {
             value: tag
           ) {
             ListComponents.Cell {
-              Text(tag.name ?? "")
-                .font(.headline)                
-                .frame(maxWidth: .infinity, alignment: .leading)
+              HStack {
+                Image(systemName: "tag")                  
+                Text(tag.name ?? "")
+                  .font(.headline)                
+                  .frame(maxWidth: .infinity, alignment: .leading)
+                  .padding(.vertical, 10)
+              }
             }
           }
           .foregroundStyle(.primary)
@@ -94,6 +98,7 @@ struct AudioListView: View {
       .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
       .navigationDestination(for: TagEntity.self) { tag in
         AudioListInTagView(
+          service: service,
           tag: tag,
           onSelect: onSelect
         )
@@ -179,14 +184,21 @@ struct AudioListView: View {
 struct AudioListInTagView: View {
 
   @Query private var items: [ItemEntity]
+  private let service: Service
   private let onSelect: (ItemEntity) -> Void
   private let tag: TagEntity
+  
+  @State private var isRenaming = false
+  @State private var newTagName = ""
+  @State private var isProcessingRename = false
 
   init(
+    service: Service,
     tag: TagEntity,
     onSelect: @escaping (ItemEntity) -> Void
   ) {
 
+    self.service = service
     self.onSelect = onSelect
 
     let tagName = tag.name
@@ -209,6 +221,40 @@ struct AudioListInTagView: View {
       )
     }
     .navigationTitle(tag.name ?? "")
+    .toolbar {
+      ToolbarItem(placement: .topBarTrailing) {
+        Button {
+          newTagName = tag.name ?? ""
+          isRenaming = true
+        } label: {
+          Text("Rename")
+//          Image(systemName: "pencil")
+//            .resizable()
+//            .aspectRatio(contentMode: .fit)
+//            .frame(width: 20, height: 20)
+        }
+        .disabled(isProcessingRename)
+      }
+    }
+    .alert("Rename Tag", isPresented: $isRenaming) {
+      TextField("Tag name", text: $newTagName)
+      Button("Cancel", role: .cancel) {
+        isRenaming = false
+      }
+      Button("Rename") {
+        Task {
+          isProcessingRename = true
+          defer { isProcessingRename = false }
+          
+          do {
+            try await service.renameTag(tag: tag, newName: newTagName)
+          } catch {
+            Log.error("Failed to rename tag: \(error)")
+          }
+        }
+        isRenaming = false
+      }
+    }
   }
 }
 
