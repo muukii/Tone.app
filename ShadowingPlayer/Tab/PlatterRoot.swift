@@ -15,8 +15,8 @@ struct PlatterRoot: View {
       onTapMainContent: {
         isExpanded = false
       }
-    ) {
-      Stack {
+    ) {      
+      NavigationStack {
         AudioListView(
           service: rootDriver.service,
           openAIService: rootDriver.openAIService,
@@ -28,7 +28,7 @@ struct PlatterRoot: View {
             }
           }
         )
-        .stackDestination(for: TagEntity.self) { tag in
+        .navigationDestination(for: TagEntity.self) { tag in
           AudioListInTagView(
             tag: tag,
             onSelect: { item in
@@ -45,18 +45,27 @@ struct PlatterRoot: View {
       if let player = mainViewModel.currentController {
         ZStack {
           
-          detailContent(player: player)
-            .frame(height: isExpanded ? nil : 0)
-            .opacity(isExpanded ? 1 : 0)
+          Group {
+            detailContent(player: player)
+              .frame(height: isExpanded ? nil : 0)
+              .opacity(isExpanded ? 1 : 0)
+          }
           
-          Text("Playing")
-            .onTapGesture {
-              isExpanded = true
-            }
-            .opacity(isExpanded ? 0 : 1)
+          Group {
+            Text(player.title)
+              .onTapGesture {
+                isExpanded = true
+              }
+              .padding(12)
+              .background(Capsule().opacity(0.2))
+          }
+          .opacity(isExpanded ? 0 : 1)
         }
+        
       } else {
         Text("Not playing")
+          .padding(12)
+          .background(Capsule().opacity(0.2))
       }
     }
   }

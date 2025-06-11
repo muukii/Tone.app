@@ -2,6 +2,7 @@ import AppService
 import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
+import CollectionView
 
 struct AudioListView: View {
 
@@ -34,7 +35,7 @@ struct AudioListView: View {
   @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
   @State private var tagEditingItem: ItemEntity?
- 
+
   private let onSelect: (ItemEntity) -> Void
 
   init(
@@ -54,17 +55,20 @@ struct AudioListView: View {
       Section {
 
         ForEach(tags) { tag in
-          StackLink(
-            transition: StackTransitions.Swap(),
-            value: tag) {             
-            Text(tag.name ?? "")
+          NavigationLink(
+            value: tag
+          ) {
+            ListComponents.Cell {
+              Text(tag.name ?? "")
+                .font(.headline)                
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
           }
-//          NavigationLink(value: tag) {
-//          }
+          .foregroundStyle(.primary)
         }
 
       } header: {
-        Text("Tags")
+        ListComponents.Header.init(title: "Tags")
       }
     }
   }
@@ -76,21 +80,18 @@ struct AudioListView: View {
         onSelect: onSelect
       )
     } header: {
-      Text("All Items")
+      ListComponents.Header.init(title: "All Items")
     }
   }
 
   var body: some View {
     Group {
-
-      ScrollView {
-        
-        LazyVStack {          
-          tagList
-          allItems
-        }
-      }
-      .toolbarBackgroundVisibility(.hidden, for: .navigationBar)      
+      
+      CollectionView(layout: .list) { 
+        tagList
+        allItems
+      }     
+      .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
       .navigationDestination(for: TagEntity.self) { tag in
         AudioListInTagView(
           tag: tag,
@@ -145,7 +146,7 @@ struct AudioListView: View {
             }
           )
         }
-      )      
+      )
       .sheet(
         isPresented: $isImportingYouTube,
         content: {
@@ -185,7 +186,7 @@ struct AudioListInTagView: View {
     tag: TagEntity,
     onSelect: @escaping (ItemEntity) -> Void
   ) {
-    
+
     self.onSelect = onSelect
 
     let tagName = tag.name
@@ -195,13 +196,13 @@ struct AudioListInTagView: View {
         $0.tags.contains(where: { $0.name == tagName })
       }
     )
-    
+
     self.tag = tag
-    
+
   }
 
   var body: some View {
-    List {
+    CollectionView(layout: .list) { 
       ItemListFragment(
         items: items,
         onSelect: onSelect
@@ -218,56 +219,44 @@ private struct ItemListFragment: View {
 
   var body: some View {
     ForEach(items) { item in
-      Cell(title: item.title)
-        .onTapGesture {
-          onSelect(item)
-        }
-//      Button {
-//        onSelect(item)
-//      } label: {
-//        AudioItemCell(item: item)
-//      }
-      .modifier(ItemEditingModifier(item: item))
+      ListComponents.Cell {
+        CellContent(title: item.title)
+          .onTapGesture {
+            onSelect(item)
+          }
+          .modifier(ItemEditingModifier(item: item))
+      }
     }
   }
 }
 
-private struct Cell: View {
-  
+private struct CellContent: View {
+
   let title: String
-  
+
   var body: some View {
-    VStack {
-      VStack(alignment: .leading) {
-        Text(title)
-          .font(.headline)
-        //      Text("Title")
-        //        .font(.subheadline)        
-      }
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.vertical, 10)
-      RoundedRectangle(cornerRadius: 1)
-        .frame(height: 1)
-        .foregroundStyle(.quinary)
+    VStack(alignment: .leading) {
+      Text(title)
+        .font(.headline)
     }
-    .padding(.horizontal, 24)
-    .contentShape(Rectangle())
-    
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(.vertical, 10)
+
   }
 }
 
 private struct ItemEditingModifier: ViewModifier {
-  
+
   @Environment(\.modelContext) var modelContext
   @State private var tagEditingItem: ItemEntity?
   @Query var allTags: [TagEntity]
-  
+
   private let item: ItemEntity
-  
+
   init(item: ItemEntity) {
     self.item = item
   }
-  
+
   func body(content: Content) -> some View {
     content
       .contextMenu(menuItems: {
@@ -295,7 +284,7 @@ private struct ItemEditingModifier: ViewModifier {
         }
       )
   }
-  
+
 }
 
 private struct ImportModifier: ViewModifier {

@@ -47,10 +47,11 @@ struct Platter<MainContent: View, ControlContent: View>: View {
                 mainContentHeight = newValue
               }
             })
-            .frame(
-              width: nil,
-              height: isExpanded ? proxy.size.height : nil
-            )
+          // TODO: shifting view makes the content glitchy by updating safe-area.
+//            .frame(
+//              width: nil,
+//              height: isExpanded ? proxy.size.height : nil
+//            )
             .allowsHitTesting(isExpanded == false)
             .overlay(
               Color.black.opacity(isExpanded ? 0.3 : 0)
