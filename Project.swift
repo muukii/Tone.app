@@ -59,6 +59,7 @@ let project = Project(
       entitlements: .dictionary([
         "com.apple.developer.icloud-services": ["CloudKit"],
         "com.apple.developer.icloud-container-identifiers": ["iCloud.app.muukii.tone"],
+        "com.apple.security.application-groups": ["group.app.muukii.tone"],
       ]),
       dependencies: [
         .external(name: "YouTubeKit"),
@@ -103,6 +104,7 @@ let project = Project(
       destinations: .iOS,
       product: .appExtension,
       bundleId: "app.muukii.tone.LiveActivity",
+      deploymentTargets: .iOS("18.0"),
       infoPlist: .dictionary([
         "CFBundleName": "$(PRODUCT_NAME)",
         "CFBundleDisplayName": "Tone Widget",
@@ -115,6 +117,9 @@ let project = Project(
         ],
       ]),
       sources: ["Sources/LiveActivity/**"],
+      entitlements: .dictionary([
+        "com.apple.security.application-groups": ["group.app.muukii.tone"],
+      ]),
       dependencies: [
         .target(name: "ActivityContent")
       ],
@@ -128,7 +133,7 @@ let project = Project(
       destinations: [.iPhone],
       product: .staticLibrary,
       bundleId: "app.muukii.Speaking.AppService",
-      deploymentTargets: .iOS("17.0"),
+      deploymentTargets: .iOS("18.0"),
       sources: ["Sources/AppService/**"],
       dependencies: [
         .target(name: "ActivityContent"),
@@ -146,7 +151,7 @@ let project = Project(
       destinations: [.iPhone],
       product: .framework,
       bundleId: "app.muukii.Speaking.ActivityContent",
-      deploymentTargets: .iOS("17.0"),
+      deploymentTargets: .iOS("18.0"),
       sources: ["Sources/ActivityContent/**"],
       dependencies: []
     ),
