@@ -30,6 +30,7 @@ struct Platter<MainContent: View, ControlContent: View>: View {
         
         Rectangle()
           .fill(.background)
+          .ignoresSafeArea()        
           .environment(\.colorScheme, .dark)
         
         ZStack {
@@ -67,7 +68,7 @@ struct Platter<MainContent: View, ControlContent: View>: View {
             )
           
         }
-        .frame(height: isExpanded ? fixedHeight : nil, alignment: .bottom)
+        .frame(height: isExpanded ? fixedHeight : nil, alignment: .top)
         .mask(
           RoundedRectangle(
             cornerRadius: 30
@@ -75,8 +76,7 @@ struct Platter<MainContent: View, ControlContent: View>: View {
           .ignoresSafeArea(edges: .top)
         )
         .frame(maxHeight: .infinity, alignment: .top)
-      }
-      
+      }      
       .safeAreaInset(
         edge: .bottom,
         spacing: 0
@@ -88,7 +88,6 @@ struct Platter<MainContent: View, ControlContent: View>: View {
           .padding(.top, 16)
           .padding(.bottom, 8)
           .frame(maxWidth: .infinity)
-          .background(.background)
           .fixedSize(horizontal: false, vertical: isExpanded ? false : true)
           .environment(\.colorScheme, .dark)
           .zIndex(-1)

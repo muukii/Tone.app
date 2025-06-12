@@ -8,6 +8,15 @@ struct PlatterRoot: View {
   let rootDriver: RootDriver
   @ObjectEdge var mainViewModel = MainViewModel()
   @State private var isExpanded = false
+  @Namespace private var namespace
+  
+  private func setPlayer(for item: ItemEntity) {
+    do {
+      try mainViewModel.setPlayerController(for: item)
+    } catch {
+      assertionFailure()
+    }
+  }
 
   var body: some View {
     Platter(
@@ -18,48 +27,29 @@ struct PlatterRoot: View {
     ) {      
       NavigationStack {
         AudioListView(
+          namespace: namespace,
           service: rootDriver.service,
           openAIService: rootDriver.openAIService,
-          onSelect: { item in
-            do {
-              try mainViewModel.setPlayerController(for: item)
-            } catch {
-              assertionFailure()
-            }
-          }
+          onSelect: setPlayer
         )
         .navigationDestination(for: TagEntity.self) { tag in
           AudioListInTagView(
             service: rootDriver.service,
             tag: tag,
-            onSelect: { item in
-              do {
-                try mainViewModel.setPlayerController(for: item)
-              } catch {
-                assertionFailure()
-              }
-            }
+            onSelect: setPlayer
           )
-        }
+          .navigationTransition(.zoom(sourceID: tag, in: namespace))
+        }        
       }
     } controlContent: {
       if let player = mainViewModel.currentController {
         ZStack {
           
-          Group {
-            detailContent(player: player)
-              .frame(height: isExpanded ? nil : 0)
-              .opacity(isExpanded ? 1 : 0)
-          }
-          
-          Group {
-            Text(player.title)
-              .onTapGesture {
-                isExpanded = true
-              }
-              .padding(12)
-              .background(Capsule().opacity(0.2))
-          }
+          detailContent(player: player)
+            .frame(height: isExpanded ? nil : 0)
+            .opacity(isExpanded ? 1 : 0)
+                    
+          compactContent(player: player)          
           .opacity(isExpanded ? 0 : 1)
         }
         
@@ -68,6 +58,29 @@ struct PlatterRoot: View {
           .padding(12)
           .background(Capsule().opacity(0.2))
       }
+    }
+  }
+  
+  private func compactContent(player: PlayerController) -> some View {    
+    HStack {
+      Text(player.title)
+        .onTapGesture {
+          isExpanded = true
+        }
+        .padding(12)
+        .background(Capsule().opacity(0.1))
+      
+      Button { 
+        
+      } label: { 
+        Image(systemName: "xmark")
+          .resizable()
+          .aspectRatio(contentMode: .fit)
+          .frame(square: 18)
+          .padding(8)
+      }
+      .buttonStyle(.bordered)
+      .buttonBorderShape(.circle)
     }
   }
 
@@ -88,6 +101,20 @@ struct PlatterRoot: View {
     }
     
   }
+}
+
+#Preview {
+  Button { 
+    
+  } label: { 
+    Image(systemName: "xmark")
+      .resizable()
+      .aspectRatio(contentMode: .fit)
+      .frame(square: 18)
+      .padding(8)
+  }
+  .buttonStyle(.bordered)
+  .buttonBorderShape(.circle)
 }
 
 private struct PlayerWrapper: View {

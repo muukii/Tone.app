@@ -35,14 +35,18 @@ struct AudioListView: View {
   @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
   @State private var tagEditingItem: ItemEntity?
+  
+  private let namespace: Namespace.ID
 
   private let onSelect: (ItemEntity) -> Void
 
   init(
+    namespace: Namespace.ID,
     service: Service,
     openAIService: OpenAIService?,
     onSelect: @escaping (ItemEntity) -> Void
   ) {
+    self.namespace = namespace
     self.service = service
     self.openAIService = openAIService
     self.onSelect = onSelect
@@ -69,6 +73,7 @@ struct AudioListView: View {
             }
           }
           .foregroundStyle(.primary)
+          .matchedTransitionSource(id: tag, in: namespace)
         }
 
       } header: {
@@ -96,13 +101,6 @@ struct AudioListView: View {
         allItems
       }     
       .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
-      .navigationDestination(for: TagEntity.self) { tag in
-        AudioListInTagView(
-          service: service,
-          tag: tag,
-          onSelect: onSelect
-        )
-      }
       .safeAreaPadding(.bottom, 50)
       .overlay {
         if items.isEmpty {
@@ -117,6 +115,7 @@ struct AudioListView: View {
             } label: {
               Image(systemName: "gearshape")
             }
+            .matchedTransitionSource(id: "settings", in: namespace)
           }
         }
         ToolbarItem(placement: .topBarTrailing) {
@@ -167,6 +166,7 @@ struct AudioListView: View {
         isPresented: $isInSettings,
         content: {
           SettingsView()
+            .navigationTransition(.zoom(sourceID: "settings", in: namespace))
         }
       )
       .modifier(

@@ -33,6 +33,7 @@ struct MainTabView: View {
   var body: some View {
     TabView {
       AudioListView(
+        namespace: namespace,
         service: rootDriver.service,
         openAIService: rootDriver.openAIService,
         onSelect: { item in
@@ -338,6 +339,8 @@ final class MainViewModel {
         return
       }
     }
+    
+    discardPlayerController()
 
     let newController = try PlayerController(item: item)
 
