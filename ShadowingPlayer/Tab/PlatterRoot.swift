@@ -24,7 +24,7 @@ struct PlatterRoot: View {
       onTapMainContent: {
         isExpanded = false
       }
-    ) {      
+    ) {
       NavigationStack {
         AudioListView(
           namespace: namespace,
@@ -50,38 +50,36 @@ struct PlatterRoot: View {
             .opacity(isExpanded ? 1 : 0)
                     
           compactContent(player: player)          
-          .opacity(isExpanded ? 0 : 1)
+            .opacity(isExpanded ? 0 : 1)
         }
         
       } else {
-        Text("Not playing")
-          .padding(12)
-          .background(Capsule().opacity(0.2))
+        EmptyPlayerView()
+          .padding(.horizontal, 16)
       }
     }
   }
   
   private func compactContent(player: PlayerController) -> some View {    
-    HStack {
-      Text(player.title)
-        .onTapGesture {
-          isExpanded = true
+    CompactPlayerView(
+      title: player.title,
+      isPlaying: player.isPlaying,
+      onTap: {
+        isExpanded = true
+      },
+      onPlayPause: {
+        if player.isPlaying {
+          player.pause()
+        } else {
+          player.play()
         }
-        .padding(12)
-        .background(Capsule().opacity(0.1))
-      
-      Button { 
-        
-      } label: { 
-        Image(systemName: "xmark")
-          .resizable()
-          .aspectRatio(contentMode: .fit)
-          .frame(square: 18)
-          .padding(8)
+      },
+      onClose: {
+        mainViewModel.discardPlayerController()
+        isExpanded = false
       }
-      .buttonStyle(.bordered)
-      .buttonBorderShape(.circle)
-    }
+    )
+    .padding(.horizontal, 16)
   }
 
   private func detailContent(
@@ -103,18 +101,198 @@ struct PlatterRoot: View {
   }
 }
 
-#Preview {
-  Button { 
-    
-  } label: { 
-    Image(systemName: "xmark")
-      .resizable()
-      .aspectRatio(contentMode: .fit)
-      .frame(square: 18)
-      .padding(8)
+private struct CompactPlayerView: View {
+  let title: String
+  let isPlaying: Bool
+  let onTap: () -> Void
+  let onPlayPause: () -> Void
+  let onClose: () -> Void
+  
+  @State private var isPressed = false  
+  
+  var body: some View {
+    HStack(spacing: 16) {
+      WaveformIndicator(isPlaying: isPlaying)
+      VStack(alignment: .leading, spacing: 2) {
+        MarqueeText(title, font: .footnote.weight(.semibold))
+          .frame(height: 16)
+        
+        Text(isPlaying ? "Now Playing" : "Paused")
+          .font(.caption2)
+          .foregroundStyle(.secondary)
+      }
+      
+      Spacer()
+      
+      // Play/Pause button
+      Button { 
+        onPlayPause()
+      } label: { 
+        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+          .font(.title3)
+          .symbolRenderingMode(.hierarchical)
+          .foregroundStyle(.primary)
+      }
+      .buttonStyle(.plain)
+      
+      Button { 
+        onClose()
+      } label: { 
+        Image(
+          systemName: "xmark.circle.fill"
+        )
+        .font(.title3)
+        .symbolRenderingMode(.hierarchical)
+        .foregroundStyle(.secondary)
+      }
+      .buttonStyle(.plain)
+      
+    }
+    .padding(.horizontal, 20)
+    .padding(.vertical, 12)
+    .background {
+      Capsule()
+        .fill(.ultraThinMaterial)
+        .overlay {
+          Capsule()
+            .strokeBorder(.separator, lineWidth: 0.5)
+        }
+        .shadow(color: .black.opacity(0.15), radius: 20, y: 10)
+    }
+    .animation(.snappy, body: { view in
+      view
+        .scaleEffect(isPressed ? 0.95 : 1.0)
+    })
+    ._onButtonGesture { pressing in
+      isPressed = pressing
+    } perform: {
+      onTap()
+    }    
   }
-  .buttonStyle(.bordered)
-  .buttonBorderShape(.circle)
+}
+
+#Preview("Compact Player View - Playing") {
+  CompactPlayerView(
+    title: "Sample Audio Title",
+    isPlaying: true,
+    onTap: {
+      print("Tapped")
+    },
+    onPlayPause: {
+      print("Play/Pause")
+    },
+    onClose: {
+      print("Close")
+    }
+  )
+  .padding()
+}
+
+#Preview("Compact Player View - Paused") {
+  CompactPlayerView(
+    title: "Sample Audio Title",
+    isPlaying: false,
+    onTap: {
+      print("Tapped")
+    },
+    onPlayPause: {
+      print("Play/Pause")
+    },
+    onClose: {
+      print("Close")
+    }
+  )
+  .padding()
+}
+
+private struct WaveformIndicator: View {
+  let isPlaying: Bool
+  
+  var body: some View {
+    HStack(spacing: 3) {
+      ForEach(0..<4) { index in
+        RoundedRectangle(cornerRadius: 2)
+          .fill(.tint)
+          .frame(
+            width: 3,
+            height: isPlaying ? CGFloat.random(in: 8...24) : 16
+          )
+          .animation(
+            isPlaying ? 
+              .easeInOut(duration: 0.4)
+                .repeatForever(autoreverses: true)
+                .delay(Double(index) * 0.1) :
+              .default,
+            value: isPlaying
+          )
+      }
+    }
+    .frame(width: 24, height: 24)
+  }
+}
+
+#Preview("Waveform Indicator - Playing") {
+  WaveformIndicator(isPlaying: true)
+    .padding()
+}
+
+#Preview("Waveform Indicator - Paused") {
+  WaveformIndicator(isPlaying: false)
+    .padding()
+}
+
+private struct EmptyPlayerView: View {
+  @State private var isPressed = false
+  
+  var body: some View {
+    HStack(spacing: 16) {
+      Image(systemName: "waveform")
+        .font(.title3)
+        .foregroundStyle(.tertiary)
+        .frame(width: 24, height: 24)
+      
+      VStack(alignment: .leading, spacing: 2) {
+        Text("No Audio Playing")
+          .font(.footnote.weight(.semibold))
+          .foregroundStyle(.primary)
+        
+        Text("Select an audio to start")
+          .font(.caption2)
+          .foregroundStyle(.secondary)
+      }
+      
+      Spacer()
+      
+      Image(systemName: "play.circle")
+        .font(.title2)
+        .foregroundStyle(.tertiary)
+    }
+    .padding(.horizontal, 20)
+    .padding(.vertical, 12)
+    .background {
+      Capsule()
+        .fill(.ultraThinMaterial)
+        .overlay {
+          Capsule()
+            .strokeBorder(.separator.opacity(0.3), lineWidth: 0.5)
+        }
+    }
+    .opacity(0.8)
+    .animation(.snappy, body: { view in
+      view
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+    })
+    ._onButtonGesture { pressing in
+      isPressed = pressing
+    } perform: {
+      // No action for empty state
+    }
+  }
+}
+
+#Preview("Empty Player View") {
+  EmptyPlayerView()
+    .padding()
 }
 
 private struct PlayerWrapper: View {

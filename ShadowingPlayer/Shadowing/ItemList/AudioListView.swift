@@ -287,6 +287,7 @@ private struct CellContent: View {
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding(.vertical, 10)
+    .contentShape(Rectangle())
 
   }
 }
