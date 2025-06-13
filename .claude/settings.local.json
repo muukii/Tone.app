@@ -18,7 +18,8 @@
       "Bash(swift package:*)",
       "mcp__XcodeBuildMCP__launch_app_sim",
       "Bash(rm:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "mcp__claude_code__Edit"
     ],
     "deny": []
   }

@@ -74,6 +74,17 @@ struct AudioListView: View {
           }
           .foregroundStyle(.primary)
           .matchedTransitionSource(id: tag, in: namespace)
+          .contextMenu {
+            Button("Delete", role: .destructive) {
+              Task {
+                do {
+                  try service.deleteTag(tag)
+                } catch {
+                  Log.error("Failed to delete tag: \(error)")
+                }
+              }
+            }
+          }
         }
 
       } header: {

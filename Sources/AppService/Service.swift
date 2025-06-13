@@ -133,6 +133,13 @@ public final class Service {
     }
   }
   
+  public func deleteTag(_ tag: TagEntity) throws {
+        
+    modelContainer.mainContext.delete(tag)
+    
+    try modelContainer.mainContext.save()       
+  }
+  
   public func createTag(name: String) throws -> TagEntity? {
     
     let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
