@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: macos-15
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Select Xcode version
+      uses: maxim-lobanov/setup-xcode@v1.1
+      with:
+        xcode-version: "16.2"
+    
+    - name: Setup mise
+      uses: jdx/mise-action@v2
+    
+    - name: Install Tuist dependencies
+      run: tuist install
+    
+    - name: Generate project with Tuist
+      run: tuist generate --no-open
+    
+    - name: Build Tone app
+      run: tuist build Tone
