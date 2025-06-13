@@ -1,3 +1,5 @@
+import ActivityContent
+import ActivityKit
 import AppService
 import MediaPlayer
 import StateGraph
@@ -46,6 +48,8 @@ public final class PlayerController: NSObject {
   private var isActivated: Bool = false
 
   private var isAppInBackground: Bool = false
+
+  private let liveActivityManager = LiveActivityManager.shared
 
   public enum Source: Equatable {
     case item(Item)
@@ -265,6 +269,8 @@ public final class PlayerController: NSObject {
 
     }
 
+    startLiveActivity()
+
     resetCommandCenter()
 
     MPNowPlayingInfoCenter.default().playbackState = .playing
@@ -277,21 +283,21 @@ public final class PlayerController: NSObject {
         guard self.isAppInBackground == false else { return }
 
         if let currentTime = self.controller.mainTrack!.currentTime() {
-          
-//          Log.debug("currentTime: \(currentTime)")
-          
+
+          //          Log.debug("currentTime: \(currentTime)")
+
           let currentCue = self.cues.first { cue in
-            
+
             if cue.backed.startTime <= currentTime,
-               cue.backed.endTime >= currentTime
+              cue.backed.endTime >= currentTime
             {
               return true
             } else {
               return false
             }
-            
+
           }
-          
+
           if self.currentCue != currentCue {
             self.currentCue = currentCue
           }
@@ -340,6 +346,8 @@ public final class PlayerController: NSObject {
     guard isPlaying else {
       return
     }
+    
+    endLiveActivity()
 
     controller.pause()
 
@@ -412,6 +420,38 @@ public final class PlayerController: NSObject {
 
     self.rate = rate
 
+  }
+
+  // MARK: - Live Activity
+
+  private func startLiveActivity() {
+    let itemId =
+      switch source {
+      case .item(let item):
+        item.id
+      case .entity(let entity):
+        entity.id.hashValue.description
+      }
+
+    liveActivityManager.startActivity(
+      itemId: itemId,
+      title: title,
+      artist: nil,
+      isPlaying: isPlaying
+    )
+
+  }
+
+  private func updateLiveActivity() {
+    liveActivityManager.updateActivity(
+      title: title,
+      artist: nil,
+      isPlaying: isPlaying
+    )
+  }
+
+  private func endLiveActivity() {
+    liveActivityManager.endActivity()
   }
 
 }

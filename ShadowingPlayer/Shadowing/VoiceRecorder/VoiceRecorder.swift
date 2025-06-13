@@ -5,7 +5,7 @@ import DSWaveformImageViews
 import SwiftUI
 import TipKit
 
-struct SampleTip: Tip {
+nonisolated struct SampleTip: Tip {
   var title: Text {
     Text("Record and playback")
   }
@@ -444,7 +444,7 @@ final class VoiceRecorderController {
 
 }
 
-struct UnsafeSendableBox<V>: @unchecked Sendable {
+nonisolated struct UnsafeSendableBox<V>: @unchecked Sendable {
   var value: V
 }
 

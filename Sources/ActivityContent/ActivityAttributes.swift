@@ -1,18 +1,28 @@
 import ActivityKit
 
-public struct MyActivityAttributes: ActivityAttributes {
+public nonisolated struct PlayerActivityAttributes: ActivityAttributes {
   
-  public struct ContentState: Codable, Hashable {
+  public nonisolated struct ContentState: Codable, Hashable {
     
-    public let text: String
+    public let title: String
+    public let artist: String?
+    public let isPlaying: Bool
     
-    public init(text: String) {
-      self.text = text
+    public init(
+      title: String,
+      artist: String? = nil,
+      isPlaying: Bool
+    ) {
+      self.title = title
+      self.artist = artist
+      self.isPlaying = isPlaying
     }
   }
   
-  public init() {
-    
+  public let itemId: String
+  
+  public init(itemId: String) {
+    self.itemId = itemId
   }
   
 }

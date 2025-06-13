@@ -91,6 +91,15 @@
       }
     },
     {
+      "identity" : "swift-concurrency-task-manager",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/VergeGroup/swift-concurrency-task-manager",
+      "state" : {
+        "revision" : "5698f92a90782cb8bfdae8303793af594ff5c441",
+        "version" : "2.1.4"
+      }
+    },
+    {
       "identity" : "swift-indexed-collection",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/FluidGroup/swift-indexed-collection",
@@ -151,15 +160,6 @@
       "state" : {
         "revision" : "ea7afa2ce943c6bf3ef87d385c8a6e9f67fea4f3",
         "version" : "2.0.4"
-      }
-    },
-    {
-      "identity" : "swift-with-prerender",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FluidGroup/swift-with-prerender",
-      "state" : {
-        "revision" : "83ea5d0f5a9fd0082c61e090f4b656c7b58ee0be",
-        "version" : "1.0.0"
       }
     },
     {

@@ -62,6 +62,8 @@ let project = Project(
         "com.apple.security.application-groups": ["group.app.muukii.tone"],
       ]),
       dependencies: [
+        .sdk(name: "CloudKit", type: .framework),
+        
         .external(name: "YouTubeKit"),
         .external(name: "AudioKit"),
         .external(name: "StateGraph"),
@@ -72,11 +74,13 @@ let project = Project(
         .external(name: "ObjectEdge"),
         .external(name: "Alamofire"),
         .external(name: "SwiftUIStack"),
-        .sdk(name: "CloudKit", type: .framework),
 
         .target(name: "AppService"),
         .target(name: "ActivityContent"),
         .target(name: "LiveActivity"),
+        .target(name: "UIComponents"),
+        
+        .external(name: "ConcurrencyTaskManager"),
 
         .external(name: "DSWaveformImageViews"),
         .external(name: "SwiftSubtitles"),
@@ -143,6 +147,7 @@ let project = Project(
         .external(name: "SwiftSubtitles"),
         .external(name: "Alamofire"),
         .external(name: "UserDefaultsSnapshotLib"),
+        .external(name: "ConcurrencyTaskManager"),
       ]
     ),
 
@@ -154,6 +159,19 @@ let project = Project(
       deploymentTargets: .iOS("18.0"),
       sources: ["Sources/ActivityContent/**"],
       dependencies: []
+    ),
+
+    .target(
+      name: "UIComponents",
+      destinations: [.iPhone, .macWithiPadDesign],
+      product: .framework,
+      bundleId: "app.muukii.tone.UIComponents",
+      deploymentTargets: .iOS("18.0"),
+      sources: ["Sources/UIComponents/**"],
+      dependencies: [
+        .external(name: "SwiftUISupport"),
+        .external(name: "SwiftUISupportLayout"),
+      ]
     ),
   ],
   schemes: [

@@ -25,5 +25,6 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-algorithms", from: "1.2.0"),
     .package(url: "https://github.com/shima11/SteppedSlider.git", branch: "main"),
     .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.10.2"),
+    .package(url: "https://github.com/VergeGroup/swift-concurrency-task-manager", from: "2.1.4"),
   ]
 )

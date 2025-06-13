@@ -2,13 +2,20 @@ import AppService
 import SwiftData
 import SwiftUI
 import SwiftUIStack
+import StateGraph
+import UIComponents
 
 struct PlatterRoot: View {
 
   let rootDriver: RootDriver
-  @ObjectEdge var mainViewModel = MainViewModel()
+  let mainViewModel: MainViewModel
   @State private var isExpanded = false
   @Namespace private var namespace
+  
+  init(rootDriver: RootDriver, mainViewModel: MainViewModel) {
+    self.rootDriver = rootDriver
+    self.mainViewModel = mainViewModel
+  }
   
   private func setPlayer(for item: ItemEntity) {
     do {
@@ -114,7 +121,8 @@ private struct CompactPlayerView: View {
     HStack(spacing: 16) {
       WaveformIndicator(isPlaying: isPlaying)
       VStack(alignment: .leading, spacing: 2) {
-        MarqueeText(title, font: .footnote.weight(.semibold))
+        MarqueeText(title)
+          .font(.caption2)
           .frame(height: 16)
         
         Text(isPlaying ? "Now Playing" : "Paused")
@@ -205,31 +213,6 @@ private struct CompactPlayerView: View {
   .padding()
 }
 
-private struct WaveformIndicator: View {
-  let isPlaying: Bool
-  
-  var body: some View {
-    HStack(spacing: 3) {
-      ForEach(0..<4) { index in
-        RoundedRectangle(cornerRadius: 2)
-          .fill(.tint)
-          .frame(
-            width: 3,
-            height: isPlaying ? CGFloat.random(in: 8...24) : 16
-          )
-          .animation(
-            isPlaying ? 
-              .easeInOut(duration: 0.4)
-                .repeatForever(autoreverses: true)
-                .delay(Double(index) * 0.1) :
-              .default,
-            value: isPlaying
-          )
-      }
-    }
-    .frame(width: 24, height: 24)
-  }
-}
 
 #Preview("Waveform Indicator - Playing") {
   WaveformIndicator(isPlaying: true)
