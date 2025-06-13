@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct Platter<MainContent: View, ControlContent: View>: View {
+public struct Platter<MainContent: View, ControlContent: View>: View {
 
   let mainContent: MainContent
   let controlContent: ControlContent
@@ -12,7 +12,7 @@ struct Platter<MainContent: View, ControlContent: View>: View {
   @State private var mainContentHeight: CGFloat?
   @State private var controlHeight: CGFloat?
 
-  init(
+  public init(
     isExpanded: Bool = false,
     onTapMainContent: @escaping () -> Void = {},
     @ViewBuilder mainContent: () -> MainContent,
@@ -24,7 +24,7 @@ struct Platter<MainContent: View, ControlContent: View>: View {
     self.controlContent = controlContent()
   }
 
-  var body: some View {
+  public var body: some View {
     GeometryReader { proxy in 
       ZStack {
         

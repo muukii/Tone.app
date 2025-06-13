@@ -1,3 +1,3 @@
 import os.log
 
-let Log = Logger.init()
+nonisolated let Log = Logger.init()

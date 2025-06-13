@@ -1,10 +1,14 @@
 import SwiftUI
 
-struct TagView: View {
+public struct TagView: View {
 
   let tag: String
 
-  var body: some View {
+  public init(tag: String) {
+    self.tag = tag
+  }
+
+  public var body: some View {
     Text(tag)
       .font(.caption)
       .padding(.horizontal, 10)

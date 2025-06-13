@@ -11,9 +11,9 @@ import Foundation
 
 extension Schemas.V2 {
   @Model
-  public final class Tag: Hashable, TagType {
+  public nonisolated final class Tag: Hashable, TagType {
         
-    public var name: String?
+    public nonisolated var name: String?
         
     public var lastUsedAt: Date?
     
@@ -27,7 +27,7 @@ extension Schemas.V2 {
       self.name = name
     }
     
-    public func markAsUsed() {
+    public nonisolated func markAsUsed() {
       self.lastUsedAt = .init()
     }
   }

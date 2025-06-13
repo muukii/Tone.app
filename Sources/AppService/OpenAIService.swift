@@ -183,7 +183,7 @@ public final class OpenAIService {
 extension OpenAIService {
 
   public enum Responses {
-    public struct Transcription: Decodable, Sendable {
+    public nonisolated struct Transcription: Decodable, Sendable {
 
       public struct Word: Decodable, Sendable {
         var word: String
@@ -215,7 +215,7 @@ extension OpenAIService {
     }
   }
 
-  public struct Message: Codable, Sendable {
+  public nonisolated struct Message: Codable, Sendable {
     public let role: String
     public let content: String
 
@@ -245,7 +245,7 @@ extension OpenAIService {
       public let message: Message
       public let finishReason: String
 
-      private enum CodingKeys: String, CodingKey {
+      private nonisolated enum CodingKeys: String, CodingKey {
         case index
         case message
         case finishReason = "finish_reason"
@@ -257,7 +257,7 @@ extension OpenAIService {
       public let completionTokens: Int
       public let totalTokens: Int
 
-      private enum CodingKeys: String, CodingKey {
+      private nonisolated enum CodingKeys: String, CodingKey {
         case promptTokens = "prompt_tokens"
         case completionTokens = "completion_tokens"
         case totalTokens = "total_tokens"
@@ -265,7 +265,7 @@ extension OpenAIService {
     }
   }
 
-  public struct ResponseInput: Codable, Sendable {
+  public nonisolated struct ResponseInput: Codable, Sendable {
     public let content: [Content]
     public let role: String
 
@@ -281,7 +281,7 @@ extension OpenAIService {
       ]
     }
 
-    public struct Content: Codable, Sendable {
+    public nonisolated struct Content: Codable, Sendable {
       public let type: String
       public let text: String
 
@@ -299,9 +299,9 @@ extension OpenAIService {
     }
   }
 
-  public struct ResponseOutput: Decodable, Sendable {
+  public nonisolated struct ResponseOutput: Decodable, Sendable {
 
-    public struct Output: Decodable, Sendable {
+    public nonisolated struct Output: Decodable, Sendable {
 
       public struct Content: Decodable, Sendable {
         public let type: String
@@ -332,7 +332,7 @@ extension OpenAIService {
       output = try container.decode(Array<Output>.self, forKey: .output)
     }
 
-    private enum CodingKeys: String, CodingKey {
+    private nonisolated enum CodingKeys: String, CodingKey {
       case id
       case object
       case created_at
@@ -341,7 +341,7 @@ extension OpenAIService {
     }
   }
 
-  private struct CreateResponseParameters: Encodable, Sendable {
+  private nonisolated struct CreateResponseParameters: Encodable, Sendable {
     let input: [[String: String]]
     let model: String
     let tools: [String]
@@ -352,7 +352,7 @@ extension OpenAIService {
     let topP: Double
     let store: Bool
 
-    private enum CodingKeys: String, CodingKey {
+    private nonisolated enum CodingKeys: String, CodingKey {
       case input
       case model
       case tools
@@ -393,7 +393,7 @@ extension OpenAIService {
     let items: SendableEncodable
     let description: String
 
-    private enum CodingKeys: String, CodingKey {
+    private nonisolated enum CodingKeys: String, CodingKey {
       case type
       case items
       case description
@@ -409,7 +409,7 @@ extension OpenAIService {
 
   private protocol SendableEncodable: Encodable, Sendable {}
 
-  private struct StringProperty: SendableEncodable {
+  private nonisolated struct StringProperty: SendableEncodable {
     let type: String
     let description: String?
 
@@ -419,19 +419,19 @@ extension OpenAIService {
     }
   }
 
-  private struct SentenceProperty: SendableEncodable {
+  private nonisolated struct SentenceProperty: SendableEncodable {
     let properties: SentencePropertyDetails
     let type: String
     let required: [String]
     let additionalProperties: Bool
   }
 
-  private struct SentencePropertyDetails: SendableEncodable {
+  private nonisolated struct SentencePropertyDetails: SendableEncodable {
     let word: StringProperty
     let sentence: StringProperty
   }
 
-  private struct JSONStringEncoding: ParameterEncoding {
+  private nonisolated struct JSONStringEncoding: ParameterEncoding {
     private let jsonString: String
 
     init(_ jsonString: String) {

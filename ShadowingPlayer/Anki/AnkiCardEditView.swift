@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIComponents
 
 struct AnkiCardEditView: View {
 

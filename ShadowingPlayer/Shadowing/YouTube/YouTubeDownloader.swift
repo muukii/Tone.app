@@ -10,8 +10,7 @@ enum YouTubeDownloader {
   static let session = URLSession(configuration: .default)
 
   /// returns audio file in temporary dir
-  static func run(url: URL) async throws -> URL {
-
+  static nonisolated func run(url: URL) async throws -> URL {
 
     let video = YouTube(url: url)
 
@@ -51,7 +50,7 @@ enum YouTubeDownloader {
 
   }
 
-  private final class TaskDeletage: NSObject, URLSessionTaskDelegate {
+  private nonisolated final class TaskDeletage: NSObject, URLSessionTaskDelegate {
 
     func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
       print("task created")
@@ -93,7 +92,7 @@ enum AudioExtractorError: Error {
 enum AudioExtractor {
 
   // returns m4a file url
-  static func run(videoURL: URL) async throws -> URL {
+  nonisolated static func run(videoURL: URL) async throws -> URL {
 
     // Create a composition
     let composition = AVMutableComposition()

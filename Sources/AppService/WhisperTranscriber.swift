@@ -8,7 +8,7 @@ public enum WhisperKitWrapper {
     case failedToDownloadModel
   }
 
-  public struct Result: Sendable {
+  public  struct Result: Sendable {
     let audioFileURL: URL
     let segments: [AbstractSegment]
   }
@@ -68,10 +68,10 @@ public enum WhisperKitWrapper {
   // Download a specific model
   public static func downloadModel(
     _ modelName: String,
-    progressHandler: @escaping (Double) -> Void = { _ in }
+    progressHandler: @escaping @Sendable (Double) -> Void = { _ in }
   ) async throws {
     do {
-      _ = try await WhisperKit.download(variant: modelName, progressCallback: { progress in
+      _ = try await WhisperKit.download(variant: modelName, progressCallback: { @Sendable progress in
         progressHandler(progress.fractionCompleted)
       })
     } catch {
@@ -127,7 +127,7 @@ public enum WhisperKitWrapper {
         wordTimestamps: true,
         suppressBlank: true
       )
-    ) { progress in
+    ) { @Sendable progress in
       return true
     }
 
