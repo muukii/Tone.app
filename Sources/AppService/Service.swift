@@ -127,10 +127,48 @@ public final class Service {
       }
       
       targetTag.name = trimmedName
-      targetTag.markAsUsed()
+      targetTag.lastUsedAt = Date()
             
       try modelContext.save()
     }
+  }
+  
+  public func createTag(name: String) throws -> TagEntity? {
+    
+    let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+    
+    guard !trimmedName.isEmpty else {
+      throw ServiceError.invalidInput("Tag name cannot be empty")
+    }
+    
+    do {
+      
+      let modelContext = ModelContext(modelContainer)
+      
+      // Check if tag already exists
+      let existingTags = try modelContext.fetch(
+        .init(
+          predicate: #Predicate<TagEntity> {
+            $0.name == trimmedName
+          }
+        )
+      )
+      
+      guard existingTags.isEmpty else {
+        Log.error("Tag with name '\(trimmedName)' already exists.")
+        return nil
+      }
+      
+      // Create new tag
+      let newTag = TagEntity(name: trimmedName)
+      newTag.markAsUsed()
+      
+      modelContext.insert(newTag)
+      try modelContext.save()
+      
+      return newTag
+    }
+        
   }
 
   public func updateTranscribe(for item: ItemEntity) async throws {

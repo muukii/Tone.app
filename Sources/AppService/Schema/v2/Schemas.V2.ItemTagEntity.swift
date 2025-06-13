@@ -23,7 +23,7 @@ extension Schemas.V2 {
     )
     public var items: [Schemas.V2.Item] = []
     
-    public init(name: String) {
+    public nonisolated init(name: String) {
       self.name = name
     }
     

@@ -148,7 +148,6 @@ private struct PlayerControlPanelContent: View {
     }
     .padding(.top, 24)
     .padding(.bottom, 10)
-    .background(.quinary)
     .onKeyPress(.space) {
       onAction(.togglePlaying)
       return .handled

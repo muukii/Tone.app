@@ -86,7 +86,8 @@ struct AudioListView: View {
     Section {
       ItemListFragment(
         items: items,
-        onSelect: onSelect
+        onSelect: onSelect,
+        service: service
       )
     } header: {
       ListComponents.Header.init(title: "All Items")
@@ -217,7 +218,8 @@ struct AudioListInTagView: View {
     CollectionView(layout: .list) { 
       ItemListFragment(
         items: items,
-        onSelect: onSelect
+        onSelect: onSelect,
+        service: service
       )
     }
     .navigationTitle(tag.name ?? "")
@@ -262,6 +264,13 @@ private struct ItemListFragment: View {
 
   let items: [ItemEntity]
   let onSelect: (ItemEntity) -> Void
+  let service: Service?
+
+  init(items: [ItemEntity], onSelect: @escaping (ItemEntity) -> Void, service: Service? = nil) {
+    self.items = items
+    self.onSelect = onSelect
+    self.service = service
+  }
 
   var body: some View {
     ForEach(items) { item in
@@ -270,7 +279,7 @@ private struct ItemListFragment: View {
           .onTapGesture {
             onSelect(item)
           }
-          .modifier(ItemEditingModifier(item: item))
+          .modifier(ItemEditingModifier(item: item, service: service))
       }
     }
   }
@@ -299,9 +308,11 @@ private struct ItemEditingModifier: ViewModifier {
   @Query var allTags: [TagEntity]
 
   private let item: ItemEntity
+  private let service: Service?
 
-  init(item: ItemEntity) {
+  init(item: ItemEntity, service: Service? = nil) {
     self.item = item
+    self.service = service
   }
 
   func body(content: Content) -> some View {
@@ -319,6 +330,7 @@ private struct ItemEditingModifier: ViewModifier {
         item: $tagEditingItem,
         content: { item in
           TagEditorView(
+            service: service ?? Service(),
             currentTags: item.tags,
             allTags: allTags,
             onAddTag: { tag in

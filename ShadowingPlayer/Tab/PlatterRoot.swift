@@ -53,10 +53,16 @@ struct PlatterRoot: View {
         ZStack {
           
           detailContent(player: player)
+            .id(player)
             .frame(height: isExpanded ? nil : 0)
+            .safeAreaInset(edge: .bottom, content: { 
+              Button("Close") {
+                isExpanded = false                
+              }
+            })
             .opacity(isExpanded ? 1 : 0)
                     
-          compactContent(player: player)          
+          compactContent(player: player)
             .opacity(isExpanded ? 0 : 1)
         }
         

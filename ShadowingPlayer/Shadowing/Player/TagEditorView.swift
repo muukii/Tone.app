@@ -5,28 +5,64 @@ import AppService
 struct TagEditorView<Tag: TagType>: View {
   
   private var tags: [Tag]
-
-  @State private var newTagText: String = ""
-
   private var allTags: [Tag]
-    
   private let onAddTag: (Tag) -> Void
   private let onRemoveTag: (Tag) -> Void
+  private let service: Service
   
-  @Environment(\.modelContext) private var modelContext
-
   init(
+    service: Service,
     currentTags: [Tag],
     allTags: [Tag],
     onAddTag: @escaping (Tag) -> Void,
     onRemoveTag: @escaping (Tag) -> Void
   ) {
+    self.service = service
     self.tags = currentTags
     self.allTags = allTags
     self.onAddTag = onAddTag
     self.onRemoveTag = onRemoveTag
   }
+  
+  var body: some View {
+    TagEditorInnerView(
+      currentTags: tags,
+      allTags: allTags,
+      onAddTag: onAddTag,
+      onRemoveTag: onRemoveTag,
+      onCreateTag: { name in        
+        try! service.createTag(name: name) as! Tag
+      }
+    )
+  }
+}
 
+struct TagEditorInnerView<Tag: TagType>: View {
+  
+  private var tags: [Tag]
+  
+  @State private var newTagText: String = ""
+  
+  private var allTags: [Tag]
+  
+  private let onAddTag: (Tag) -> Void
+  private let onRemoveTag: (Tag) -> Void
+  private let onCreateTag: (String) -> Tag
+  
+  init(
+    currentTags: [Tag],
+    allTags: [Tag],
+    onAddTag: @escaping (Tag) -> Void,
+    onRemoveTag: @escaping (Tag) -> Void,
+    onCreateTag: @escaping (String) -> Tag
+  ) {
+    self.tags = currentTags
+    self.allTags = allTags
+    self.onAddTag = onAddTag
+    self.onRemoveTag = onRemoveTag
+    self.onCreateTag = onCreateTag
+  }
+  
   var body: some View {
     NavigationStack {
       VStack(alignment: .leading, spacing: 12) {
@@ -50,7 +86,7 @@ struct TagEditorView<Tag: TagType>: View {
           }
         }
         .listStyle(.automatic)
-          
+        
         VStack {
           suggestionView
           
@@ -102,9 +138,14 @@ struct TagEditorView<Tag: TagType>: View {
         .padding(.horizontal, 4)
       Button("Add") {
         
-        let tag = fetchTag(for: newTagText)
+        let trimmed = newTagText.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        onAddTag(tag)
+        if let existingTag = allTags.first(where: { $0.name == trimmed }) {
+          onAddTag(existingTag)
+        } else {
+          let newTag = onCreateTag(trimmed)
+          onAddTag(newTag)
+        }
         
         newTagText = ""
       }
@@ -118,22 +159,56 @@ struct TagEditorView<Tag: TagType>: View {
     )
   }
   
-  private func fetchTag(for name: String) -> Tag {
-    
-    let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-    
-    let currentTag = allTags.first { $0.name == trimmed }
-    
-    guard let currentTag else {
-      
-      let newTag = Tag(name: trimmed)
-      modelContext.insert(newTag)
-      newTag.markAsUsed()
-      return newTag
-    }
-    
-    return currentTag
-  }
-  
 }
 
+
+#if DEBUG
+@Model
+private final class MockTag: TagType {
+  
+  var name: String?
+  var lastUsedAt: Date?
+  
+  init(name: String) {
+    self.name = name
+  }
+  
+  func markAsUsed() {
+    lastUsedAt = Date()
+  }
+}
+
+#Preview {
+    
+  @Previewable @State var currentTags: [MockTag] = [
+    MockTag(name: "Japanese"),
+    MockTag(name: "English")
+  ]
+  
+  @Previewable @State var allTags: [MockTag] = [
+    MockTag(name: "Japanese"),
+    MockTag(name: "English"),
+    MockTag(name: "Spanish"),
+    MockTag(name: "French"),
+    MockTag(name: "German")
+  ]
+  
+  return TagEditorInnerView(
+    currentTags: currentTags,
+    allTags: allTags,
+    onAddTag: { tag in
+      if !currentTags.contains(where: { $0.name == tag.name }) {
+        currentTags.append(tag)
+      }
+    },
+    onRemoveTag: { tag in
+      currentTags.removeAll { $0.name == tag.name }
+    },
+    onCreateTag: { name in
+      let newTag = MockTag(name: name)
+      allTags.append(newTag)
+      return newTag
+    }
+  )
+}
+#endif

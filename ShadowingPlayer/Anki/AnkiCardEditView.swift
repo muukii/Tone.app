@@ -90,16 +90,16 @@ struct AnkiCardEditView: View {
       .navigationTitle(itemToEdit == nil ? "Add cards" : "Edit card")
       .navigationBarTitleDisplayMode(.inline)
       .sheet(isPresented: $isSelectingTag) {
-        TagEditorView(
-          currentTags: tags.sorted { ($0.name ?? "") < ($1.name ?? "") },
-          allTags: allTags,
-          onAddTag: { tag in
-            tags.insert(tag)
-          },
-          onRemoveTag: { tag in
-            tags.remove(tag)
-          }
-        )
+//        TagEditorView(
+//          currentTags: tags.sorted { ($0.name ?? "") < ($1.name ?? "") },
+//          allTags: allTags,
+//          onAddTag: { tag in
+//            tags.insert(tag)
+//          },
+//          onRemoveTag: { tag in
+//            tags.remove(tag)
+//          }
+//        )
       }
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {

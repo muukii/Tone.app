@@ -16,22 +16,22 @@ protocol PlayerDisplay: View {
   )
 }
 
-enum PlayerAction {
+nonisolated enum PlayerAction {
   case onPin(range: PlayingRange)
   case onTranscribeAgain
   case onRename(title: String)
 }
 
-struct PlayerView<Display: PlayerDisplay>: View {
+struct PlayerView<Display: PlayerDisplay & Sendable>: View {
 
-  struct Term: Identifiable {
+  nonisolated struct Term: Identifiable {
     var id: String { value }
     var value: String
   }
 
   unowned let controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) async -> Void
-  @State private var controllerForDetail: PlayerController?
+//  @State private var controllerForDetail: PlayerController?
   @State private var isDisplayingPinList: Bool = false
   @State private var isProcessing: Bool = false
   @State private var isShowingRenameDialog: Bool = false
@@ -83,7 +83,21 @@ struct PlayerView<Display: PlayerDisplay>: View {
           )
         )
         .frame(height: 20)
+      
       Rectangle()
+      
+      Rectangle()
+        .fill(
+          LinearGradient(
+            stops: [
+              .init(color: .black.opacity(1), location: 0),
+              .init(color: .clear, location: 1),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+          )
+        )
+        .frame(height: 20)
     }
   }
 
@@ -101,7 +115,7 @@ struct PlayerView<Display: PlayerDisplay>: View {
     }
     .safeAreaInset(
       edge: .bottom,
-      spacing: 0,
+      spacing: 20,
       content: {
 
         PlayerControlPanel(
@@ -118,7 +132,8 @@ struct PlayerView<Display: PlayerDisplay>: View {
                 await actionHandler(.onPin(range: range))
               }
             case .onTapDetail:
-              controllerForDetail = controller
+//              controllerForDetail = controller
+              break
             case .onStartRecord:
               controller.startRecording()
             case .onStopRecording:
@@ -126,14 +141,21 @@ struct PlayerView<Display: PlayerDisplay>: View {
             }
           }
         )
+        .background(
+          RoundedRectangle(cornerRadius: 32)
+            .foregroundStyle(
+              .quinary
+            )
+        )
+        .padding(.horizontal, 8)
       }
     )
-    .navigationDestination(
-      item: $controllerForDetail,
-      destination: { controller in
-        RepeatingView(controller: controller)
-      }
-    )
+//    .navigationDestination(
+//      item: $controllerForDetail,
+//      destination: { controller in
+//        RepeatingView(controller: controller)
+//      }
+//    )
     .onAppear {
       UIApplication.shared.isIdleTimerDisabled = true
     }
