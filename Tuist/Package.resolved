@@ -248,8 +248,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/argmaxinc/whisperkit",
       "state" : {
-        "revision" : "6a509d6181da1f71517159425d6ec9d94d424f55",
-        "version" : "0.12.0"
+        "revision" : "b3c412aa7520069f6c71f7cc217fbcf850ba31a1",
+        "version" : "0.13.0"
       }
     },
     {
