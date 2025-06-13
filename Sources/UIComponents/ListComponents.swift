@@ -1,18 +1,18 @@
 import SwiftUI
 
-enum ListComponents {
+public enum ListComponents {
   
-  struct Cell<Content: View>: View {
+  public struct Cell<Content: View>: View {
     
     let content: Content
     
-    init(
+    public init(
       @ViewBuilder content: () -> Content
     ) {
       self.content = content()
     }
     
-    var body: some View {
+    public var body: some View {
       VStack {
         content
         RoundedRectangle(cornerRadius: 1)
@@ -24,15 +24,15 @@ enum ListComponents {
     }    
   }
   
-  struct Header: View {
+  public struct Header: View {
     
     let title: String
     
-    init(title: String) {
+    public init(title: String) {
       self.title = title
     }
     
-    var body: some View {
+    public var body: some View {
       Text(title)
         .font(.system(size: 20, weight: .bold, design: .default))
         .frame(maxWidth: .infinity, alignment: .leading)

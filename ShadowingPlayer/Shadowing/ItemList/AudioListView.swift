@@ -3,6 +3,7 @@ import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
 import CollectionView
+import UIComponents
 
 struct AudioListView: View {
 
@@ -71,9 +72,9 @@ struct AudioListView: View {
                   .padding(.vertical, 10)
               }
             }
+            .matchedTransitionSource(id: tag.id, in: namespace)
           }
           .foregroundStyle(.primary)
-          .matchedTransitionSource(id: tag, in: namespace)
           .contextMenu {
             Button("Delete", role: .destructive) {
               Task {

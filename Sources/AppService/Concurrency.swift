@@ -16,13 +16,6 @@ public nonisolated func withBackground<Return: Sendable>(
   return try await thunk()
 }
 
-public nonisolated func withA<Return: Sendable>(
-  _ thunk: @escaping @isolated(any) () async throws -> Return
-) async rethrows -> Return {
-  
-  return try await thunk()
-}
-
 extension Task {
   
   /**

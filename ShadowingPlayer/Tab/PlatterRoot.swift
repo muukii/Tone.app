@@ -45,7 +45,7 @@ struct PlatterRoot: View {
             tag: tag,
             onSelect: setPlayer
           )
-          .navigationTransition(.zoom(sourceID: tag, in: namespace))
+          .navigationTransition(.zoom(sourceID: tag.id, in: namespace))
         }        
       }
     } controlContent: {
@@ -69,6 +69,11 @@ struct PlatterRoot: View {
       } else {
         EmptyPlayerView()
           .padding(.horizontal, 16)
+      }
+    }
+    .onChange(of: mainViewModel.currentController) { oldValue, newValue in
+      if oldValue != newValue, newValue != nil {
+        isExpanded = true      
       }
     }
   }

@@ -9,13 +9,13 @@ public struct WaveformIndicator: View {
   }
   
   public var body: some View {
-    HStack(spacing: 3) {
+    HStack(spacing: 2) {
       ForEach(0..<4) { index in
         RoundedRectangle(cornerRadius: 2)
           .fill(.tint)
           .frame(
-            width: 3,
-            height: isPlaying ? CGFloat.random(in: 8...24) : 16
+            width: 2,
+            height: isPlaying ? CGFloat.random(in: 4...24) : 16
           )
           .animation(
             isPlaying ? 
