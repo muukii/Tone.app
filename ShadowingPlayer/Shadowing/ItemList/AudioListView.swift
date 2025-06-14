@@ -110,6 +110,9 @@ struct AudioListView: View {
     Group {
       
       CollectionView(layout: .list) { 
+        if service.hasTranscribingItems {
+          Text("Transcribing...")            
+        }
         tagList
         allItems
       }     
@@ -366,7 +369,7 @@ private struct ImportModifier: ViewModifier {
 
   private struct Selected: Identifiable {
     let id = UUID()
-    let selectingFiles: [AudioImportView.TargetFile]
+    let selectingFiles: [TargetFile]
   }
 
   @Binding var isPresented: Bool
@@ -386,8 +389,8 @@ private struct ImportModifier: ViewModifier {
           AudioImportView(
             service: service,
             targets: selected.selectingFiles,
-            onComplete: {
-              //                processing = false
+            onSubmit: {
+              self.selected = nil
             }
           )
         }
@@ -415,7 +418,7 @@ private struct ImportModifier: ViewModifier {
             self.selected = Selected(
               selectingFiles: audioFiles.map {
 
-                AudioImportView.TargetFile(
+                TargetFile(
                   name: $0.lastPathComponent,
                   url: $0
                 )
