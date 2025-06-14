@@ -343,29 +343,37 @@ public final class Service {
       }
 
       try modelContext.transaction {
+        
+        let itemIdentifier = title
+        
+        let items = try modelContext.fetch(
+          .init(predicate: #Predicate<ItemEntity> { $0.identifier == itemIdentifier })
+        )
+        
+        assert(items.count <= 1)
 
-        let new = ItemEntity()
+        let targetEntity = items.first ?? ItemEntity()
 
-        new.createdAt = .init()
-        new.identifier = title
-        new.title = title
-        new.audioFilePath =
+        targetEntity.createdAt = .init()
+        targetEntity.identifier = itemIdentifier
+        targetEntity.title = title
+        targetEntity.audioFilePath =
           audioFileDestinationPath.relative(basedOn: .init(url: URL.documentsDirectory)).rawValue
-        try new.setSegmentData(storedSubtitle)
+        try targetEntity.setSegmentData(storedSubtitle)
 
-        new.pinItems = []
+        targetEntity.pinItems = []
         
         // Add tags to the new item
         for tag in tags {
-          if new.tags.contains(tag) == false {
-            new.tags.append(tag)
+          if targetEntity.tags.contains(tag) == false {
+            targetEntity.tags.append(tag)
           }
           tag.markAsUsed()
         }
+                              
+        modelContext.insert(targetEntity)
 
-        modelContext.insert(new)
-
-        let identifier = new.identifier
+        let identifier = targetEntity.identifier
         let pins = try modelContext.fetch(
           .init(predicate: #Predicate<PinEntity> { $0.item?.identifier == identifier })
         )

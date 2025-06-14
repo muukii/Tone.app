@@ -171,6 +171,7 @@ let project = Project(
       dependencies: [
         .external(name: "SwiftUISupport"),
         .external(name: "SwiftUISupportLayout"),
+        .external(name: "SteppedSlider"),
       ]
     ),
   ],
