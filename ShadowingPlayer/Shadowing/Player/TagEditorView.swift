@@ -5,6 +5,8 @@ import UIComponents
 
 struct TagEditorView<Tag: TagType>: View {
   
+  @Environment(\.dismiss) private var dismiss
+  
   private var tags: [Tag]
   private var allTags: [Tag]
   private let onAddTag: (Tag) -> Void
@@ -26,16 +28,26 @@ struct TagEditorView<Tag: TagType>: View {
   }
   
   var body: some View {
-    TagEditorInnerView(
-      nameKeyPath: \.name,
-      currentTags: tags,
-      allTags: allTags,
-      onAddTag: onAddTag,
-      onRemoveTag: onRemoveTag,
-      onCreateTag: { name in        
-        try! service.createTag(name: name) as! Tag
+    NavigationStack {
+      TagEditorInnerView(
+        nameKeyPath: \.name,
+        currentTags: tags,
+        allTags: allTags,
+        onAddTag: onAddTag,
+        onRemoveTag: onRemoveTag,
+        onCreateTag: { name in        
+          try! service.createTag(name: name) as! Tag
+        }
+      )
+      .toolbar {
+        ToolbarItem(placement: .confirmationAction) {
+          Button("Done") {
+            dismiss()
+          }
+          .fontWeight(.medium)
+        }
       }
-    )
+    }
   }
 }
 

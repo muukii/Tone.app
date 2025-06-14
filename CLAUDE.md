@@ -29,6 +29,7 @@ Required tools:
 - Main content: `AudioListView` for browsing audio items
 - Player slides up from bottom with full shadowing controls
 - Previous tab-based navigation is commented out in favor of Platter
+- Use CollectionView(layout: .list) instead of ScrollView with LazyVStack
 
 ### Target Structure
 - **Tone** (main app): iPhone + Mac Catalyst, SwiftUI-based

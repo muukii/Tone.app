@@ -59,12 +59,39 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
         .bold()
         .foregroundStyle(.primary)
       Spacer()
-//      Button {
-//        controllerForDetail = nil
-//      } label: {
-//        Image(systemName: "xmark")
-//          .foregroundStyle(.primary)
-//      }
+      
+      HStack(spacing: 8) {
+        Button {
+          isDisplayingPinList = true
+        } label: {
+          Image(systemName: "list.bullet")
+            .foregroundStyle(.primary)
+        }
+        .contextMenu(menuItems: {
+          Text("Display pinned items")
+        })
+        
+        Menu {
+          Menu("Transcribe again") {
+            Text("It removes all of pinned items.")
+            Button("Run") {
+              Task {
+                isProcessing = true
+                defer { isProcessing = false }
+                await actionHandler(.onTranscribeAgain)
+              }
+            }
+          }
+
+          Button("Rename") {
+            newTitle = controller.title
+            isShowingRenameDialog = true
+          }
+        } label: {
+          Image(systemName: "ellipsis")
+            .foregroundStyle(.primary)
+        }
+      }
     }
     .padding(.horizontal, 16)
   }
@@ -174,42 +201,7 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
         )
       }
     )
-    .toolbar(content: {
-      ToolbarItem(placement: .topBarTrailing) {
-        Button {
-          isDisplayingPinList = true
-        } label: {
-          Image(systemName: "list.bullet")
-        }
-        .contextMenu(menuItems: {
-          Text("Display pinned items")
-        })
-      }
 
-      ToolbarItem(placement: .topBarTrailing) {
-        Menu {
-          Menu("Transcribe again") {
-            Text("It removes all of pinned items.")
-            Button("Run") {
-              Task {
-                isProcessing = true
-                defer { isProcessing = false }
-                await actionHandler(.onTranscribeAgain)
-              }
-            }
-          }
-
-          Button("Rename") {
-            newTitle = controller.title
-            isShowingRenameDialog = true
-          }
-        } label: {
-          Image(systemName: "ellipsis")
-        }
-      }
-
-    })
-    .navigationBarTitleDisplayMode(.inline)
     .alert("Rename", isPresented: $isShowingRenameDialog) {
       TextField("Title", text: $newTitle)
       Button("Cancel", role: .cancel) {}

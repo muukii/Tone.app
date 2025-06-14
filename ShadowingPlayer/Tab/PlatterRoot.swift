@@ -56,9 +56,14 @@ struct PlatterRoot: View {
             .id(player)
             .frame(height: isExpanded ? nil : 0)
             .safeAreaInset(edge: .bottom, content: { 
-              Button("Close") {
-                isExpanded = false                
+              Button.init { 
+                isExpanded = false
+              } label: { 
+                Capsule()
+                  .fill(.thinMaterial)
+                  .frame(width: nil, height: 38)
               }
+              .padding(.horizontal, 8)
             })
             .opacity(isExpanded ? 1 : 0)
                     

@@ -15,6 +15,21 @@ public final class Service {
   public var hasTranscribingItems: Bool {
     !transcribingItems.isEmpty
   }
+  
+  public struct TranscriptionProgress {
+    public let remainingCount: Int
+    public let currentItemTitle: String?
+  }
+  
+  public var transcriptionProgress: TranscriptionProgress {
+    let remaining = transcribingItems.filter { $0.status == .waiting || $0.status == .processing }.count
+    let currentTitle = transcribingItems.first { $0.status == .processing }?.file.name
+    
+    return TranscriptionProgress(
+      remainingCount: remaining,
+      currentItemTitle: currentTitle
+    )
+  }
     
   private let taskManager = TaskManagerActor()
 
@@ -216,18 +231,26 @@ public final class Service {
     )
   }
 
-  public func transcribe(title: String, audioFileURL: URL) async throws {
+  public func transcribe(title: String, audioFileURL: URL, tags: [TagEntity] = []) async throws {
 
     let result = try await WhisperKitWrapper.run(url: audioFileURL)
     try await self.importItem(
       title: title,
       audioFileURL: audioFileURL,
-      segments: result.segments
+      segments: result.segments,
+      tags: tags
     )
 
   }
+  
+  public func cancelTranscribe() {
+    Task {
+      await taskManager.cancelAll()
+      transcribingItems.removeAll()
+    }
+  }
 
-  public func enqueueTranscribe(target: TargetFile) -> TranscribeWorkItem {
+  public func enqueueTranscribe(target: TargetFile, additionalTags: [TagEntity] = []) -> TranscribeWorkItem {
     
     enum TaskKey: TaskKeyType {
       
@@ -246,7 +269,8 @@ public final class Service {
           
           try await self?.transcribe(
             title: file.name,
-            audioFileURL: file.url
+            audioFileURL: file.url,
+            tags: file.tags + additionalTags
           )
           
           item.status = .completed
@@ -264,7 +288,8 @@ public final class Service {
   public func importItem(
     title: String,
     audioFileURL: URL,
-    segments: [AbstractSegment]
+    segments: [AbstractSegment],
+    tags: [TagEntity] = []
   ) async throws {
 
     let storedSubtitle = StoredSubtitle(items: segments)
@@ -329,6 +354,14 @@ public final class Service {
         try new.setSegmentData(storedSubtitle)
 
         new.pinItems = []
+        
+        // Add tags to the new item
+        for tag in tags {
+          if new.tags.contains(tag) == false {
+            new.tags.append(tag)
+          }
+          tag.markAsUsed()
+        }
 
         modelContext.insert(new)
 
@@ -349,7 +382,7 @@ public final class Service {
     }
   }
 
-  public func importItem(title: String, audioFileURL: URL, subtitleFileURL: URL) async throws {
+  public func importItem(title: String, audioFileURL: URL, subtitleFileURL: URL, tags: [TagEntity] = []) async throws {
 
     guard subtitleFileURL.startAccessingSecurityScopedResource() else {
       Log.error("Failed to start accessing security scoped resource")
@@ -363,22 +396,38 @@ public final class Service {
     try await self.importItem(
       title: title,
       audioFileURL: audioFileURL,
-      segments: subtitle.cues.map { .init(cue: $0) }
+      segments: subtitle.cues.map { .init(cue: $0) },
+      tags: tags
     )
 
   }
 }
 
-public nonisolated struct TargetFile: Sendable, Hashable {
+public final class TargetFile: Hashable, Identifiable {
+  
+  public let id = UUID()
   public let name: String
   public let url: URL
+  
+  @GraphStored
+  public var tags: [TagEntity]
 
   public init(
     name: String,
-    url: URL
+    url: URL,
+    tags: [TagEntity] = []
   ) {
     self.name = name
     self.url = url
+    self.tags = tags
+  }
+  
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(id)
+  }
+  
+  public static func == (lhs: TargetFile, rhs: TargetFile) -> Bool {
+    lhs.id == rhs.id
   }
 }
 

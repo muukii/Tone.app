@@ -111,7 +111,14 @@ struct AudioListView: View {
       
       CollectionView(layout: .list) { 
         if service.hasTranscribingItems {
-          Text("Transcribing...")            
+          let progress = service.transcriptionProgress
+          TranscriptionProgressView(
+            currentItemTitle: progress.currentItemTitle,
+            remainingCount: progress.remainingCount,
+            onCancel: {
+              service.cancelTranscribe()
+            }
+          )
         }
         tagList
         allItems
@@ -279,9 +286,13 @@ private struct ItemListFragment: View {
 
   let items: [ItemEntity]
   let onSelect: (ItemEntity) -> Void
-  let service: Service?
+  let service: Service
 
-  init(items: [ItemEntity], onSelect: @escaping (ItemEntity) -> Void, service: Service? = nil) {
+  init(
+    items: [ItemEntity],
+    onSelect: @escaping (ItemEntity) -> Void,
+    service: Service
+  ) {
     self.items = items
     self.onSelect = onSelect
     self.service = service
@@ -323,9 +334,12 @@ private struct ItemEditingModifier: ViewModifier {
   @Query var allTags: [TagEntity]
 
   private let item: ItemEntity
-  private let service: Service?
+  private let service: Service
 
-  init(item: ItemEntity, service: Service? = nil) {
+  init(
+    item: ItemEntity,
+    service: Service
+  ) {
     self.item = item
     self.service = service
   }
@@ -343,9 +357,9 @@ private struct ItemEditingModifier: ViewModifier {
       })
       .sheet(
         item: $tagEditingItem,
-        content: { item in
+        content: { item in          
           TagEditorView(
-            service: service ?? Service(),
+            service: service,
             currentTags: item.tags,
             allTags: allTags,
             onAddTag: { tag in
@@ -355,6 +369,7 @@ private struct ItemEditingModifier: ViewModifier {
               item.tags.removeAll(where: { $0 == tag })
             }
           )
+          .presentationDetents([.medium, .large])
         }
       )
   }
@@ -440,5 +455,37 @@ private func emptyView() -> some View {
     Text("You can add your own contents from the import button on the top right corner.")
   } actions: {
     // No Actions for now
+  }
+}
+
+private struct TranscriptionProgressView: View {
+  let currentItemTitle: String?
+  let remainingCount: Int
+  let onCancel: () -> Void
+  
+  var body: some View {
+    HStack(spacing: 12) {
+      ProgressView()
+        .scaleEffect(0.8)
+      VStack(alignment: .leading, spacing: 4) {
+        if let title = currentItemTitle {
+          Text("Transcribing: \(title)")
+            .font(.subheadline)
+            .lineLimit(1)
+        }
+        Text("\(remainingCount) remaining")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      }
+      Spacer()
+      Button(action: onCancel) {
+        Image(systemName: "xmark.circle.fill")
+          .font(.title2)
+          .foregroundStyle(.secondary)
+      }
+      .buttonStyle(.plain)
+    }
+    .padding(.horizontal)
+    .padding(.vertical, 8)
   }
 }
