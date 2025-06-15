@@ -75,13 +75,24 @@ struct AudioListView: View {
     }
     .toolbar(content: {
       if isSettingsEnabled {
-        ToolbarItem(placement: .topBarLeading) {
-          Button {
-            isInSettings = true
-          } label: {
-            Image(systemName: "gearshape")
+        if #available(iOS 26, *) {
+          ToolbarItem(placement: .topBarLeading) {
+            Button {
+              isInSettings = true
+            } label: {
+              Image(systemName: "gearshape")
+            }            
           }
           .matchedTransitionSource(id: "settings", in: namespace)
+        } else {
+          ToolbarItem(placement: .topBarLeading) {
+            Button {
+              isInSettings = true
+            } label: {
+              Image(systemName: "gearshape")
+            }
+            .matchedTransitionSource(id: "settings", in: namespace)
+          }          
         }
       }
       ToolbarItem(placement: .topBarTrailing) {
@@ -131,7 +142,7 @@ struct AudioListView: View {
     .sheet(
       isPresented: $isInSettings,
       content: {
-        SettingsView()
+        SettingsView(service: service)
           .navigationTransition(.zoom(sourceID: "settings", in: namespace))
       }
     )

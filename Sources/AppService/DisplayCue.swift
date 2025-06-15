@@ -34,17 +34,20 @@ public nonisolated struct AbstractSegment: Equatable, Identifiable, Codable, Sen
   public let startTime: TimeInterval
   public let endTime: TimeInterval
   public let text: String
+  public let kind: Schemas.V3.SegmentKind
 
   public init(cue: Subtitles.Cue) {
     self.startTime = cue.startTime.timeInSeconds
     self.endTime = cue.endTime.timeInSeconds
     self.text = cue.text
+    self.kind = .text
   }
 
-  public init(startTime: TimeInterval, endTime: TimeInterval, text: String) {
+  public init(startTime: TimeInterval, endTime: TimeInterval, text: String, kind: Schemas.V3.SegmentKind = .text) {
     self.startTime = startTime
     self.endTime = endTime
     self.text = text
+    self.kind = kind
   }
 }
 

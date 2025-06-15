@@ -41,12 +41,12 @@ struct ChunkView: View {
         }
 
         Text(text).font(.system(size: 24, weight: .bold, design: .default))
-          .modifier(
-            condition: isFocusing == false,
-            identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
-            active: StyleModifier(opacity: 0.2)
-          )
-          .id(identifier)
+        .modifier(
+          condition: isFocusing == false,
+          identity: StyleModifier(scale: .init(width: 1.1, height: 1.1)),
+          active: StyleModifier(opacity: 0.2)
+        )
+        .id(identifier)
           
       }
 

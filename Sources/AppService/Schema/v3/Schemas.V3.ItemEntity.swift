@@ -45,7 +45,8 @@ extension Schemas.V3 {
         Segment(
           startTime: $0.startTime,
           endTime: $0.endTime,
-          text: $0.text
+          text: $0.text,
+          kind: $0.kind
         )
       }
       
@@ -59,7 +60,8 @@ extension Schemas.V3 {
         AbstractSegment(
           startTime: segment.startTime,
           endTime: segment.endTime,
-          text: segment.text
+          text: segment.text,
+          kind: segment.segmentKind
         )
       }
       return StoredSubtitle(items: abstractSegments)

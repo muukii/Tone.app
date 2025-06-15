@@ -77,7 +77,10 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     self.snapshot = NSDiffableDataSourceSnapshot<String, DisplayCue>.init()&>.modify({ s in
 
       let chunks = controller.cues.chunked(by: {
-        return ($1.backed.startTime - $0.backed.endTime > 0.08) == false
+        // Don't chunk together if there's a time gap > 0.08s OR if the next segment is a separator
+        let hasTimeGap = ($1.backed.startTime - $0.backed.endTime > 0.08)
+        let nextIsSeparator = $1.backed.kind == .separator
+        return !hasTimeGap && !nextIsSeparator
       })
 
       for (index, chunk) in chunks.enumerated() {
@@ -134,7 +137,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         cellProvider: { context in
 
           let cue = context.data
-
+          
           //        return context.cell { cell, state, cellState in
           //          return CueCellContentConfiguration(
           //            text: cue.backed.text,
@@ -144,33 +147,47 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
           //          )
           //        }
 
-          return context.cell { cellState, customState in
-            ChunkView(
-              text: cue.backed.text,
-              hasMark: customState.hasMark,
-              identifier: cue.id,
-              isFocusing: customState.isFocusing,
-              isInRange: customState.playingRange?.contains(cue) ?? false,
-              onSelect: {
-                if controller.isRepeating {
-
-                  if var currentRange = customState.playingRange {
-
-                    currentRange.select(cue: cue)
-                    
-                    controller.setRepeat(range: currentRange)
-
+          if cue.backed.kind == .separator {
+            return context.cell { cellState, customState in
+              SeparatorView(
+                identifier: cue.id,
+                isFocusing: customState.isFocusing,
+                isInRange: customState.playingRange?.contains(cue) ?? false,
+                onSelect: {
+                  if controller.isRepeating {
+                    if var currentRange = customState.playingRange {
+                      currentRange.select(cue: cue)
+                      controller.setRepeat(range: currentRange)
+                    }
                   } else {
-
+                    controller.move(to: cue)
                   }
-                } else {
-                  controller.move(to: cue)
                 }
-              },
-              onAction: { action in
-                handleAction(action, cue: cue)
-              }
-            )
+              )
+            }
+          } else {
+            return context.cell { cellState, customState in
+              ChunkView(
+                text: cue.backed.text,
+                hasMark: customState.hasMark,
+                identifier: cue.id,
+                isFocusing: customState.isFocusing,
+                isInRange: customState.playingRange?.contains(cue) ?? false,
+                onSelect: {
+                  if controller.isRepeating {
+                    if var currentRange = customState.playingRange {
+                      currentRange.select(cue: cue)
+                      controller.setRepeat(range: currentRange)
+                    }
+                  } else {
+                    controller.move(to: cue)
+                  }
+                },
+                onAction: { action in
+                  handleAction(action, cue: cue)
+                }
+              )
+            }
           }
 
         }

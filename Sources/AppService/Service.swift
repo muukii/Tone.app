@@ -16,6 +16,9 @@ public final class Service {
     !transcribingItems.isEmpty
   }
   
+  @GraphStored(backed: .userDefaults(key: "selectedWhisperModel"))
+  public var selectedWhisperModel: String = "small.en"
+  
   public struct TranscriptionProgress {
     public let remainingCount: Int
     public let currentItemTitle: String?
@@ -206,7 +209,7 @@ public final class Service {
 
   public func updateTranscribe(for item: ItemEntity) async throws {
 
-    let result = try await WhisperKitWrapper.run(url: item.audioFileAbsoluteURL)
+    let result = try await WhisperKitWrapper.run(url: item.audioFileAbsoluteURL, model: selectedWhisperModel)
     try await self.importItem(
       title: item.title,
       audioFileURL: result.audioFileURL,
@@ -233,7 +236,7 @@ public final class Service {
 
   public func transcribe(title: String, audioFileURL: URL, tags: [TagEntity] = []) async throws {
 
-    let result = try await WhisperKitWrapper.run(url: audioFileURL)
+    let result = try await WhisperKitWrapper.run(url: audioFileURL, model: selectedWhisperModel)
     try await self.importItem(
       title: title,
       audioFileURL: audioFileURL,

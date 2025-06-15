@@ -2,6 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+
 ```bash
 # Build using Tuist (recommended)
 tuist install            # Install dependencies
@@ -22,7 +23,22 @@ Required tools:
 
 ## Project Overview
 
-**Tone** is a sophisticated iOS language learning app focused on **shadowing practice** - a technique where users listen to audio and repeat it to improve pronunciation and fluency.
+**Tone** is a sophisticated iOS app designed for English learners to practice **shadowing** - a proven language learning method where users listen to audio and repeat it simultaneously or with a slight delay to improve pronunciation, rhythm, and intonation.
+
+### What is Shadowing?
+Shadowing is an intensive language learning technique that involves:
+- Listening to native speaker audio
+- Repeating the audio in real-time or with minimal delay
+- Mimicking pronunciation, intonation, and speech rhythm
+- Building muscle memory for natural speech patterns
+
+### Core Purpose
+The app provides a comprehensive platform for shadowing practice with features specifically designed to support this learning method:
+- Precise audio playback control with variable speed
+- Word-level synchronized subtitles
+- Recording overlay to compare with original audio
+- Segment repetition for focused practice
+- Bookmarking system for difficult passages
 
 ### Navigation Architecture
 - Uses **Platter UI** - a custom split-view interface with expandable player
@@ -60,6 +76,8 @@ Required tools:
   - YouTube URL with audio extraction and transcription
 - **Transcription Architecture**:
   - **Primary**: WhisperKit (local, on-device) with configurable models
+    - Model selection managed via StateGraph with UserDefaults backing
+    - Available models: small.en, medium.en (configurable in Settings)
   - **Secondary**: OpenAI API support (implemented but not exposed in UI)
   - Word-level timestamp precision for accurate synchronization
 
@@ -70,6 +88,7 @@ Required tools:
   - Recording overlay synchronized with playback position
 - **UI Features**:
   - Chunk-based subtitle display (groups by timing gaps >0.08s)
+  - Support for separator segments in subtitle flow
   - Real-time highlighting with 5ms polling intervals
   - Auto-scrolling with manual override detection
   - Contextual actions: copy, pin, add to flashcard
@@ -87,11 +106,16 @@ Required tools:
 
 ## Data Models & Persistence
 
-### V2 Schema Structure
+### V3 Schema Structure
 - **Item**: Core audio learning entity
   - Audio file path (relative to documents)
   - Embedded subtitle data as JSON
-  - Relationships: One-to-many with Pin, Many-to-many with Tag
+  - Relationships: One-to-many with Pin, Many-to-many with Tag, One-to-many with Segment
+- **Segment**: Individual subtitle/text segments with timing
+  - `startTime`, `endTime`: TimeInterval for precise synchronization
+  - `text`: The subtitle content
+  - `kind`: SegmentKind enum (`.text` or `.separator`) for different segment types
+  - Cascade delete with parent Item
 - **Pin**: Bookmarked audio segments
   - Composite ID: `{itemID}{startCueID}-{endCueID}`
   - Cascade delete with parent Item
@@ -161,3 +185,45 @@ git submodule update --recursive --remote
 5. **Anki Integration**: Implemented but disabled
 
 The app demonstrates professional-grade engineering with innovative UI patterns and sophisticated audio processing, making it a powerful tool for language learners practicing shadowing techniques.
+
+## Best Practices & Patterns
+
+### Data Structure Integration
+When creating arrays of options with associated metadata (e.g., model names with descriptions), integrate them into a single structure rather than maintaining separate arrays and lookup functions:
+
+```swift
+// ❌ Avoid: Separate array and lookup function
+public static let availableModels = ["small.en", "medium.en"]
+public static func getModelDescription(for modelName: String) -> String {
+  switch modelName {
+    case "small.en": return "Balanced speed and accuracy"
+    case "medium.en": return "Better accuracy, slower"
+    default: return ""
+  }
+}
+
+// ✅ Prefer: Integrated structure
+public struct Model: Sendable {
+  public let name: String
+  public let description: String
+}
+
+public static let availableModels: [Model] = [
+  Model(name: "small.en", description: "Balanced speed and accuracy"),
+  Model(name: "medium.en", description: "Better accuracy, slower")
+]
+```
+
+Benefits:
+- Ensures data consistency (names and descriptions stay synchronized)
+- Simplifies UI construction with ForEach
+- Makes adding/removing options atomic operations
+- Type-safe access to all properties
+```
+
+## Project Memories
+- This project uses a custom UI framework called Platter for a split-view interface with an expandable player
+- Utilizes WhisperKit for on-device transcription with word-level timestamp precision
+- Implements a sophisticated audio engine with sample-accurate synchronization and variable playback speed
+- Uses StateGraph for reactive state management, replacing Observable/Combine
+- Has disabled Anki integration despite having implementation
