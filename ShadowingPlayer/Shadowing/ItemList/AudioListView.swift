@@ -224,7 +224,8 @@ struct AudioListInTagView: View {
     self._items = Query(
       filter: #Predicate<ItemEntity> {
         $0.tags.contains(where: { $0.name == tagName })
-      }
+      },
+      sort: \.title      
     )
 
     self.tag = tag
