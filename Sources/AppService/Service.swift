@@ -169,6 +169,89 @@ public final class Service {
     try modelContainer.mainContext.save()
   }
 
+  public func insertSeparator(for item: ItemEntity, beforeCueId: String) async throws {
+    
+    let itemID = item.id
+    
+    try await withBackground { [self] in
+      
+      let modelContext = ModelContext(modelContainer)
+      
+      let id = itemID
+      let targetItem = try modelContext.fetch(
+        .init(
+          predicate: #Predicate<ItemEntity> {
+            $0.persistentModelID == id
+          }
+        )
+      ).first
+      
+      guard let targetItem else {
+        assertionFailure("not found item")
+        return
+      }
+      
+      // Get the current segments from the item
+      let currentSubtitle = try targetItem.segment()
+      var segments = currentSubtitle.items
+      
+      // Find the index of the segment with the given cue ID
+      guard let targetIndex = segments.firstIndex(where: { $0.id == beforeCueId }) else {
+        Log.error("Could not find segment with id: \(beforeCueId)")
+        return
+      }
+      
+      // Get the segment before which we want to insert the separator
+      let targetSegment = segments[targetIndex]
+      
+      // Calculate the position for the separator
+      // If there's a previous segment, place the separator between them
+      let separatorStartTime: TimeInterval
+      let separatorEndTime: TimeInterval
+      
+      if targetIndex > 0 {
+        let previousSegment = segments[targetIndex - 1]
+        // Place separator in the middle of the gap
+        let gapStart = previousSegment.endTime
+        let gapEnd = targetSegment.startTime
+        let gapDuration = gapEnd - gapStart
+        
+        if gapDuration > 0 {
+          // There's a gap, place separator in the middle
+          separatorStartTime = gapStart + (gapDuration / 2) - 0.001
+          separatorEndTime = gapStart + (gapDuration / 2) + 0.001
+        } else {
+          // No gap, create a minimal separator
+          separatorStartTime = gapStart
+          separatorEndTime = gapStart + 0.002
+        }
+      } else {
+        // This is the first segment, place separator just before it
+        separatorStartTime = max(0, targetSegment.startTime - 0.1)
+        separatorEndTime = separatorStartTime + 0.002
+      }
+      
+      // Create the separator segment
+      let separator = AbstractSegment(
+        startTime: separatorStartTime,
+        endTime: separatorEndTime,
+        text: "",
+        kind: .separator
+      )
+      
+      // Insert the separator before the target segment
+      segments.insert(separator, at: targetIndex)
+      
+      // Update the item with the new segments
+      let updatedSubtitle = StoredSubtitle(items: segments)
+      try targetItem.setSegmentData(updatedSubtitle)
+      
+      try modelContext.save()
+      
+      Log.debug("Inserted separator before segment at \(separatorStartTime)")
+    }
+  }
+
   public func createTag(name: String) throws -> TagEntity? {
 
     let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)

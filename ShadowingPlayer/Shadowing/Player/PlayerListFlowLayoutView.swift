@@ -51,6 +51,7 @@ enum PlayerChunkAction {
   case addMark(identifier: String)
   case removeMark(identifier: String)
   case addToFlashcard(identifier: String)
+  case insertSeparatorBefore(cueId: String)
 }
 
 @MainActor
@@ -138,31 +139,10 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
           let cue = context.data
           
-          //        return context.cell { cell, state, cellState in
-          //          return CueCellContentConfiguration(
-          //            text: cue.backed.text,
-          //            isFocusing: cellState.isFocusing,
-          //            isInRange: cellState.playingRange?.contains(cue) ?? false,
-          //            accentColor: .systemMint
-          //          )
-          //        }
-
           if cue.backed.kind == .separator {
             return context.cell { cellState, customState in
               SeparatorView(
-                identifier: cue.id,
-                isFocusing: customState.isFocusing,
-                isInRange: customState.playingRange?.contains(cue) ?? false,
-                onSelect: {
-                  if controller.isRepeating {
-                    if var currentRange = customState.playingRange {
-                      currentRange.select(cue: cue)
-                      controller.setRepeat(range: currentRange)
-                    }
-                  } else {
-                    controller.move(to: cue)
-                  }
-                }
+                preferredWidth: context.collectionView.bounds.width - 32
               )
             }
           } else {
@@ -238,6 +218,10 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
       break
     case .addToFlashcard(let identifier):
       break
+    case .insertSeparatorBefore(let cueId):
+      Task {
+        await actionHandler(.onInsertSeparator(beforeCueId: cueId))
+      }
     }
   }
 

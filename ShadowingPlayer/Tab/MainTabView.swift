@@ -299,6 +299,8 @@ struct EntityPlayerView: View {
               try await service.updateTranscribe(for: item)
             case .onRename(let title):
               try await service.renameItem(item: item, newTitle: title)
+            case .onInsertSeparator(let beforeCueId):
+              try await service.insertSeparator(for: item, beforeCueId: beforeCueId)
             }
           } catch {
             Log.error("\(error.localizedDescription)")

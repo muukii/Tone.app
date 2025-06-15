@@ -92,12 +92,20 @@ struct ChunkView: View {
         }
       }
 
+//      Divider()
+//
+//      Button {
+//        onAction(.addToFlashcard(identifier: String(describing: identifier)))
+//      } label: {
+//        Label("Add to Flashcard", systemImage: "rectangle.stack.badge.plus")
+//      }
+//      
       Divider()
-
+      
       Button {
-        onAction(.addToFlashcard(identifier: String(describing: identifier)))
+        onAction(.insertSeparatorBefore(cueId: String(describing: identifier)))
       } label: {
-        Label("Add to Flashcard", systemImage: "rectangle.stack.badge.plus")
+        Label("Insert Separator Before", systemImage: "square.fill.and.line.vertical.and.square.fill")
       }
     }
     .animation(.bouncy, value: isFocusing)

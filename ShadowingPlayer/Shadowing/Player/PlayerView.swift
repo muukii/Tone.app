@@ -20,6 +20,7 @@ nonisolated enum PlayerAction {
   case onPin(range: PlayingRange)
   case onTranscribeAgain
   case onRename(title: String)
+  case onInsertSeparator(beforeCueId: String)
 }
 
 struct PlayerView<Display: PlayerDisplay & Sendable>: View {
