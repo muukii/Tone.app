@@ -33,8 +33,6 @@ struct AudioImportView: View {
 
   var body: some View {
     
-    let _ = Self._printChanges()
-    
     NavigationStack {
       List {
         
@@ -135,7 +133,10 @@ struct AudioImportView: View {
             
             Button {
               for target in targetFiles {
-                _ = service.enqueueTranscribe(target: target)
+                _ = service.enqueueTranscribe(
+                  target: target,
+                  additionalTags: batchTags
+                )
               }
               onSubmit()
             } label: {
