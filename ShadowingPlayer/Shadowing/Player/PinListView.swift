@@ -3,6 +3,8 @@ import AppService
 import CollectionView
 
 struct PinListView: View {
+  
+  @Environment(\.dismiss) var dismiss
 
   let pins: [PinEntity]
 
@@ -17,6 +19,14 @@ struct PinListView: View {
           // TODO: performance is so bad
           Text("\(Self.makeDescription(pin: pin))")
         }
+      }
+    }
+    .toolbar { 
+      ToolbarItem(placement: .confirmationAction) {
+        Button("Done") {
+          dismiss()
+        }
+        .fontWeight(.medium)
       }
     }
   }
