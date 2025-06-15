@@ -11,6 +11,7 @@ struct PlatterRoot: View {
   let mainViewModel: MainViewModel
   @State private var isExpanded = false
   @Namespace private var namespace
+  @State private var controlHeight: CGFloat?
   
   init(rootDriver: RootDriver, mainViewModel: MainViewModel) {
     self.rootDriver = rootDriver
@@ -20,9 +21,10 @@ struct PlatterRoot: View {
   private func setPlayer(for item: ItemEntity) {
     do {
       try mainViewModel.setPlayerController(for: item)
+      isExpanded = true
     } catch {
       assertionFailure()
-    }
+    }    
   }
 
   var body: some View {
@@ -39,6 +41,8 @@ struct PlatterRoot: View {
           openAIService: rootDriver.openAIService,
           onSelect: setPlayer
         )
+        // this is workaround as NavigationStack will not response to using safeAreaInsets modifier outside of NavigationStack.
+        .safeAreaPadding(.bottom, isExpanded ? nil : controlHeight ?? 0)
         .navigationDestination(for: TagEntity.self) { tag in
           AudioListInTagView(
             service: rootDriver.service,
@@ -46,39 +50,42 @@ struct PlatterRoot: View {
             onSelect: setPlayer
           )
           .navigationTransition(.zoom(sourceID: tag.id, in: namespace))
-        }        
-      }
+        } 
+      }      
     } controlContent: {
-      if let player = mainViewModel.currentController {
-        ZStack {
+      Group {
+        if let player = mainViewModel.currentController {
+          ZStack {
+            
+            detailContent(player: player)
+              .id(player)
+              .frame(height: isExpanded ? nil : 0)
+              .safeAreaInset(edge: .bottom, content: { 
+                Button.init { 
+                  isExpanded = false
+                } label: { 
+                  Capsule()
+                    .fill(.thinMaterial)
+                    .frame(width: nil, height: 38)
+                }
+                .padding(.horizontal, 8)
+              })
+              .opacity(isExpanded ? 1 : 0)
+            
+            compactContent(player: player)
+              .opacity(isExpanded ? 0 : 1)
+          }
           
-          detailContent(player: player)
-            .id(player)
-            .frame(height: isExpanded ? nil : 0)
-            .safeAreaInset(edge: .bottom, content: { 
-              Button.init { 
-                isExpanded = false
-              } label: { 
-                Capsule()
-                  .fill(.thinMaterial)
-                  .frame(width: nil, height: 38)
-              }
-              .padding(.horizontal, 8)
-            })
-            .opacity(isExpanded ? 1 : 0)
-                    
-          compactContent(player: player)
-            .opacity(isExpanded ? 0 : 1)
+        } else {
+          EmptyPlayerView()
+            .padding(.horizontal, 16)
         }
-        
-      } else {
-        EmptyPlayerView()
-          .padding(.horizontal, 16)
       }
-    }
-    .onChange(of: mainViewModel.currentController) { oldValue, newValue in
-      if oldValue != newValue, newValue != nil {
-        isExpanded = true      
+      .onGeometryChange(for: CGFloat.self, of: \.size.height) { newValue in
+        // it's through using hop-to-main that avoids glitches at launch time. as this closure is nonisolated.
+        Task { @MainActor in
+          controlHeight = newValue
+        }
       }
     }
   }

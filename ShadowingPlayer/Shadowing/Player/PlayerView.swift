@@ -66,10 +66,8 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
         } label: {
           Image(systemName: "list.bullet")
             .foregroundStyle(.primary)
-        }
-        .contextMenu(menuItems: {
-          Text("Display pinned items")
-        })
+        }       
+        .frame(width: 44, height: 44)
         
         Menu {
           Menu("Transcribe again") {
@@ -90,6 +88,7 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
         } label: {
           Image(systemName: "ellipsis")
             .foregroundStyle(.primary)
+            .frame(width: 44, height: 44)
         }
       }
     }

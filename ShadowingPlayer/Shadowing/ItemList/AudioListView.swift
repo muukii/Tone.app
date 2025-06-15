@@ -1,9 +1,9 @@
 import AppService
+import CollectionView
 import SwiftData
 import SwiftUI
-import UniformTypeIdentifiers
-import CollectionView
 import UIComponents
+import UniformTypeIdentifiers
 
 struct AudioListView: View {
 
@@ -29,14 +29,12 @@ struct AudioListView: View {
   }
 
   @Environment(\.modelContext) var modelContext
-
   @State private var isInSettings: Bool = false
-
   @State private var isImportingAudioAndSRT: Bool = false
   @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
   @State private var tagEditingItem: ItemEntity?
-  
+
   private let namespace: Namespace.ID
 
   private let onSelect: (ItemEntity) -> Void
@@ -53,21 +51,114 @@ struct AudioListView: View {
     self.onSelect = onSelect
   }
 
+  var body: some View {
+
+    CollectionView(layout: .list) {
+      if service.hasTranscribingItems {
+        let progress = service.transcriptionProgress
+        TranscriptionProgressView(
+          currentItemTitle: progress.currentItemTitle,
+          remainingCount: progress.remainingCount,
+          onCancel: {
+            service.cancelTranscribe()
+          }
+        )
+      }
+      tagList
+      allItems
+    }
+    .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+    .overlay {
+      if items.isEmpty {
+        emptyView()
+      }
+    }
+    .toolbar(content: {
+      if isSettingsEnabled {
+        ToolbarItem(placement: .topBarLeading) {
+          Button {
+            isInSettings = true
+          } label: {
+            Image(systemName: "gearshape")
+          }
+          .matchedTransitionSource(id: "settings", in: namespace)
+        }
+      }
+      ToolbarItem(placement: .topBarTrailing) {
+
+        Menu {
+          Button("File and SRT") {
+            isImportingAudioAndSRT = true
+          }
+          Button("File (on-device transcribing)") {
+            isImportingAudio = true
+          }
+          Button("YouTube (on-device transcribing)") {
+            isImportingYouTube = true
+          }
+        } label: {
+          Text("Import")
+        }
+
+      }
+    })
+    .navigationTitle("Tone")
+    .sheet(
+      isPresented: $isImportingAudioAndSRT,
+      content: {
+        AudioAndSubtitleImportView(
+          service: service,
+          onComplete: {
+            isImportingAudioAndSRT = false
+          },
+          onCancel: {
+            isImportingAudioAndSRT = false
+          }
+        )
+      }
+    )
+    .sheet(
+      isPresented: $isImportingYouTube,
+      content: {
+        YouTubeImportView(
+          service: service,
+          onComplete: {
+            isImportingYouTube = false
+          }
+        )
+      }
+    )
+    .sheet(
+      isPresented: $isInSettings,
+      content: {
+        SettingsView()
+          .navigationTransition(.zoom(sourceID: "settings", in: namespace))
+      }
+    )
+    .modifier(
+      ImportModifier(
+        isPresented: $isImportingAudio,
+        service: service
+      )
+    )
+
+  }
+  
   @ViewBuilder
   private var tagList: some View {
     if tags.isEmpty == false {
-
+      
       Section {
-
+        
         ForEach(tags) { tag in
           NavigationLink(
             value: tag
           ) {
             ListComponents.Cell {
               HStack {
-                Image(systemName: "tag")                  
+                Image(systemName: "tag")
                 Text(tag.name ?? "")
-                  .font(.headline)                
+                  .font(.headline)
                   .frame(maxWidth: .infinity, alignment: .leading)
                   .padding(.vertical, 10)
               }
@@ -87,13 +178,13 @@ struct AudioListView: View {
             }
           }
         }
-
+        
       } header: {
         ListComponents.Header.init(title: "Tags")
       }
     }
   }
-
+  
   private var allItems: some View {
     Section {
       ItemListFragment(
@@ -106,102 +197,6 @@ struct AudioListView: View {
     }
   }
 
-  var body: some View {
-    Group {
-      
-      CollectionView(layout: .list) { 
-        if service.hasTranscribingItems {
-          let progress = service.transcriptionProgress
-          TranscriptionProgressView(
-            currentItemTitle: progress.currentItemTitle,
-            remainingCount: progress.remainingCount,
-            onCancel: {
-              service.cancelTranscribe()
-            }
-          )
-        }
-        tagList
-        allItems
-      }     
-      .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
-      .safeAreaPadding(.bottom, 50)
-      .overlay {
-        if items.isEmpty {
-          emptyView()
-        }
-      }
-      .toolbar(content: {
-        if isSettingsEnabled {
-          ToolbarItem(placement: .topBarLeading) {
-            Button {
-              isInSettings = true
-            } label: {
-              Image(systemName: "gearshape")
-            }
-            .matchedTransitionSource(id: "settings", in: namespace)
-          }
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-
-          Menu {
-            Button("File and SRT") {
-              isImportingAudioAndSRT = true
-            }
-            Button("File (on-device transcribing)") {
-              isImportingAudio = true
-            }
-            Button("YouTube (on-device transcribing)") {
-              isImportingYouTube = true
-            }
-          } label: {
-            Text("Import")
-          }
-
-        }
-      })
-      .navigationTitle("Tone")
-      .sheet(
-        isPresented: $isImportingAudioAndSRT,
-        content: {
-          AudioAndSubtitleImportView(
-            service: service,
-            onComplete: {
-              isImportingAudioAndSRT = false
-            },
-            onCancel: {
-              isImportingAudioAndSRT = false
-            }
-          )
-        }
-      )
-      .sheet(
-        isPresented: $isImportingYouTube,
-        content: {
-          YouTubeImportView(
-            service: service,
-            onComplete: {
-              isImportingYouTube = false
-            }
-          )
-        }
-      )
-      .sheet(
-        isPresented: $isInSettings,
-        content: {
-          SettingsView()
-            .navigationTransition(.zoom(sourceID: "settings", in: namespace))
-        }
-      )
-      .modifier(
-        ImportModifier(
-          isPresented: $isImportingAudio,
-          service: service
-        )
-      )
-
-    }
-  }
-
 }
 
 struct AudioListInTagView: View {
@@ -210,7 +205,7 @@ struct AudioListInTagView: View {
   private let service: Service
   private let onSelect: (ItemEntity) -> Void
   private let tag: TagEntity
-  
+
   @State private var isRenaming = false
   @State private var newTagName = ""
   @State private var isProcessingRename = false
@@ -237,7 +232,7 @@ struct AudioListInTagView: View {
   }
 
   var body: some View {
-    CollectionView(layout: .list) { 
+    CollectionView(layout: .list) {
       ItemListFragment(
         items: items,
         onSelect: onSelect,
@@ -252,10 +247,10 @@ struct AudioListInTagView: View {
           isRenaming = true
         } label: {
           Text("Rename")
-//          Image(systemName: "pencil")
-//            .resizable()
-//            .aspectRatio(contentMode: .fit)
-//            .frame(width: 20, height: 20)
+          //          Image(systemName: "pencil")
+          //            .resizable()
+          //            .aspectRatio(contentMode: .fit)
+          //            .frame(width: 20, height: 20)
         }
         .disabled(isProcessingRename)
       }
@@ -269,7 +264,7 @@ struct AudioListInTagView: View {
         Task {
           isProcessingRename = true
           defer { isProcessingRename = false }
-          
+
           do {
             try await service.renameTag(tag: tag, newName: newTagName)
           } catch {
@@ -357,7 +352,7 @@ private struct ItemEditingModifier: ViewModifier {
       })
       .sheet(
         item: $tagEditingItem,
-        content: { item in          
+        content: { item in
           TagEditorView(
             service: service,
             currentTags: item.tags,
@@ -462,7 +457,7 @@ private struct TranscriptionProgressView: View {
   let currentItemTitle: String?
   let remainingCount: Int
   let onCancel: () -> Void
-  
+
   var body: some View {
     HStack(spacing: 12) {
       ProgressView()

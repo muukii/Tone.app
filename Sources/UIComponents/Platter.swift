@@ -40,14 +40,6 @@ public struct Platter<MainContent: View, ControlContent: View>: View {
             .ignoresSafeArea()
           
           mainContent
-            .onGeometryChange(for: EdgeInsets.self, of: \.safeAreaInsets, action: { newValue in
-              print(newValue)
-            })
-            .onGeometryChange(for: CGFloat.self, of: \.size.height, action: { oldValue, newValue in
-              if isExpanded == false && newValue != oldValue {
-                mainContentHeight = newValue
-              }
-            })
           // TODO: shifting view makes the content glitchy by updating safe-area.
 //            .frame(
 //              width: nil,
@@ -55,16 +47,7 @@ public struct Platter<MainContent: View, ControlContent: View>: View {
 //            )
             .allowsHitTesting(isExpanded == false)
             .overlay(
-              Color.black.opacity(isExpanded ? 0.3 : 0)
-                .ignoresSafeArea()
-                .contentShape(Rectangle())
-                .allowsHitTesting(isExpanded)
-                .gesture(
-                  TapGesture().onEnded({
-                    _onTapMainContent()
-                  }), 
-                  isEnabled: isExpanded
-                )
+              coverView
             )
           
         }
@@ -96,6 +79,23 @@ public struct Platter<MainContent: View, ControlContent: View>: View {
       .animation(.smooth(duration: 0.4), value: UUID())
     }
   }
+  
+  private var coverView: some View {
+    Rectangle()
+      .fill(.regularMaterial)
+      .overlay(Color.black.opacity(0.3))
+      .compositingGroup()
+      .opacity(isExpanded ? 1 : 0)
+      .ignoresSafeArea()
+      .contentShape(Rectangle())
+      .allowsHitTesting(isExpanded)
+      .gesture(
+        TapGesture().onEnded({
+          _onTapMainContent()
+        }), 
+        isEnabled: isExpanded
+      )
+  }
 
 }
 
@@ -113,35 +113,37 @@ public struct Platter<MainContent: View, ControlContent: View>: View {
           showLyrics = false
         },        
         mainContent: {
-          ScrollView {
-            LazyVStack {
-              Section {
-
-                ForEach(0..<10, id: \.self) { _ in
-
-                  VStack(alignment: .leading) {
-                    Text("Title")
-                      .font(.headline)
-                    Text("Title")
-                      .font(.subheadline)
-
-                    RoundedRectangle(cornerRadius: 1)
-                      .frame(height: 1)
-                      .foregroundStyle(.quinary)
+          NavigationStack {
+              ScrollView {
+                LazyVStack {
+                  Section {
+                    
+                    ForEach(0..<20, id: \.self) { _ in
+                      
+                      VStack(alignment: .leading) {
+                        Text("Title")
+                          .font(.headline)
+                        Text("Title")
+                          .font(.subheadline)
+                        
+                        RoundedRectangle(cornerRadius: 1)
+                          .frame(height: 1)
+                          .foregroundStyle(.quinary)
+                      }
+                      .frame(maxWidth: .infinity, alignment: .leading)
+                      .padding(.horizontal, 24)
+                    }
+                    
+                  } header: {
+                    
+                    Text("Header")
+                      .frame(maxWidth: .infinity, alignment: .leading)
+                      .padding(.horizontal, 24)
+                      .padding(.vertical, 10)
                   }
-                  .frame(maxWidth: .infinity, alignment: .leading)
-                  .padding(.horizontal, 24)
                 }
-
-              } header: {
-
-                Text("Header")
-                  .frame(maxWidth: .infinity, alignment: .leading)
-                  .padding(.horizontal, 24)
-                  .padding(.vertical, 10)
               }
-            }
-          }
+            }          
         },
         controlContent: {
           VStack(spacing: 16) {
