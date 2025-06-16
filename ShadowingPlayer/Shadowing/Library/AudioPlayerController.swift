@@ -322,8 +322,12 @@ final class AudioPlayerController: NSObject {
   }
 
   func pause() {
+    
+    guard isPlaying else {
+      return
+    }
 
-    isPlaying = false
+    isPlaying = false    
     
     timeline.pause()    
 

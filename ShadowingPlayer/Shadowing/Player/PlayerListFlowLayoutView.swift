@@ -52,6 +52,7 @@ enum PlayerChunkAction {
   case removeMark(identifier: String)
   case addToFlashcard(identifier: String)
   case insertSeparatorBefore(cueId: String)
+  case deleteSeparator(cueId: String)
 }
 
 @MainActor
@@ -142,7 +143,11 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
           if cue.backed.kind == .separator {
             return context.cell { cellState, customState in
               SeparatorView(
-                preferredWidth: context.collectionView.bounds.width - 32
+                preferredWidth: context.collectionView.bounds.width - 32,
+                identifier: cue.id,
+                onAction: { action in
+                  handleAction(action, cue: cue)
+                }
               )
             }
           } else {
@@ -221,6 +226,10 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     case .insertSeparatorBefore(let cueId):
       Task {
         await actionHandler(.onInsertSeparator(beforeCueId: cueId))
+      }
+    case .deleteSeparator(let cueId):
+      Task {
+        await actionHandler(.onDeleteSeparator(cueId: cueId))
       }
     }
   }

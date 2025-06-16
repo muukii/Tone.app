@@ -251,6 +251,45 @@ public final class Service {
       Log.debug("Inserted separator before segment at \(separatorStartTime)")
     }
   }
+  
+  public func deleteSeparator(for item: ItemEntity, cueId: String) async throws {
+    
+    let itemID = item.id
+    
+    try await withBackground { [self] in
+      
+      let modelContext = ModelContext(modelContainer)
+      let list = FetchDescriptor<ItemEntity>(
+        predicate: #Predicate { $0.id == itemID }
+      )
+      
+      guard let targetItem = try modelContext.fetch(list).first else {
+        assertionFailure("not found item")
+        return
+      }
+      
+      // Get the current segments from the item
+      let currentSubtitle = try targetItem.segment()
+      var segments = currentSubtitle.items
+      
+      // Find and remove the separator segment
+      if let index = segments.firstIndex(where: { 
+        $0.id == cueId && $0.kind == .separator
+      }) {
+        segments.remove(at: index)
+        
+        // Update the item with the new segments
+        let updatedSubtitle = StoredSubtitle(items: segments)
+        try targetItem.setSegmentData(updatedSubtitle)
+        
+        try modelContext.save()
+        
+        Log.debug("Deleted separator at index \(index)")
+      } else {
+        Log.warning("Separator with ID \(cueId) not found")
+      }
+    }
+  }
 
   public func createTag(name: String) throws -> TagEntity? {
 
