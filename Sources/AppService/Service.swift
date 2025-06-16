@@ -489,11 +489,28 @@ public final class Service {
         targetEntity.pinItems = []
         
         // Add tags to the new item
+        // We need to fetch the tags from the current model context to ensure they're properly tracked
         for tag in tags {
-          if targetEntity.tags.contains(tag) == false {
-            targetEntity.tags.append(tag)
+          // Fetch the tag from the current context by its name
+          if let tagName = tag.name {
+            let existingTags = try modelContext.fetch(
+              .init(predicate: #Predicate<TagEntity> { $0.name == tagName })
+            )
+            
+            if let contextTag = existingTags.first {
+              // Use the tag from the current context
+              if targetEntity.tags.contains(contextTag) == false {
+                targetEntity.tags.append(contextTag)
+              }
+              contextTag.markAsUsed()
+            } else {
+              // If tag doesn't exist in this context, create it
+              let newTag = TagEntity(name: tagName)
+              newTag.markAsUsed()
+              modelContext.insert(newTag)
+              targetEntity.tags.append(newTag)
+            }
           }
-          tag.markAsUsed()
         }
                               
         modelContext.insert(targetEntity)
