@@ -19,6 +19,9 @@ public final class Service {
   @GraphStored(backed: .userDefaults(key: "selectedWhisperModel"))
   public var selectedWhisperModel: String = "small.en"
   
+  @GraphStored(backed: .userDefaults(key: "openAIAPIKey"))
+  public var openAIAPIKey: String = ""
+  
   public struct TranscriptionProgress {
     public let remainingCount: Int
     public let currentItemTitle: String?
@@ -551,6 +554,40 @@ public final class Service {
     )
 
   }
+  
+#if targetEnvironment(simulator)
+  public func addExampleItems() async throws {
+    
+    let allEntities = try modelContainer.mainContext.fetch(
+      .init(
+        predicate: #Predicate<ItemEntity> { _ in
+          true
+        })
+    )
+    
+    guard allEntities.isEmpty else {
+      Log.warning("Example items already exist, skipping import.")
+      return
+    }
+          
+    let item = Item.social
+    
+    try await importItem(
+      title: "Example",
+      audioFileURL: item.audioFileURL,
+      subtitleFileURL: item.subtitleFileURL
+    )
+
+    let a = Item.overwhelmed
+
+    try await importItem(
+      title: "overwhelmed",
+      audioFileURL: a.audioFileURL,
+      subtitleFileURL: a.subtitleFileURL
+    )
+  }
+#endif
+    
 }
 
 public final class TargetFile: Hashable, Identifiable {

@@ -428,6 +428,10 @@ final class AudioTimeline {
 
 extension AVAudioPlayerNode {
   var playerTime: AVAudioTime? {
+    
+    guard self.engine?.isRunning == true else { 
+      return nil
+    }
 
     guard let nodeTime = self.lastRenderTime else {
       return nil

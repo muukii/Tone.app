@@ -3,8 +3,8 @@ import AppService
 import DynamicList
 import MondrianLayout
 import SwiftUI
-import SwiftUISupportLayout
 import SwiftUISupport
+import SwiftUISupportLayout
 import UIKit
 
 private enum CellIsFocusing: CustomStateKey {
@@ -92,11 +92,11 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     })
   }
 
-  private func makeCellState() -> [DisplayCue: CellState] {
+  private func makeCellState(currentCue: DisplayCue?) -> [DisplayCue: CellState] {
 
     var cellStates: [DisplayCue: CellState] = [:]
 
-    let focusing = controller.currentCue
+    let focusing = currentCue
 
     if let focusing {
       cellStates[focusing, default: .empty].isFocusing = true
@@ -122,11 +122,13 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
   }
 
   var body: some View {
+    
+    let currentCue = controller.currentCue
 
     ZStack {
       DynamicList<String, DisplayCue>(
         snapshot: snapshot,
-        cellStates: makeCellState(),
+        cellStates: makeCellState(currentCue: currentCue),
         layout: {
           let layout = AlignedCollectionViewFlowLayout(horizontalAlignment: .leading)
           layout.estimatedItemSize = .init(width: 50, height: 50)
@@ -139,7 +141,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         cellProvider: { context in
 
           let cue = context.data
-          
+
           if cue.backed.kind == .separator {
             return context.cell { cellState, customState in
               SeparatorView(
@@ -188,7 +190,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
         }
       }
       .scrolling(
-        to: controller.currentCue.map {
+        to: currentCue.map {
           .init(
             item: $0,
             skipCondition: { scrollView in
@@ -238,15 +240,15 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
 #if DEBUG
 
-#Preview("FollowButton") {
-  Button {
+  #Preview("FollowButton") {
+    Button {
 
-  } label: {
-    Image(systemName: "arrow.up.backward.circle.fill")
+    } label: {
+      Image(systemName: "arrow.up.backward.circle.fill")
+    }
+    .buttonStyle(.bordered)
+    .buttonBorderShape(.roundedRectangle)
+    .tint(.purple)
   }
-  .buttonStyle(.bordered)
-  .buttonBorderShape(.roundedRectangle)
-  .tint(.purple)
-}
 
 #endif

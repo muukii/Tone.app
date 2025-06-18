@@ -18,7 +18,6 @@ public struct PlayerControlPanelContent: View {
   let isRepeating: Bool
   let isRecording: Bool
   @Binding var rate: CGFloat
-  let hasCurrentCue: Bool
   let namespace: Namespace.ID
   private let onAction: @MainActor (Action) -> Void
 
@@ -27,15 +26,13 @@ public struct PlayerControlPanelContent: View {
     isRepeating: Bool,
     isRecording: Bool,
     rate: Binding<CGFloat>,
-    hasCurrentCue: Bool,
     namespace: Namespace.ID,
-    onAction: @escaping @MainActor @Sendable (Action) -> Void
+    onAction: @escaping @MainActor (Action) -> Void
   ) {
     self.isPlaying = isPlaying
     self.isRepeating = isRepeating
     self.isRecording = isRecording
     self._rate = rate
-    self.hasCurrentCue = hasCurrentCue
     self.namespace = namespace
     self.onAction = onAction
   }
@@ -251,7 +248,6 @@ private struct _Slider: View {
     isRepeating: false,
     isRecording: false,
     rate: .constant(0.8),
-    hasCurrentCue: true,
     namespace: namespace,
     onAction: { action in
       print("Preview action: \(action)")
@@ -267,7 +263,6 @@ private struct _Slider: View {
     isRepeating: true,
     isRecording: true,
     rate: .constant(1.0),
-    hasCurrentCue: true,
     namespace: namespace,
     onAction: { action in
       print("Preview action: \(action)")
@@ -283,7 +278,6 @@ private struct _Slider: View {
     isRepeating: true,
     isRecording: false,
     rate: .constant(0.3),
-    hasCurrentCue: false,
     namespace: namespace,
     onAction: { action in
       print("Preview action: \(action)")

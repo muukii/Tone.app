@@ -42,7 +42,6 @@ struct PlayerControlPanel: View {
       isRepeating: controller.isRepeating,
       isRecording: controller.isRecording,
       rate: controller.$rate.binding,
-      hasCurrentCue: controller.currentCue != nil,
       namespace: namespace,
       onAction: { action in
         handleAction(action)
@@ -50,7 +49,6 @@ struct PlayerControlPanel: View {
     )
   }
 
-  @MainActor
   private func handleAction(_ action: PlayerControlPanelContent.Action) {
     switch action {
     case .togglePlaying:

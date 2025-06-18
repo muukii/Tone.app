@@ -281,27 +281,13 @@ public final class PlayerController: NSObject {
         guard let self else { return }
 
         guard self.isAppInBackground == false else { return }
-
-        if let currentTime = self.controller.mainTrack!.currentTime() {
-
-          //          Log.debug("currentTime: \(currentTime)")
-
-          let currentCue = self.cues.first { cue in
-
-            if cue.backed.startTime <= currentTime,
-              cue.backed.endTime >= currentTime
-            {
-              return true
-            } else {
-              return false
-            }
-
-          }
-
-          if self.currentCue != currentCue {
-            self.currentCue = currentCue
-          }
+        
+        let currentCue = self.currentDisplayCue()
+        
+        if self.currentCue != currentCue {
+          self.currentCue = currentCue
         }
+
       }
 
     }
@@ -331,6 +317,28 @@ public final class PlayerController: NSObject {
 
   }
 
+  private func currentDisplayCue() -> DisplayCue? {
+
+    guard let currentTime = self.controller.mainTrack?.currentTime() else {
+
+      return nil
+    }
+
+    let currentCue = self.cues.first { cue in
+
+      if cue.backed.startTime <= currentTime,
+        cue.backed.endTime >= currentTime
+      {
+        return true
+      } else {
+        return false
+      }
+
+    }
+
+    return currentCue
+  }
+
   @objc
   private func didEnterBackground() {
     isAppInBackground = true
@@ -346,7 +354,7 @@ public final class PlayerController: NSObject {
     guard isPlaying else {
       return
     }
-    
+
     endLiveActivity()
 
     controller.pause()

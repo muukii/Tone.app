@@ -15,7 +15,6 @@ import TipKit
 struct AppRoot: App {
   
   @State var rootDriver: RootDriver?
-  @AppStorage("openAIAPIKey") var openAIAPIKey: String = ""
 
   init() {
     try? Tips.configure()
@@ -42,7 +41,9 @@ struct AppRoot: App {
               UIApplication.shared.beginReceivingRemoteControlEvents()
               AudioSessionManager.shared.setInitialState()
 #if targetEnvironment(simulator)
-              addExampleItems(using: rootDriver.service)
+              Task {
+                try await rootDriver.service.addExampleItems()
+              }
 #endif
             }
         } else {
@@ -50,34 +51,9 @@ struct AppRoot: App {
         }
       }
       .task {
-        self.rootDriver = .init(openAIAPIToken: openAIAPIKey)     
+        self.rootDriver = .init()
       }
     }
     
   }
 }
-
-#if targetEnvironment(simulator)
-private func addExampleItems(using service: Service) {
-
-  Task { [service] in
-    let item = Item.social
-
-    try await service.importItem(
-      title: "Example",
-      audioFileURL: item.audioFileURL,
-      subtitleFileURL: item.subtitleFileURL
-    )
-
-    let a = Item.overwhelmed
-
-    try await service.importItem(
-      title: "overwhelmed",
-      audioFileURL: a.audioFileURL,
-      subtitleFileURL: a.subtitleFileURL
-    )
-
-  }
-
-}
-#endif

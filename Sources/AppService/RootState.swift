@@ -17,13 +17,16 @@ public final class RootDriver {
       
   public let service: Service
   
-  public init(openAIAPIToken: String?) {      
+  public init() {
+    self.service = .init()
+    let openAIAPIToken = service.openAIAPIKey.isEmpty ? nil : service.openAIAPIKey
     self.tokens = .init(openAI: openAIAPIToken.map { .init(value: $0) })
     self._openAIService = openAIAPIToken.map { .init(apiKey: $0) }
-    self.service = .init()
   }
 
   public func setOpenAIAPIToken(_ token: String) {
+    
+    service.openAIAPIKey = token
     
     guard token.isEmpty == false else {
       _openAIService = nil

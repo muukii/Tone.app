@@ -4,7 +4,6 @@ import AppService
 struct SettingsView: View {
   
   // @StateObject var manager = ActivityManager.shared
-  @AppStorage("openAIAPIKey") var openAIAPIKey: String = ""
   
   let service: Service
   
@@ -12,7 +11,7 @@ struct SettingsView: View {
     NavigationStack {
       Form {
         Section("OpenAI API") {
-          SecureField("API Key", text: $openAIAPIKey)
+          SecureField("API Key", text: service.$openAIAPIKey.binding)
             .textContentType(.password)
         }
         
