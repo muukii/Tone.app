@@ -17,7 +17,7 @@ public struct PlayerControlPanelContent: View {
   let isPlaying: Bool
   let isRepeating: Bool
   let isRecording: Bool
-  @Binding var rate: CGFloat
+  @Binding var rate: Double
   let namespace: Namespace.ID
   private let onAction: @MainActor (Action) -> Void
 
@@ -25,7 +25,7 @@ public struct PlayerControlPanelContent: View {
     isPlaying: Bool,
     isRepeating: Bool,
     isRecording: Bool,
-    rate: Binding<CGFloat>,
+    rate: Binding<Double>,
     namespace: Namespace.ID,
     onAction: @escaping @MainActor (Action) -> Void
   ) {
@@ -195,24 +195,38 @@ private struct RecordingButton: View {
 private struct _Slider: View {
 
   var onReset: () -> Void
-  @Binding var rate: CGFloat
+  @Binding var rate: Double
 
   var body: some View {
     VStack {
-      Button(
-        action: onReset,
-        label: {
-          Text("\(String(format: "%.2f", rate))")
-            .font(.headline.monospacedDigit().bold())
-            .contentTransition(.numericText(value: 1))
-        }
-      )
-      .buttonStyle(.bordered)
-      .buttonBorderShape(.roundedRectangle(radius: 8))
-      .tint(Color.accentColor)
-
-      SteppedSlider(
+//      Button(
+//        action: onReset,
+//        label: {
+//          Text("\(String(format: "%.2f", rate))")
+//            .font(.headline.monospacedDigit().bold())
+//            .contentTransition(.numericText(value: 1))
+//        }
+//      )
+//      .buttonStyle(.bordered)
+//      .buttonBorderShape(.roundedRectangle(radius: 8))
+//      .tint(Color.accentColor)
+      
+      HoverSlider(
         value: $rate,
+        range: 0.3...1,
+        defaultValue: 1,
+        format: FloatingPointFormatStyle<Double>()
+          .precision(.fractionLength(2))
+      )
+      .foregroundStyle(.orange)
+
+      /*
+      SteppedSlider(
+        value: .init(get: {
+          return CGFloat(rate)
+        }, set: { 
+          rate = Double($0)          
+        }),
         range: 0.3...1,
         steps: 0.02,
         horizontalEdgeMask: .hidden,
@@ -234,6 +248,7 @@ private struct _Slider: View {
         }
       )
       .frame(height: 40)
+       */
 
     }
   }

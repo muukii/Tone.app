@@ -27,7 +27,7 @@ public final class PlayerController: NSObject {
   public var isPlaying: Bool = false
 
   @GraphStored
-  public var rate: CGFloat = 1
+  public var rate: Double = 1
 
   @GraphStored
   public var currentCue: DisplayCue?
