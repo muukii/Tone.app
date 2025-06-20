@@ -39,7 +39,7 @@ let project = Project(
       // infoPlist: "Supporting/Info.plist",
       infoPlist: .extendingDefault(with: [
         "CFBundleShortVersionString": "$(APP_SHORT_VERSION)",
-        "UIBackgroundModes": ["audio"],
+        "UIBackgroundModes": ["audio", "processing"],
         "UIApplicationSceneManifest": [
           "UIApplicationSupportsMultipleScenes": "YES",
           "UISceneConfigurations": [:],
@@ -60,6 +60,7 @@ let project = Project(
         "com.apple.developer.icloud-services": ["CloudKit"],
         "com.apple.developer.icloud-container-identifiers": ["iCloud.app.muukii.tone"],
         "com.apple.security.application-groups": ["group.app.muukii.tone"],
+        "com.apple.developer.background-tasks.continued-processing.gpu": true,
       ]),
       dependencies: [
         .sdk(name: "CloudKit", type: .framework),
