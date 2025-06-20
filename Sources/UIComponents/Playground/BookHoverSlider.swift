@@ -55,7 +55,10 @@ where F.FormatInput == Double, F.FormatOutput == String {
   }
 
   var body: some View {
-    mainContent
+    
+    let valueText = formatStyle.format(value)
+    
+    mainContent(valueText: valueText)
       .animation(.snappy, value: value)
       .fixedSize(horizontal: true, vertical: true)
       .font(.system(size: 16, weight: .bold))
@@ -80,14 +83,14 @@ where F.FormatInput == Double, F.FormatOutput == String {
         .impact(flexibility: .soft, intensity: 0.5),
         trigger: isResetting && value == defaultValue
       )
-      .sensoryFeedback(.selection, trigger: value)
+      .sensoryFeedback(.selection, trigger: valueText)
   }
   
   @ViewBuilder
-  private var mainContent: some View {
+  private func mainContent(valueText: String) -> some View {
     HStack {
       leftIndicator
-      valueDisplay
+      valueDisplay(valueText: valueText)        
       rightIndicator
     }
   }
@@ -119,7 +122,7 @@ where F.FormatInput == Double, F.FormatOutput == String {
   }
   
   @ViewBuilder
-  private var valueDisplay: some View {
+  private func valueDisplay(valueText: String) -> some View {
     if isTracking {
       // Show placeholder rectangle when tracking
       RoundedRectangle(cornerRadius: 4)
@@ -127,7 +130,7 @@ where F.FormatInput == Double, F.FormatOutput == String {
         .frame(width: textSize.width, height: textSize.height)
     } else {
       // Show actual text when not tracking
-      Text(formatStyle.format(value))
+      Text(valueText)
         .contentTransition(.numericText(value: value))
         .onGeometryChange(
           for: CGSize.self,
@@ -138,7 +141,7 @@ where F.FormatInput == Double, F.FormatOutput == String {
         )
     }
   }
-  
+     
   private var dragGesture: some Gesture {
     DragGesture(minimumDistance: 0, coordinateSpace: .global)
       .updating($hoverlingPoint) { value, state, _ in
@@ -168,7 +171,7 @@ where F.FormatInput == Double, F.FormatOutput == String {
         let previousValue = self.value
 
         // Check for reset based on Y-axis movement
-        if value.translation.height > 50 {
+        if value.translation.height > 40 {
           isResetting = true
           self.value = defaultValue
         } else {

@@ -53,7 +53,6 @@ struct AppRoot: App {
       .task {
         self.rootDriver = .init()
       }
-    }
-    
+    }    
   }
 }
