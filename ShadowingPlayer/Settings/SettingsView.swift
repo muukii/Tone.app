@@ -18,11 +18,29 @@ struct SettingsView: View {
         Section("WhisperKit Models") {
           Picker("Selected Model", selection: service.$selectedWhisperModel.binding) {
             ForEach(WhisperKitWrapper.availableModels) { model in
-              Text(model.name)
-                .tag(model.name)
+              VStack(alignment: .leading) {
+                Text(model.name)
+                Text(model.description)
+                  .font(.caption)
+                  .foregroundStyle(.secondary)
+              }
+              .tag(model.name)
             }
           }
           .pickerStyle(.menu)
+          
+          if let selectedModelDescription = WhisperKitWrapper.availableModels.first(where: { $0.name == service.selectedWhisperModel })?.description {
+            Text(selectedModelDescription)
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
+        }
+        
+        Section("Background Processing") {
+          Toggle("Background Transcription Notifications", isOn: service.$backgroundTranscriptionNotificationsEnabled.binding)
+          Text("Receive a notification when transcription completes in the background")
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
 
         // Section {

@@ -469,16 +469,29 @@ private struct TranscriptionProgressView: View {
   let currentItemTitle: String?
   let remainingCount: Int
   let onCancel: () -> Void
+  
+  @Environment(\.scenePhase) var scenePhase
 
   var body: some View {
     HStack(spacing: 12) {
       ProgressView()
         .scaleEffect(0.8)
       VStack(alignment: .leading, spacing: 4) {
-        if let title = currentItemTitle {
-          Text("Transcribing: \(title)")
-            .font(.subheadline)
-            .lineLimit(1)
+        HStack(spacing: 6) {
+          if let title = currentItemTitle {
+            Text("Transcribing: \(title)")
+              .font(.subheadline)
+              .lineLimit(1)
+          }
+          if scenePhase == .background {
+            Label("Background", systemImage: "moon.fill")
+              .font(.caption2)
+              .foregroundStyle(.blue)
+              .padding(.horizontal, 6)
+              .padding(.vertical, 2)
+              .background(Color.blue.opacity(0.15))
+              .cornerRadius(4)
+          }
         }
         Text("\(remainingCount) remaining")
           .font(.caption)

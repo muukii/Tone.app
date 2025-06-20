@@ -49,6 +49,7 @@ let project = Project(
         "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
         "NSMicrophoneUsageDescription":
           "To record your voice and play it back for pronunciation practice.",
+        "BGTaskSchedulerPermittedIdentifiers": ["app.muukii.tone.transcription"],
       ]),
       sources: ["ShadowingPlayer/**"],
       resources: [
