@@ -600,10 +600,11 @@ public final class Service {
         // Find matching tags
         let actor = BackgroundModelActor(modelContainer: modelContainer)
         let targetFile = try await actor.perform { modelContext in
-                    
+               
+          let tagSet = persistedItem.tagNames.map { Optional($0) }
           let tags = try modelContext.fetch(
             .init(predicate: #Predicate<TagEntity> { tag in
-              persistedItem.tagNames.contains(tag.name ?? "")
+              tagSet.contains(tag.name)
             })
           )
           

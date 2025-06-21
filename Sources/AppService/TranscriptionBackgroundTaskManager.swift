@@ -33,7 +33,7 @@ public nonisolated final class TranscriptionBackgroundTaskManager: Sendable {
     BGTaskScheduler.shared.register(
       forTaskWithIdentifier: Self.taskIdentifier,
       using: nil,
-      launchHandler: { [weak self] task in
+      launchHandler: { @Sendable [weak self] task in
         guard let task = task as? BGContinuedProcessingTask else {
           task.setTaskCompleted(success: false)
           return
