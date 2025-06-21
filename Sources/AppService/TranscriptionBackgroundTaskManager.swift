@@ -2,8 +2,9 @@ import BackgroundTasks
 import Foundation
 import StateGraph
 
+#if swift(>=6.2)
 @available(iOS 26.0, *)
-public nonisolated final class TranscriptionBackgroundTaskManager: Sendable {
+public final class TranscriptionBackgroundTaskManager: Sendable {
 
   public static let taskIdentifier = "app.muukii.tone.transcription"
 
@@ -12,9 +13,10 @@ public nonisolated final class TranscriptionBackgroundTaskManager: Sendable {
 
   @GraphStored
   public var currentTaskId: String? = nil
-
+ 
   @GraphStored
   private var currentTask: BGContinuedProcessingTask? = nil
+
   
   @GraphStored
   private var shouldContinue: Bool = true
@@ -107,3 +109,4 @@ public nonisolated final class TranscriptionBackgroundTaskManager: Sendable {
     // This just sets up the task management
   }
 }
+#endif

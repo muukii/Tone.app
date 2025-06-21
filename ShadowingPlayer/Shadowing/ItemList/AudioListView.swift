@@ -75,25 +75,16 @@ struct AudioListView: View {
     }
     .toolbar(content: {
       if isSettingsEnabled {
-        if #available(iOS 26, *) {
-          ToolbarItem(placement: .topBarLeading) {
-            Button {
-              isInSettings = true
-            } label: {
-              Image(systemName: "gearshape")
-            }            
+
+        ToolbarItem(placement: .topBarLeading) {
+          Button {
+            isInSettings = true
+          } label: {
+            Image(systemName: "gearshape")
           }
           .matchedTransitionSource(id: "settings", in: namespace)
-        } else {
-          ToolbarItem(placement: .topBarLeading) {
-            Button {
-              isInSettings = true
-            } label: {
-              Image(systemName: "gearshape")
-            }
-            .matchedTransitionSource(id: "settings", in: namespace)
-          }          
         }
+
       }
       ToolbarItem(placement: .topBarTrailing) {
 
@@ -154,13 +145,13 @@ struct AudioListView: View {
     )
 
   }
-  
+
   @ViewBuilder
   private var tagList: some View {
     if tags.isEmpty == false {
-      
+
       Section {
-        
+
         ForEach(tags) { tag in
           NavigationLink(
             value: tag
@@ -189,13 +180,13 @@ struct AudioListView: View {
             }
           }
         }
-        
+
       } header: {
         ListComponents.Header.init(title: "Tags")
       }
     }
   }
-  
+
   private var allItems: some View {
     Section {
       ItemListFragment(
@@ -236,7 +227,7 @@ struct AudioListInTagView: View {
       filter: #Predicate<ItemEntity> {
         $0.tags.contains(where: { $0.name == tagName })
       },
-      sort: \.title      
+      sort: \.title
     )
 
     self.tag = tag
@@ -469,7 +460,7 @@ private struct TranscriptionProgressView: View {
   let currentItemTitle: String?
   let remainingCount: Int
   let onCancel: () -> Void
-  
+
   @Environment(\.scenePhase) var scenePhase
 
   var body: some View {

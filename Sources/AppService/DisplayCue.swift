@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSubtitles
 
-public nonisolated struct DisplayCue: Identifiable, Hashable, Sendable {
+public struct DisplayCue: Identifiable, Hashable, Sendable {
 
   public func hash(into hasher: inout Hasher) {
     id.hash(into: &hasher)
@@ -25,7 +25,7 @@ public nonisolated struct DisplayCue: Identifiable, Hashable, Sendable {
 
 }
 
-public nonisolated struct AbstractSegment: Equatable, Identifiable, Codable, Sendable {
+public struct AbstractSegment: Equatable, Identifiable, Codable, Sendable {
 
   public var id: String {
     "\(startTime),\(endTime)"
@@ -51,7 +51,7 @@ public nonisolated struct AbstractSegment: Equatable, Identifiable, Codable, Sen
   }
 }
 
-public nonisolated struct StoredSubtitle: Codable, Sendable {
+public struct StoredSubtitle: Codable, Sendable {
 
   public let items: [AbstractSegment]
 

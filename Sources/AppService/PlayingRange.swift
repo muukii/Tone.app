@@ -1,6 +1,6 @@
 import Foundation
 
-public nonisolated struct PlayingRange: Equatable, Sendable {
+public struct PlayingRange: Equatable, Sendable {
 
   private var whole: [DisplayCue]
 

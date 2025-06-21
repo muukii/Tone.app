@@ -1,7 +1,7 @@
 
 import Foundation
 
-public nonisolated struct AbsolutePath: Hashable {
+public struct AbsolutePath: Hashable {
 
   /**
    /path/to/file
@@ -34,7 +34,7 @@ public nonisolated struct AbsolutePath: Hashable {
   }
 }
 
-public nonisolated struct RelativePath: Hashable {
+public struct RelativePath: Hashable {
 
   public let rawValue: String
 

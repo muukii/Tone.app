@@ -163,15 +163,6 @@
       }
     },
     {
-      "identity" : "swift-with-prerender",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FluidGroup/swift-with-prerender",
-      "state" : {
-        "revision" : "83ea5d0f5a9fd0082c61e090f4b656c7b58ee0be",
-        "version" : "1.0.0"
-      }
-    },
-    {
       "identity" : "swiftsubtitles",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dagronf/SwiftSubtitles",
