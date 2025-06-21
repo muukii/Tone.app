@@ -19,7 +19,6 @@ let package = Package(
     .package(url: "https://github.com/siteline/swiftui-introspect", from: "1.1.0"),
     .package(url: "https://github.com/muukii/swift-macro-hex-color", from: "0.1.1"),
     .package(url: "https://github.com/dmrschmidt/DSWaveformImage", from: "14.2.2"),
-    .package(url: "https://github.com/AudioKit/AudioKit", from: "5.6.2"),
     .package(url: "https://github.com/alexeichhorn/YouTubeKit", from: "0.2.0"),
     .package(url: "https://github.com/argmaxinc/whisperkit", from: "0.13.0"),
     .package(url: "https://github.com/apple/swift-algorithms", from: "1.2.0"),

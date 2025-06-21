@@ -130,7 +130,7 @@ The app provides a comprehensive platform for shadowing practice with features s
 
 ## Key Dependencies
 
-- **Audio**: AudioKit, WhisperKit, DSWaveformImageViews
+- **Audio**: WhisperKit, DSWaveformImageViews
 - **UI**: Custom submodules (SwiftUIRingSlider, DynamicList, SwiftUIStack)
 - **State**: StateGraph (VergeGroup/swift-state-graph)
 - **Media**: YouTubeKit, Alamofire
