@@ -71,7 +71,7 @@ struct PlayerControlLiveActivity: Widget {
   }
 }
 
-nonisolated struct Action: LiveActivityIntent {
+struct Action: LiveActivityIntent {
 
   static var title: LocalizedStringResource {
     return "Hello"

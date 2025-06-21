@@ -109,7 +109,7 @@ private struct StyleView: View {
     .padding()
 }
 
-nonisolated struct AdaptiveColor: ShapeStyle {
+struct AdaptiveColor: ShapeStyle {
   
   let light: Color
   let dark: Color

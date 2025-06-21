@@ -16,7 +16,7 @@ protocol PlayerDisplay: View {
   )
 }
 
-nonisolated enum PlayerAction {
+enum PlayerAction {
   case onPin(range: PlayingRange)
   case onTranscribeAgain
   case onRename(title: String)
@@ -26,7 +26,7 @@ nonisolated enum PlayerAction {
 
 struct PlayerView<Display: PlayerDisplay & Sendable>: View {
 
-  nonisolated struct Term: Identifiable {
+  struct Term: Identifiable {
     var id: String { value }
     var value: String
   }

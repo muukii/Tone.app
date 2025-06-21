@@ -3,7 +3,7 @@ import Foundation
 
 extension Schemas.V2 {
   @Model
-  public nonisolated final class Item: Hashable {
+  public final class Item: Hashable {
     
     @Attribute(.unique)
     public var identifier: String?

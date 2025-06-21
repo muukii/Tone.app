@@ -150,13 +150,13 @@ enum AnkiModels {
     }
     
     @Model
-    public nonisolated final class Tag: Hashable, TagType {
+    public final class Tag: Hashable, TagType {
       
-      public nonisolated var name: String?
+      public var name: String?
       
-      public nonisolated var lastUsedAt: Date?
+      public var lastUsedAt: Date?
       
-      public nonisolated var items: [ExpressionItem]?
+      public var items: [ExpressionItem]?
       
       public init(name: String) {
         self.name = name
@@ -168,30 +168,30 @@ enum AnkiModels {
     }
     
     @Model
-    public nonisolated final class ExpressionItem {
+    public final class ExpressionItem {
       
-      public nonisolated var identifier: String?
+      public var identifier: String?
       
       @Relationship(deleteRule: .nullify, inverse: \Tag.items)
-      public nonisolated var tags: [Tag]?
+      public var tags: [Tag]?
       
-      public nonisolated var front: String?
-      public nonisolated var back: String?
+      public var front: String?
+      public var back: String?
       
       // https://super-memory.com/english/ol/sm2.htm
       // spaced repetition用プロパティ
-      public nonisolated var easeFactor: Double = 2.5  // E-Factor（最小1.3）
-      public nonisolated var interval: Int = 0  // 次回までの間隔（日数）
-      public nonisolated var repetition: Int = 0  // 連続正解回数
+      public var easeFactor: Double = 2.5  // E-Factor（最小1.3）
+      public var interval: Int = 0  // 次回までの間隔（日数）
+      public var repetition: Int = 0  // 連続正解回数
       
-      public nonisolated var lastReviewedAt: Date?  // 最終復習日
-      public nonisolated var nextReviewAt: Date?  // 次回復習予定日
+      public var lastReviewedAt: Date?  // 最終復習日
+      public var nextReviewAt: Date?  // 次回復習予定日
       
-      public nonisolated var wrappedLastReviewedAt: Date {
+      public var wrappedLastReviewedAt: Date {
         lastReviewedAt ?? Date.init(timeIntervalSince1970: 0)
       }
        
-      public nonisolated var wrappedNextReviewAt: Date {
+      public var wrappedNextReviewAt: Date {
         nextReviewAt ?? Date.init(timeIntervalSince1970: 0)
       }
       
