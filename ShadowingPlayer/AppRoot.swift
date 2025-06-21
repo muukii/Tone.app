@@ -10,6 +10,7 @@ import AppService
 import SwiftData
 import SwiftUI
 import TipKit
+import UserNotifications
 
 @main
 struct AppRoot: App {
@@ -40,6 +41,21 @@ struct AppRoot: App {
             .onAppear {
               UIApplication.shared.beginReceivingRemoteControlEvents()
               AudioSessionManager.shared.setInitialState()
+              
+              // Request notification permissions for background transcription
+              Task {
+                do {
+                  let granted = try await UNUserNotificationCenter.current().requestAuthorization(
+                    options: [.alert, .sound]
+                  )
+                  if granted {
+                    Log.debug("Notification permission granted")
+                  }
+                } catch {
+                  Log.error("Failed to request notification permission: \(error)")
+                }
+              }
+              
 #if targetEnvironment(simulator)
               Task {
                 try await rootDriver.service.addExampleItems()

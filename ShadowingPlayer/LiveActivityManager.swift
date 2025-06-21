@@ -129,7 +129,7 @@ public final class LiveActivityManager {
   
 }
 
-public nonisolated enum LiveActivityError: LocalizedError {
+public enum LiveActivityError: LocalizedError {
   case activitiesNotEnabled
   case failedToStart(Error)
   

@@ -3,7 +3,7 @@ import SwiftData
 
 extension Schemas.V3 {
   @Model
-  public nonisolated final class Pin: Identifiable {
+  public final class Pin: Identifiable {
 
     @Attribute(.unique)
     public var identifier: String

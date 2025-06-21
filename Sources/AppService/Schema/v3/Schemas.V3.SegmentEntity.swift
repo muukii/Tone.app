@@ -3,13 +3,13 @@ import Foundation
 
 extension Schemas.V3 {
   
-  public enum SegmentKind: String, Codable, CaseIterable {
+  public enum SegmentKind: String, Sendable, Codable, CaseIterable {
     case text
     case separator
   }
   
   @Model
-  public nonisolated final class Segment: Hashable {
+  public final class Segment: Hashable {
     
     public var startTime: TimeInterval
     public var endTime: TimeInterval

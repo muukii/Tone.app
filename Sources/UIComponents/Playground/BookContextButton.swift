@@ -244,7 +244,7 @@ struct BookContextButton: View, PreviewProvider {
 
     var body: some View {
       TrackingView(
-        hoverlingPoint: hoverlingPoint,
+        hoverlingPoint: hoverlingPoint
       ) { isOn in
         Circle()
           .scale(isOn ? 1.5 : 1)

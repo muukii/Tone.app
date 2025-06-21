@@ -11,21 +11,26 @@ public enum WhisperKitWrapper {
     let audioFileURL: URL
     let segments: [AbstractSegment]
   }
-  
+
   // Model information
   public struct Model: Sendable, Identifiable {
     public var id: String { name }
     public let name: String
     public let description: String
   }
-  
+
   // Available models with descriptions
   public static let availableModels: [Model] = [
     Model(name: "small.en", description: "Balanced speed and accuracy"),
-    Model(name: "medium.en", description: "Better accuracy, slower")
+    Model(name: "medium.en", description: "Better accuracy, slower"),
   ]
 
-  public static func run(url input: URL, model: String) async throws -> Result {
+  public static func run(
+    url input: URL,
+    model: String,
+    progressHandler: (@Sendable (Double) -> Void)? = nil,
+    shouldContinue: (@Sendable () -> Bool)? = nil
+  ) async throws -> Result {
 
     let hasSecurityScope = input.startAccessingSecurityScopedResource()
 
@@ -45,10 +50,22 @@ public enum WhisperKitWrapper {
         skipSpecialTokens: true,
         wordTimestamps: true,
         suppressBlank: true
-      )
-    ) { @Sendable progress in
-      return true
-    }
+      ),
+      callback: { @Sendable progress in
+        // Check if we should continue
+        if let shouldContinue = shouldContinue, !shouldContinue() {
+          return false
+        }
+
+        // Report progress if handler provided
+        if let progressHandler = progressHandler {
+          let progressValue = progress.timings.decodingLoop / progress.timings.inputAudioSeconds
+          progressHandler(progressValue)
+        }
+
+        return true
+      }
+    )
 
     let result = results.first
 

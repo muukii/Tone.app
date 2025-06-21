@@ -3,7 +3,7 @@ import _Concurrency
 /**
  Performs the given task in background
  */
-public nonisolated func withBackground<Return: Sendable>(
+public func withBackground<Return: Sendable>(
   _ thunk: @escaping @isolated(any) @Sendable () async throws -> Return
 ) async rethrows -> Return {
 

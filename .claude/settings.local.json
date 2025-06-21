@@ -20,7 +20,8 @@
       "Bash(rm:*)",
       "WebFetch(domain:github.com)",
       "mcp__claude_code__Edit",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "WebFetch(domain:developer.apple.com)"
     ],
     "deny": []
   }

@@ -1,8 +1,8 @@
 import ActivityKit
 
-public nonisolated struct PlayerActivityAttributes: ActivityAttributes {
+public struct PlayerActivityAttributes: ActivityAttributes {
   
-  public nonisolated struct ContentState: Codable, Hashable {
+  public struct ContentState: Codable, Hashable {
     
     public let title: String
     public let artist: String?

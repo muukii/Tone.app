@@ -50,7 +50,7 @@ enum YouTubeDownloader {
 
   }
 
-  private nonisolated final class TaskDeletage: NSObject, URLSessionTaskDelegate {
+  private final class TaskDeletage: NSObject, URLSessionTaskDelegate {
 
     func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
       print("task created")
