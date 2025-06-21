@@ -19,10 +19,17 @@ public nonisolated final class TranscriptionBackgroundTaskManager: Sendable {
   @GraphStored
   private var shouldContinue: Bool = true
 
+  @MainActor
+  private var isRegistered: Bool = false
+
   public init() {}
 
   /// Register the background task handler
+  @MainActor
   public func register() {
+    guard !isRegistered else { return }
+    isRegistered = true
+
     BGTaskScheduler.shared.register(
       forTaskWithIdentifier: Self.taskIdentifier,
       using: nil,
