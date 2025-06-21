@@ -68,8 +68,9 @@ public final class Service {
     
 #if swift(>=6.2)
     if #available(iOS 26.0, *) {
-      self.anyContinuedProcessingTaskManager = TranscriptionBackgroundTaskManager()
-      continuedProcessingTaskManager.register()
+      let manager = TranscriptionBackgroundTaskManager()
+      self.anyContinuedProcessingTaskManager = manager
+      manager.register()
     } else {
       self.anyContinuedProcessingTaskManager = nil
     }
