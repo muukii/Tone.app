@@ -460,6 +460,8 @@ private struct TranscriptionProgressView: View {
   let currentItemTitle: String?
   let remainingCount: Int
   let onCancel: () -> Void
+  
+  @Environment(\.scenePhase) var scenePhase
 
   @Environment(\.scenePhase) var scenePhase
 

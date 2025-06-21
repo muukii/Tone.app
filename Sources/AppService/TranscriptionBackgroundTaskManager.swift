@@ -16,7 +16,6 @@ public final class TranscriptionBackgroundTaskManager: Sendable {
  
   @GraphStored
   private var currentTask: BGContinuedProcessingTask? = nil
-
   
   @GraphStored
   private var shouldContinue: Bool = true
@@ -109,4 +108,6 @@ public final class TranscriptionBackgroundTaskManager: Sendable {
     // This just sets up the task management
   }
 }
+
 #endif
+

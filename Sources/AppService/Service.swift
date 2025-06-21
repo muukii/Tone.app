@@ -23,13 +23,13 @@ public final class Service {
 
   @GraphStored(backed: .userDefaults(key: "openAIAPIKey"))
   public var openAIAPIKey: String = ""
-
+  
   @GraphStored(backed: .userDefaults(key: "backgroundTranscriptionNotificationsEnabled"))
   public var backgroundTranscriptionNotificationsEnabled: Bool = false
-
+  
   @GraphStored(backed: .userDefaults(key: "pendingTranscriptions"))
   private var pendingTranscriptionsWrapper: PendingTranscriptionsWrapper = .init(items: [])
-
+  
   public struct TranscriptionProgress {
     public let remainingCount: Int
     public let currentItemTitle: String?
@@ -47,6 +47,21 @@ public final class Service {
   }
 
   private let taskManager = TaskManagerActor()
+  
+  // Background task management
+  private var backgroundTaskIdentifier: UIBackgroundTaskIdentifier = .invalid
+  
+  // Track if we should stop processing due to background time running out
+  @GraphStored
+  private var shouldStopBackgroundProcessing: Bool = false
+  
+  // Continued processing task manager for iOS 17+
+  @available(iOS 26.0, *)
+  public var continuedProcessingTaskManager: TranscriptionBackgroundTaskManager {
+    anyContinuedProcessingTaskManager as! TranscriptionBackgroundTaskManager
+  }
+  
+  public let anyContinuedProcessingTaskManager: AnyObject?
 
   // Background task management
   private var backgroundTaskIdentifier: UIBackgroundTaskIdentifier = .invalid
@@ -64,6 +79,12 @@ public final class Service {
   #endif
 
   public init() {
+    
+    if #available(iOS 26.0, *) {
+      self.anyContinuedProcessingTaskManager = TranscriptionBackgroundTaskManager()
+    } else {
+      self.anyContinuedProcessingTaskManager = nil
+    }
 
     #if swift(>=6.2)
       if #available(iOS 26.0, *) {
@@ -469,12 +490,12 @@ public final class Service {
         )
       }
     #else
+
       result = try await WhisperKitWrapper.run(
         url: audioFileURL,
         model: selectedWhisperModel
       )
-    #endif
-  
+
     try await self.importItem(
       title: title,
       audioFileURL: audioFileURL,
@@ -489,6 +510,166 @@ public final class Service {
       await taskManager.cancelAll()
       transcribingItems.removeAll()
       endBackgroundTaskIfNeeded()
+    }
+  }
+  
+  // MARK: - Background Task Management
+  
+  private func beginBackgroundTaskIfNeeded() {
+    guard backgroundTaskIdentifier == .invalid else { return }
+    
+    backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask(
+      withName: "WhisperKit Transcription"
+    ) { [weak self] in
+      // Called when background time is about to expire
+      Log.warning("Background task expiring, stopping transcription...")
+      self?.handleBackgroundTaskExpiration()
+    }
+    
+    if backgroundTaskIdentifier != .invalid {
+      Log.debug("Started background task for transcription")
+      shouldStopBackgroundProcessing = false
+      
+      // Monitor remaining background time
+      Task { [weak self] in
+        await self?.monitorBackgroundTime()
+      }
+    }
+  }
+  
+  private func endBackgroundTaskIfNeeded() {
+    guard backgroundTaskIdentifier != .invalid else { return }
+    
+    UIApplication.shared.endBackgroundTask(backgroundTaskIdentifier)
+    backgroundTaskIdentifier = .invalid
+    shouldStopBackgroundProcessing = false
+    Log.debug("Ended background task")
+  }
+  
+  private func handleBackgroundTaskExpiration() {
+    // Signal that we should stop processing
+    shouldStopBackgroundProcessing = true
+    
+    // Cancel current transcription
+    Task {
+      await taskManager.cancelAll()
+      
+      // Mark currently processing item as waiting so it can be resumed
+      if let processingItem = transcribingItems.first(where: { $0.status == .processing }) {
+        processingItem.status = .waiting
+      }
+      
+      endBackgroundTaskIfNeeded()
+    }
+  }
+  
+  private func monitorBackgroundTime() async {
+    while backgroundTaskIdentifier != .invalid {
+      let remainingTime = UIApplication.shared.backgroundTimeRemaining
+      
+      if remainingTime < 30 && remainingTime != .greatestFiniteMagnitude {
+        Log.warning("Less than 30 seconds of background time remaining: \(remainingTime)")
+        
+        // If we're getting low on time, gracefully stop after current file
+        if remainingTime < 10 {
+          shouldStopBackgroundProcessing = true
+        }
+      }
+      
+      try? await Task.sleep(nanoseconds: 5_000_000_000) // Check every 5 seconds
+    }
+  }
+  
+  // MARK: - Persistence
+  
+  private nonisolated struct PersistentTranscriptionItem: Codable, Equatable {
+    let fileName: String
+    let fileURL: URL
+    let tagNames: [String]
+    let status: String // "waiting", "processing", "completed", "failed"
+  }
+  
+  private nonisolated struct PendingTranscriptionsWrapper: Codable, Equatable, UserDefaultsStorable {
+    let items: [PersistentTranscriptionItem]
+  }
+  
+  
+  private func savePendingTranscriptions() {
+    let pendingItems = transcribingItems.compactMap { item -> PersistentTranscriptionItem? in
+      // Only save items that haven't completed
+      guard item.status == .waiting || item.status == .processing else {
+        return nil
+      }
+      
+      return PersistentTranscriptionItem(
+        fileName: item.file.name,
+        fileURL: item.file.url,
+        tagNames: item.file.tags.compactMap { $0.name },
+        status: item.status == .processing ? "waiting" : "waiting" // Reset processing to waiting
+      )
+    }
+    
+    pendingTranscriptionsWrapper = PendingTranscriptionsWrapper(items: pendingItems)
+    Log.debug("Saved \(pendingItems.count) pending transcriptions")
+  }
+  
+  private func restorePendingTranscriptions() async {    
+    let persistedItems = pendingTranscriptionsWrapper.items
+    
+    // Clear the saved data
+    pendingTranscriptionsWrapper = .init(items: [])
+    
+    Log.debug("Restoring \(persistedItems.count) pending transcriptions")
+    
+    do {
+      for persistedItem in persistedItems {
+        // Find matching tags
+        let actor = BackgroundModelActor(modelContainer: modelContainer)
+        let targetFile = try await actor.perform { modelContext in
+               
+          let tagSet = persistedItem.tagNames.map { Optional($0) }
+          let tags = try modelContext.fetch(
+            .init(predicate: #Predicate<TagEntity> { tag in
+              tagSet.contains(tag.name)
+            })
+          )
+          
+          // Create a new TargetFile and enqueue it
+          let targetFile = TargetFile(
+            name: persistedItem.fileName,
+            url: persistedItem.fileURL,
+            tags: tags
+          )
+          
+          return targetFile
+        }
+        
+        _ = enqueueTranscribe(target: targetFile)
+      }
+    } catch {
+      Log.error("Failed to restore pending transcriptions: \(error)")
+    }
+  }
+  
+  private func notifyTranscriptionComplete() {
+    guard backgroundTranscriptionNotificationsEnabled else { return }
+    
+    let content = UNMutableNotificationContent()
+    content.title = "Transcription Complete"
+    content.body = "All audio files have been transcribed successfully."
+    content.sound = .default
+    
+    let request = UNNotificationRequest(
+      identifier: "transcription-complete-\(UUID().uuidString)",
+      content: content,
+      trigger: nil
+    )
+    
+    UNUserNotificationCenter.current().add(request) { error in
+      if let error = error {
+        Log.error("Failed to send notification: \(error)")
+      }
+
     }
   }
 
