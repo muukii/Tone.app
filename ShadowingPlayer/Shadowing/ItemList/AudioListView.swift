@@ -463,8 +463,6 @@ private struct TranscriptionProgressView: View {
   
   @Environment(\.scenePhase) var scenePhase
 
-  @Environment(\.scenePhase) var scenePhase
-
   var body: some View {
     HStack(spacing: 12) {
       ProgressView()
