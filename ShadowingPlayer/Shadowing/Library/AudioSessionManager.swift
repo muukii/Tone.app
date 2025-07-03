@@ -22,10 +22,10 @@ public final class AudioSessionManager {
   public func setInitialState() {            
     do {
       try instance.setCategory(
-        .playback,
+        .playAndRecord,
         mode: .default,
         policy: .default,
-        options: [.mixWithOthers]
+        options: []
       )
       try instance.setActive(true, options: [])
     } catch {
@@ -41,10 +41,10 @@ public final class AudioSessionManager {
     try instance.setActive(false, options: [])
 
     try instance.setCategory(
-      .playback,
-      mode: .default,
+      .playAndRecord,
+      mode: .voiceChat,
       policy: .default,
-      options: [.duckOthers]
+      options: []
     )
     
     try instance.setActive(true, options: [])
@@ -54,9 +54,9 @@ public final class AudioSessionManager {
   
   public func activateForRecording() throws {
     
-    guard mode != .disabled else {
-      return
-    }
+//    guard mode != .disabled else {
+//      return
+//    }
     
     try instance.setActive(false, options: [])
     

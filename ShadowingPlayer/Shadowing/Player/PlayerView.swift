@@ -38,6 +38,7 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
   @State private var isProcessing: Bool = false
   @State private var isShowingRenameDialog: Bool = false
   @State private var newTitle: String = ""
+  @State private var isShowingMicrophonePermissionAlert: Bool = false
 
   private let pins: [PinEntity]
   private let namespace: Namespace.ID
@@ -163,7 +164,19 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
 //              controllerForDetail = controller
               break
             case .onStartRecord:
-              controller.startRecording()
+              // Taskを使うとhopが発生するため理想的ではないが、
+              // async関数のrequestPermission()を呼ぶために必要
+              Task {
+                let permissionManager = MicrophonePermissionManager()                                                
+                if await permissionManager.requestPermission() {
+                  controller.startRecording()
+                } else {
+                  // パーミッションが拒否されている場合はアラートを表示
+                  if permissionManager.currentStatus == .denied {
+                    isShowingMicrophonePermissionAlert = true
+                  }
+                }
+              }
             case .onStopRecording:
               controller.stopRecording()
             }
@@ -223,6 +236,16 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
         ProgressView()
       }
       .interactiveDismissDisabled(true)
+    }
+    .alert("Microphone Access Required", isPresented: $isShowingMicrophonePermissionAlert) {
+      Button("Cancel", role: .cancel) {}
+      Button("Open Settings") {
+        if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+          UIApplication.shared.open(settingsURL)
+        }
+      }
+    } message: {
+      Text("Tone needs access to your microphone to record your voice during shadowing practice. Please enable microphone access in Settings.")
     }
 
   }

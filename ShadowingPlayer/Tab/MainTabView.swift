@@ -344,8 +344,6 @@ final class MainViewModel {
       }
     }
     
-    discardPlayerController()
-
     let newController = try PlayerController(item: item)
 
     currentController = newController
@@ -353,7 +351,7 @@ final class MainViewModel {
 
   @MainActor
   func discardPlayerController() {
-
+        
     try? AudioSessionManager.shared.deactivate()
 
     currentController?.pause()
