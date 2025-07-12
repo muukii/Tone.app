@@ -55,6 +55,7 @@ final class AudioPlayerController: NSObject {
   @GraphStored
   var recordings: [Recording] = []
 
+  @GraphStored
   private var currentRecording: Recording? = nil
 
   //  var isAppInBackground: Bool = false
@@ -155,11 +156,10 @@ final class AudioPlayerController: NSObject {
       return
     }
     
-    try! AudioSessionManager.shared.activate()
+//    try! AudioSessionManager.shared.activate()
     
     Log.debug("Stop recording")
 
-    currentActiveEngine.inputNode.removeTap(onBus: 0)
     currentRecording.writingFile.close()
 
     recordings.append(currentRecording)
@@ -193,6 +193,8 @@ final class AudioPlayerController: NSObject {
     guard isRecording == false else {
       return
     }
+    
+    assert(MicrophonePermissionManager().isGranted, "Microphone permission must be granted before calling startRecording()")
 
     // take a value before pause   
     
@@ -202,12 +204,15 @@ final class AudioPlayerController: NSObject {
     
     Log.debug("Start recording at: \(currentTimeInMain)")
 
-    pause()
+//    pause()
 
-    try! AudioSessionManager.shared.activateForRecording()
+//    try! AudioSessionManager.shared.activateForRecording()
 
     do {
+      
       let format = currentActiveEngine.inputNode.outputFormat(forBus: 0)
+      
+      Log.info("Recording inputNode.outputFormat: \(format)")
 
       let recording = try Recording.init(
         offsetToMain: currentTimeInMain,
@@ -217,27 +222,48 @@ final class AudioPlayerController: NSObject {
 
       self.currentRecording = recording
 
-      let outputFile = recording.writingFile
-
       print("outputFile: \(recording.filePath)")
 
-      currentActiveEngine.inputNode.installTap(
-        onBus: 0,
-        bufferSize: 1024,
-        format: format
-      ) { @Sendable (buffer, time) in
-        do {
-          try outputFile.write(from: buffer)
-        } catch {
-          print("録音エラー: \(error)")
-        }
-      }
-
-      try play()
+//      try play()
     } catch {
       assertionFailure()
     }
 
+  }
+  
+  private var hasSetTap: Bool = false
+  
+  private func setTap() {
+    
+    guard !hasSetTap, let currentActiveEngine else {
+      return
+    }
+    hasSetTap = true
+    
+    let format = currentActiveEngine.inputNode.outputFormat(forBus: 0)
+
+    currentActiveEngine.inputNode.installTap(
+      onBus: 0,
+      bufferSize: 4096,
+      format: format
+    ) { @Sendable [weak self] (buffer, time) in
+      print("Audio buffer received at time: \(time)")
+      do {
+        try self?.$currentRecording.wrappedValue?.writingFile.write(from: buffer)
+      } catch {
+        Log.error("Failed to write audio buffer: \(error)")
+      }
+    }
+  }
+  
+  private func removeTap() {
+    
+    guard let currentActiveEngine else {
+      return
+    }
+    
+    currentActiveEngine.inputNode.removeTap(onBus: 0)
+    hasSetTap = false
   }
 
   func setSpeed(speed: Double) {
@@ -261,6 +287,8 @@ final class AudioPlayerController: NSObject {
     self.currentActiveEngine = newEngine
     
     timeline.attach(to: newEngine)
+    
+    setTap()
   }
 
   func play() throws {
