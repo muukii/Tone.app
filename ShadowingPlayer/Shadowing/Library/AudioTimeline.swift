@@ -112,6 +112,15 @@ final class AudioTimeline {
     private var isAttached: Bool = false
 
     var offset: Offset?
+    
+    var volume: Float {
+      get {
+        player.volume
+      }
+      set {
+        player.volume = newValue
+      }
+    }
 
     var duration: TimeInterval {
       Double(file.length) / file.processingFormat.sampleRate

@@ -172,12 +172,13 @@ final class AudioPlayerController: NSObject {
   
   private func addRecordingToPlay(recording: Recording) {
     do {
-      timeline.addTrack(
+      let recordingTrack = timeline.addTrack(
         trackType: .sub,
         name: "Recording",
         file: try recording.makeReadingFile(),
         offset: .timeInMain(.from(timeInterval: recording.offsetToMain))
       )
+      recordingTrack.volume = 10 // Increase volume by 50%
     } catch {
       assertionFailure()
     }
