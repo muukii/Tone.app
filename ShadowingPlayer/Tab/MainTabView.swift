@@ -352,7 +352,7 @@ final class MainViewModel {
   @MainActor
   func discardPlayerController() {
         
-    try? AudioSessionManager.shared.deactivate()
+    AudioSessionManager.shared.resetToDefaultState()
 
     currentController?.pause()
     currentController = nil

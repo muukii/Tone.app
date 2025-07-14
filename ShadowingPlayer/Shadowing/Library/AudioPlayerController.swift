@@ -61,6 +61,7 @@ final class AudioPlayerController: NSObject {
   //  var isAppInBackground: Bool = false
 
   private var currentActiveEngine: AVAudioEngine?
+  private var recordingEngine: AVAudioEngine?  // 録音専用エンジン
 
   private let file: AVAudioFile
 
@@ -126,6 +127,12 @@ final class AudioPlayerController: NSObject {
 
   deinit {
     // Remove observers for notifications and remote commands
+    // 録音エンジンのクリーンアップ
+    if let recordingEngine = recordingEngine {
+      recordingEngine.inputNode.removeTap(onBus: 0)
+      recordingEngine.stop()
+    }
+    
     NotificationCenter.default.removeObserver(self)
     Log.debug("deinit \(String(describing: self))")
   }
@@ -152,11 +159,19 @@ final class AudioPlayerController: NSObject {
 
   func stopRecording() {
 
-    guard let currentRecording, let currentActiveEngine else {
+    guard let currentRecording else {
       return
     }
     
-//    try! AudioSessionManager.shared.activate()
+    // 録音エンジンのタップを削除して停止
+    if let recordingEngine = recordingEngine {
+      recordingEngine.inputNode.removeTap(onBus: 0)
+      recordingEngine.stop()
+      self.recordingEngine = nil
+    }
+    
+    // 再生専用に戻す
+    try? AudioSessionManager.shared.optimizeForPlayback()
     
     Log.debug("Stop recording")
 
@@ -187,7 +202,7 @@ final class AudioPlayerController: NSObject {
     
   func startRecording() {
 
-    guard isPlaying, let currentActiveEngine else {
+    guard isPlaying else {
       return
     }
 
@@ -205,25 +220,52 @@ final class AudioPlayerController: NSObject {
     
     Log.debug("Start recording at: \(currentTimeInMain)")
 
-//    pause()
-
-//    try! AudioSessionManager.shared.activateForRecording()
+    // 録音時の最適化
+    try? AudioSessionManager.shared.optimizeForRecording()
+    
+    // 録音専用エンジンを作成
+    if recordingEngine == nil {
+      recordingEngine = AVAudioEngine()
+    }
+    
+    guard let recordingEngine else {
+      return
+    }
 
     do {
+      // inputNodeのフォーマットを先に取得（エンジン起動前）
+      let inputFormat = recordingEngine.inputNode.outputFormat(forBus: 0)
       
-      let format = currentActiveEngine.inputNode.outputFormat(forBus: 0)
+      // ミキサーノードを作成して接続（エンジンが動作するために必要）
+      let mixerNode = AVAudioMixerNode()
+      recordingEngine.attach(mixerNode)
+      recordingEngine.connect(recordingEngine.inputNode, to: mixerNode, format: inputFormat)
+      recordingEngine.connect(mixerNode, to: recordingEngine.mainMixerNode, format: inputFormat)
       
-      Log.info("Recording inputNode.outputFormat: \(format)")
+      // 録音エンジンを起動
+      try recordingEngine.start()
+      
+      // フォーマットが有効かチェック（サンプルレートとチャンネル数が0でないこと）
+      guard inputFormat.sampleRate > 0 && inputFormat.channelCount > 0 else {
+        Log.error("Input node is not enabled. Format: \(inputFormat)")
+        recordingEngine.stop()
+        return
+      }
+      
+      Log.info("Recording inputNode format: \(inputFormat)")
 
       let recording = try Recording.init(
         offsetToMain: currentTimeInMain,
         destination: URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf"),
-        format: format
+        format: inputFormat
       )
 
       self.currentRecording = recording
 
       print("outputFile: \(recording.filePath)")
+      
+      // 録音エンジンにタップを設定
+      setRecordingTap(with: nil)
 
 //      try play()
     } catch {
@@ -234,19 +276,38 @@ final class AudioPlayerController: NSObject {
   
   private var hasSetTap: Bool = false
   
-  private func setTap() {
+  // 再生エンジン用（現在は使用していない）
+  private func setTap(with format: AVAudioFormat?) {
     
     guard !hasSetTap, let currentActiveEngine else {
       return
     }
     hasSetTap = true
-    
-    let format = currentActiveEngine.inputNode.outputFormat(forBus: 0)
 
     currentActiveEngine.inputNode.installTap(
       onBus: 0,
       bufferSize: 4096,
-      format: format
+      format: format  // nilの場合はinputNodeのデフォルトフォーマットが使用される
+    ) { @Sendable [weak self] (buffer, time) in
+      print("Audio buffer received at time: \(time)")
+      do {
+        try self?.$currentRecording.wrappedValue?.writingFile.write(from: buffer)
+      } catch {
+        Log.error("Failed to write audio buffer: \(error)")
+      }
+    }
+  }
+  
+  // 録音エンジン用
+  private func setRecordingTap(with format: AVAudioFormat?) {
+    guard let recordingEngine else {
+      return
+    }
+
+    recordingEngine.inputNode.installTap(
+      onBus: 0,
+      bufferSize: 4096,
+      format: format  // nilの場合はinputNodeのデフォルトフォーマットが使用される
     ) { @Sendable [weak self] (buffer, time) in
       print("Audio buffer received at time: \(time)")
       do {
@@ -282,14 +343,14 @@ final class AudioPlayerController: NSObject {
       return
     }
     
-    try! AudioSessionManager.shared.activate()
-    
+    // AudioSessionは既にinitializeで設定済み
     let newEngine = AVAudioEngine()
     self.currentActiveEngine = newEngine
     
     timeline.attach(to: newEngine)
     
-    setTap()
+    // タップは録音開始時にのみ設定するように変更
+    // setTap()
   }
 
   func play() throws {

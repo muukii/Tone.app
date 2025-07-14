@@ -40,7 +40,7 @@ struct AppRoot: App {
           ContentView(rootDriver: rootDriver)
             .onAppear {
               UIApplication.shared.beginReceivingRemoteControlEvents()
-              AudioSessionManager.shared.setInitialState()
+              AudioSessionManager.shared.initialize()
               
               // Request notification permissions for background transcription
               Task {

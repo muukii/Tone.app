@@ -16,7 +16,7 @@ class PlayAndRecordViewModel: ObservableObject {
   func startPlayAndRecord() {
     
     MainActor.assumeIsolated {
-      try? AudioSessionManager.shared.activateForRecording()
+      try? AudioSessionManager.shared.optimizeForRecording()
     }
     
     guard let inputURL = Bundle.main.url(forResource: "Social Media Has Ruined Photography", withExtension: "mp3") else {

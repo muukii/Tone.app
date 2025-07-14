@@ -473,7 +473,7 @@ private final class Controller: ObservableObject {
 
   func prepare() {
     do {
-      try AudioSessionManager.shared.activate()
+      AudioSessionManager.shared.resetToDefaultState()
 
       let aTrack = timeline.addTrack(
         trackType: .main,

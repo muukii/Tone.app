@@ -214,11 +214,7 @@ public final class PlayerController: NSObject {
 
       Log.debug("deinit \(String(describing: self))")
 
-      do {
-        try AudioSessionManager.shared.deactivate()
-      } catch {
-        print(error)
-      }
+      // AudioSessionの変更は不要（アプリ全体で維持）
 
       Task { @MainActor [currentTimeObservation, currentTimer, currentTimerForLoop] in
         currentTimeObservation?.invalidate()
@@ -240,11 +236,7 @@ public final class PlayerController: NSObject {
 
     isActivated = true
 
-    do {
-      try AudioSessionManager.shared.activate()
-    } catch {
-      print(error)
-    }
+    // AudioSessionは既にinitializeで設定済み
   }
 
   func deactivate() {

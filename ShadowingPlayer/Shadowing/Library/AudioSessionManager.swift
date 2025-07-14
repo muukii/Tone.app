@@ -2,16 +2,8 @@ import AVFoundation
 
 @MainActor
 public final class AudioSessionManager {
-
-  public enum Mode {
-    case playback
-    case playAndRecord
-    case disabled
-  }
   
   public static let shared = AudioSessionManager()
-  
-  private var mode: Mode = .disabled
   
   private var instance: AVAudioSession {
     AVAudioSession.sharedInstance()
@@ -19,65 +11,46 @@ public final class AudioSessionManager {
   
   private init() {}
   
-  public func setInitialState() {            
+  // 初期状態に設定する（アプリ起動時や初期状態に戻す時に使用）
+  public func resetToDefaultState() {
+    Log.debug("AudioSessionManager.resetToDefaultState() called")
     do {
+      // 再生のみの状態にして、AirPodsの音質を保つ
       try instance.setCategory(
-        .playAndRecord,
+        .playback,
         mode: .default,
-        policy: .default,
-        options: []
+        options: [.allowBluetooth, .allowBluetoothA2DP]
       )
-      try instance.setActive(true, options: [])
+      try instance.setActive(true)
+      Log.debug("AudioSessionManager reset to default state - category: playback, mode: default, active: true")
     } catch {
-      Log.error("Failed to set audio session category: \(error)")
+      Log.error("Failed to reset audio session to default state: \(error)")
     }
-    mode = .playback
-
   }
   
-  public func activate() throws {    
-    guard mode != .disabled else { return }
-    
-    try instance.setActive(false, options: [])
-
+  // アプリ起動時に一度だけ呼ぶ（resetToDefaultStateのエイリアス）
+  public func initialize() {
+    Log.debug("AudioSessionManager.initialize() called")
+    resetToDefaultState()
+  }
+  
+  // 録音時に呼ぶ（必要に応じて）
+  public func optimizeForRecording() throws {
+    Log.debug("AudioSessionManager.optimizeForRecording() called")
+    // 録音のためにカテゴリを変更
     try instance.setCategory(
       .playAndRecord,
-      mode: .voiceChat,
-      policy: .default,
-      options: []
+      mode: .videoChat,  // videoChatモードは録音品質とレイテンシのバランスが良い
+      options: [.allowBluetooth, .allowBluetoothA2DP]
     )
-    
-    try instance.setActive(true, options: [])
-    
-    mode = .playback
+    Log.debug("AudioSessionManager changed to playAndRecord category with videoChat mode for recording")
   }
   
-  public func activateForRecording() throws {
-    
-//    guard mode != .disabled else {
-//      return
-//    }
-    
-    try instance.setActive(false, options: [])
-    
-    try instance.setCategory(
-      .playAndRecord,
-      mode: .spokenAudio,
-      policy: .default,
-      options: []
-    )
-    
-    try instance.setActive(true, options: [])
-    
-    mode = .playAndRecord
-  }
-  
-  public func deactivate() throws {
-    guard mode != .disabled else { return }
-    
-    setInitialState()
-    
-    mode = .disabled
+  // 再生専用時に呼ぶ（必要に応じて）
+  public func optimizeForPlayback() throws {
+    Log.debug("AudioSessionManager.optimizeForPlayback() called")
+    try instance.setMode(.default)
+    Log.debug("AudioSessionManager mode changed to default for playback")
   }
   
 } 
