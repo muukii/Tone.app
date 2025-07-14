@@ -266,36 +266,10 @@ final class AudioPlayerController: NSObject {
       
       // 録音エンジンにタップを設定
       setRecordingTap(with: nil)
-
-//      try play()
     } catch {
       assertionFailure()
     }
 
-  }
-  
-  private var hasSetTap: Bool = false
-  
-  // 再生エンジン用（現在は使用していない）
-  private func setTap(with format: AVAudioFormat?) {
-    
-    guard !hasSetTap, let currentActiveEngine else {
-      return
-    }
-    hasSetTap = true
-
-    currentActiveEngine.inputNode.installTap(
-      onBus: 0,
-      bufferSize: 4096,
-      format: format  // nilの場合はinputNodeのデフォルトフォーマットが使用される
-    ) { @Sendable [weak self] (buffer, time) in
-      print("Audio buffer received at time: \(time)")
-      do {
-        try self?.$currentRecording.wrappedValue?.writingFile.write(from: buffer)
-      } catch {
-        Log.error("Failed to write audio buffer: \(error)")
-      }
-    }
   }
   
   // 録音エンジン用
@@ -316,16 +290,6 @@ final class AudioPlayerController: NSObject {
         Log.error("Failed to write audio buffer: \(error)")
       }
     }
-  }
-  
-  private func removeTap() {
-    
-    guard let currentActiveEngine else {
-      return
-    }
-    
-    currentActiveEngine.inputNode.removeTap(onBus: 0)
-    hasSetTap = false
   }
 
   func setSpeed(speed: Double) {
@@ -348,9 +312,6 @@ final class AudioPlayerController: NSObject {
     self.currentActiveEngine = newEngine
     
     timeline.attach(to: newEngine)
-    
-    // タップは録音開始時にのみ設定するように変更
-    // setTap()
   }
 
   func play() throws {
