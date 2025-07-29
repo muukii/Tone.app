@@ -33,6 +33,7 @@ struct AudioListView: View {
   @State private var isImportingAudioAndSRT: Bool = false
   @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
+  @State private var isImportingPhotos: Bool = false
   @State private var tagEditingItem: ItemEntity?
 
   private let namespace: Namespace.ID
@@ -89,14 +90,20 @@ struct AudioListView: View {
       ToolbarItem(placement: .topBarTrailing) {
 
         Menu {
-          Button("File and SRT") {
-            isImportingAudioAndSRT = true
+          Menu("Files") {
+            Button("Audio and SRT files") {
+              isImportingAudioAndSRT = true
+            }
+            Button("Audio files (on-device transcribing)") {
+              isImportingAudio = true
+            }
+            Button("YouTube (on-device transcribing)") {
+              isImportingYouTube = true
+            }
           }
-          Button("File (on-device transcribing)") {
-            isImportingAudio = true
-          }
-          Button("YouTube (on-device transcribing)") {
-            isImportingYouTube = true
+          
+          Button("Photos (audio and video)") {
+            isImportingPhotos = true
           }
         } label: {
           Text("Import")
@@ -135,6 +142,17 @@ struct AudioListView: View {
       content: {
         SettingsView(service: service)
           .navigationTransition(.zoom(sourceID: "settings", in: namespace))
+      }
+    )
+    .sheet(
+      isPresented: $isImportingPhotos,
+      content: {
+        PhotosImportView(
+          service: service,
+          onComplete: {
+            isImportingPhotos = false
+          }
+        )
       }
     )
     .modifier(

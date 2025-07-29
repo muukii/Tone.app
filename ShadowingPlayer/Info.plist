@@ -6,5 +6,7 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Tone needs access to your Photos library to import audio and video files for language learning practice.</string>
 </dict>
 </plist>
