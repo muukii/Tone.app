@@ -33,6 +33,7 @@ struct AudioListView: View {
   @State private var isImportingAudioAndSRT: Bool = false
   @State private var isImportingAudio: Bool = false
   @State private var isImportingYouTube: Bool = false
+  @State private var isImportingPhotos: Bool = false
   @State private var tagEditingItem: ItemEntity?
 
   private let namespace: Namespace.ID
@@ -98,6 +99,9 @@ struct AudioListView: View {
           Button("YouTube (on-device transcribing)") {
             isImportingYouTube = true
           }
+          Button("Photos (audio and video)") {
+            isImportingPhotos = true
+          }
         } label: {
           Text("Import")
         }
@@ -126,6 +130,20 @@ struct AudioListView: View {
           service: service,
           onComplete: {
             isImportingYouTube = false
+          }
+        )
+      }
+    )
+    .sheet(
+      isPresented: $isImportingPhotos,
+      content: {
+        PhotosImportView(
+          service: service,
+          onComplete: {
+            isImportingPhotos = false
+          },
+          onCancel: {
+            isImportingPhotos = false
           }
         )
       }
