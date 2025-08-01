@@ -31,7 +31,7 @@ struct AudioListView: View {
   @Environment(\.modelContext) var modelContext
   @State private var isInSettings: Bool = false
   @State private var isImportingAudioAndSRT: Bool = false
-  @State private var isImportingAudio: Bool = false
+  @State private var isImportingAudioFromFiles: Bool = false
   @State private var isImportingYouTube: Bool = false
   @State private var tagEditingItem: ItemEntity?
 
@@ -92,9 +92,16 @@ struct AudioListView: View {
           Button("File and SRT") {
             isImportingAudioAndSRT = true
           }
-          Button("File (on-device transcribing)") {
-            isImportingAudio = true
-          }
+          Menu.init(content: {            
+            Button("Photos") {
+              isImportingAudioFromFiles = true
+            }
+            Button("Files") {
+              isImportingAudioFromFiles = true
+            }
+          }, label: {
+            Text("From Device")
+          })
           Button("YouTube (on-device transcribing)") {
             isImportingYouTube = true
           }
@@ -139,7 +146,7 @@ struct AudioListView: View {
     )
     .modifier(
       ImportModifier(
-        isPresented: $isImportingAudio,
+        isPresented: $isImportingAudioFromFiles,
         service: service
       )
     )

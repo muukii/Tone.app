@@ -1,5 +1,6 @@
 import YouTubeKit
 import AVFoundation
+import AppService
 
 enum YouTubeDownloaderError: Error {
   case streamNotFound
@@ -46,7 +47,7 @@ enum YouTubeDownloader {
 
     Log.debug("Download completed => \(downloadedTempURL)")
 
-    return try await AudioExtractor.run(videoURL: destinationURL)
+    return try await AudioExtractor.extractAudio(from: destinationURL)
 
   }
 
@@ -82,63 +83,4 @@ enum YouTubeDownloader {
     }
   }
 
-}
-
-enum AudioExtractorError: Error {
-  case somethingFailed
-  case underlying(Error)
-}
-
-enum AudioExtractor {
-
-  // returns m4a file url
-  nonisolated static func run(videoURL: URL) async throws -> URL {
-
-    // Create a composition
-    let composition = AVMutableComposition()
-    do {
-      let sourceUrl = videoURL
-      let asset = AVURLAsset(url: sourceUrl)
-      guard let audioAssetTrack = try await asset.loadTracks(withMediaType: .audio).first else {
-        throw AudioExtractorError.somethingFailed
-      }
-      guard
-        let audioCompositionTrack = composition.addMutableTrack(
-          withMediaType: AVMediaType.audio,
-          preferredTrackID: kCMPersistentTrackID_Invalid
-        )
-      else {
-        throw AudioExtractorError.somethingFailed
-      }
-      try audioCompositionTrack.insertTimeRange(
-        await audioAssetTrack.load(.timeRange),
-        of: audioAssetTrack,
-        at: CMTime.zero
-      )
-    } catch {
-      throw AudioExtractorError.underlying(error)
-    }
-
-    // Get url for output
-    let outputURL = videoURL.updatingPathExtension("m4a")
-    if FileManager.default.fileExists(atPath: outputURL.path) {
-      try FileManager.default.removeItem(atPath: outputURL.path)
-    }
-
-    // Create an export session
-    let exportSession = AVAssetExportSession(
-      asset: composition,
-      presetName: AVAssetExportPresetPassthrough
-    )!
-    exportSession.outputFileType = AVFileType.m4a
-    exportSession.outputURL = outputURL
-
-    await exportSession.export()
-
-    guard case exportSession.status = AVAssetExportSession.Status.completed else {
-      throw AudioExtractorError.somethingFailed
-    }
-
-    return outputURL
-  }
 }

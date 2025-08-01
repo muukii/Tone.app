@@ -22,7 +22,8 @@
       "mcp__claude_code__Edit",
       "Bash(git commit:*)",
       "WebFetch(domain:developer.apple.com)",
-      "WebFetch(domain:stackoverflow.com)"
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:www.hackingwithswift.com)"
     ],
     "deny": []
   }
