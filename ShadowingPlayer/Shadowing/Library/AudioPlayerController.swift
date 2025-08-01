@@ -62,6 +62,7 @@ final class AudioPlayerController: NSObject {
 
   private var currentActiveEngine: AVAudioEngine?
   private var recordingEngine: AVAudioEngine?  // 録音専用エンジン
+  private var isRecordingEnginePrepared: Bool = false  // 録音エンジンの準備状態
 
   private let file: AVAudioFile
 
@@ -163,11 +164,11 @@ final class AudioPlayerController: NSObject {
       return
     }
     
-    // 録音エンジンのタップを削除して停止
+    // 録音エンジンのタップを削除（エンジンは停止するが破棄しない）
     if let recordingEngine = recordingEngine {
       recordingEngine.inputNode.removeTap(onBus: 0)
       recordingEngine.stop()
-      self.recordingEngine = nil
+      // self.recordingEngine = nil  // エンジンは再利用するため破棄しない
     }
     
     // 再生専用に戻す
@@ -183,6 +184,18 @@ final class AudioPlayerController: NSObject {
 
     self.currentRecording = nil
 
+  }
+  
+  // 新しい録音を作成するヘルパーメソッド
+  private func createRecording(
+    at position: TimeInterval,
+    with format: AVAudioFormat
+  ) throws -> Recording {
+    return try Recording(
+      offsetToMain: position,
+      destination: URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf"),
+      format: format
+    )
   }
   
   private func addRecordingToPlay(recording: Recording) {
@@ -223,9 +236,10 @@ final class AudioPlayerController: NSObject {
     // 録音時の最適化
     try? AudioSessionManager.shared.optimizeForRecording()
     
-    // 録音専用エンジンを作成
+    // 録音専用エンジンを作成または再利用
     if recordingEngine == nil {
       recordingEngine = AVAudioEngine()
+      isRecordingEnginePrepared = false
     }
     
     guard let recordingEngine else {
@@ -233,17 +247,23 @@ final class AudioPlayerController: NSObject {
     }
 
     do {
-      // inputNodeのフォーマットを先に取得（エンジン起動前）
+      // inputNodeのフォーマットを先に取得
       let inputFormat = recordingEngine.inputNode.outputFormat(forBus: 0)
       
-      // ミキサーノードを作成して接続（エンジンが動作するために必要）
-      let mixerNode = AVAudioMixerNode()
-      recordingEngine.attach(mixerNode)
-      recordingEngine.connect(recordingEngine.inputNode, to: mixerNode, format: inputFormat)
-      recordingEngine.connect(mixerNode, to: recordingEngine.mainMixerNode, format: inputFormat)
+      // 初回のみノードを接続
+      if !isRecordingEnginePrepared {
+        // ミキサーノードを作成して接続（エンジンが動作するために必要）
+        let mixerNode = AVAudioMixerNode()
+        recordingEngine.attach(mixerNode)
+        recordingEngine.connect(recordingEngine.inputNode, to: mixerNode, format: inputFormat)
+        recordingEngine.connect(mixerNode, to: recordingEngine.mainMixerNode, format: inputFormat)
+        isRecordingEnginePrepared = true
+      }
       
-      // 録音エンジンを起動
-      try recordingEngine.start()
+      // 録音エンジンを起動（停止している場合のみ）
+      if !recordingEngine.isRunning {
+        try recordingEngine.start()
+      }
       
       // フォーマットが有効かチェック（サンプルレートとチャンネル数が0でないこと）
       guard inputFormat.sampleRate > 0 && inputFormat.channelCount > 0 else {
@@ -254,12 +274,7 @@ final class AudioPlayerController: NSObject {
       
       Log.info("Recording inputNode format: \(inputFormat)")
 
-      let recording = try Recording.init(
-        offsetToMain: currentTimeInMain,
-        destination: URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf"),
-        format: inputFormat
-      )
-
+      let recording = try createRecording(at: currentTimeInMain, with: inputFormat)
       self.currentRecording = recording
 
       print("outputFile: \(recording.filePath)")
@@ -380,6 +395,11 @@ final class AudioPlayerController: NSObject {
 
     isPlaying = false    
     
+    // 録音中の場合は録音も停止
+    if isRecording {
+      stopRecording()
+    }
+    
     timeline.pause()    
 
     currentTimerForLoop?.invalidate()
@@ -389,9 +409,33 @@ final class AudioPlayerController: NSObject {
 
   func seek(positionInMain: TimeInterval) {
     Log.debug("Seek \(positionInMain)")
+    
+    // 録音中の場合は、録音ファイルを切り替える（エンジンは停止しない）
+    if isRecording, let currentRecording = currentRecording {
+      // 現在の録音ファイルを閉じて保存
+      currentRecording.writingFile.close()
+      recordings.append(currentRecording)
+      addRecordingToPlay(recording: currentRecording)
+      
+      // 新しい録音ファイルを作成
+      do {
+        guard let recordingEngine = recordingEngine else {
+          Log.error("Recording engine is nil while isRecording is true")
+          return
+        }
+        
+        let inputFormat = recordingEngine.inputNode.outputFormat(forBus: 0)
+        let newRecording = try createRecording(at: positionInMain, with: inputFormat)
+        self.currentRecording = newRecording
+        Log.debug("Created new recording at position: \(positionInMain)")
+      } catch {
+        Log.error("Failed to create new recording during seek: \(error)")
+        self.currentRecording = nil
+      }
+    }
+    
     createEngine()
     timeline.seek(position: positionInMain, in: .main)
-
   }
   
   
