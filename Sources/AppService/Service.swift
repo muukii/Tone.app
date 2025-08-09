@@ -561,6 +561,65 @@ public final class Service {
     return item
   }
   
+  public func enqueueVideoTranscribe(target: TargetFile, additionalTags: [TagEntity] = [])
+  -> TranscribeWorkItem
+  {
+    
+    enum TaskKey: TaskKeyType {
+      
+    }
+    
+    let item = TranscribeWorkItem(file: target)
+    
+    transcribingItems.append(item)
+        
+    item.associatedTask = Task {
+      await taskManager.task(key: .init(TaskKey.self), mode: .waitInCurrent) { [weak self] in
+        do {
+          guard let self else { return }
+          
+          // Check if we should stop due to background time expiring
+          if self.shouldStopBackgroundProcessing {
+            Log.warning("Skipping transcription due to background time limit")
+            item.status = .waiting  // Mark as waiting so it can be resumed
+            return
+          }
+          
+          let file = item.file
+          
+          item.status = .processing
+          
+          // Extract audio from video first
+          let audioURL = try await AudioExtractor.extractAudio(from: file.url)
+          
+          // Transcribe the extracted audio
+          try await self.transcribe(
+            title: file.name,
+            audioFileURL: audioURL,
+            tags: file.tags + additionalTags
+          )
+          
+          // Clean up temporary video and extracted audio files
+          try? FileManager.default.removeItem(at: file.url)
+          try? FileManager.default.removeItem(at: audioURL)
+          
+          item.status = .completed
+
+        } catch {
+          item.status = .failed
+          Log.error("Video transcription failed: \(error)")
+          // Clean up temporary video file on failure
+          try? FileManager.default.removeItem(at: target.url)
+        }
+        
+        self?.transcribingItems.removeAll(where: { $0 == item })
+      
+      }
+    }
+    
+    return item
+  }
+  
   public func importItem(
     title: String,
     audioFileURL: URL,
