@@ -5,12 +5,14 @@ import YouTubeKit
 struct YouTubeImportView: View {
 
   let service: Service
+  let defaultTag: TagEntity?
   let onComplete: @MainActor () -> Void
 
   @State private var statusText: String = ""
 
-  init(service: Service, onComplete: @escaping @MainActor () -> Void) {
+  init(service: Service, defaultTag: TagEntity? = nil, onComplete: @escaping @MainActor () -> Void) {
     self.service = service
+    self.defaultTag = defaultTag
     self.onComplete = onComplete
   }
 
@@ -31,9 +33,11 @@ struct YouTubeImportView: View {
 
           statusText = "Transcribing..."
 
+          let tags = defaultTag != nil ? [defaultTag!] : []
           try await service.transcribe(
             title: title ?? "(Not fetched)",
-            audioFileURL: audio
+            audioFileURL: audio,
+            tags: tags
           )
 
           onComplete()

@@ -7,11 +7,14 @@ import UniformTypeIdentifiers
 // Import errors
 enum ImportError: LocalizedError {
   case noVideosProcessed
+  case audioExtractionFailed(Error)
   
   var errorDescription: String? {
     switch self {
     case .noVideosProcessed:
       return "Failed to process any videos. Please try again."
+    case .audioExtractionFailed(let error):
+      return "Failed to extract audio: \(error.localizedDescription)"
     }
   }
 }
@@ -20,11 +23,19 @@ struct PhotosVideoPickerModifier: ViewModifier {
   
   @Binding var isPresented: Bool
   @State var selectedItems: [PhotosPickerItem] = []
-  @State var videoTargets: [TargetFile] = []
+  @State var audioTargets: [TargetFile] = []
   @State var showImportView: Bool = false
   @State var isProcessing: Bool = false
   @State var processingError: Error?
+  @State var processingStatus: String = ""
   let service: Service
+  let defaultTag: TagEntity?
+  
+  init(isPresented: Binding<Bool>, service: Service, defaultTag: TagEntity? = nil) {
+    self._isPresented = isPresented
+    self.service = service
+    self.defaultTag = defaultTag
+  }
   
   func body(content: Content) -> some View {
     content
@@ -41,15 +52,35 @@ struct PhotosVideoPickerModifier: ViewModifier {
         }
       }
       .sheet(isPresented: $showImportView) {
-        VideoImportView(
+        AudioImportView(
           service: service,
-          targets: videoTargets,
+          targets: audioTargets,
+          defaultTag: defaultTag,
           onSubmit: {
-            videoTargets = []
+            audioTargets = []
             selectedItems = []
             showImportView = false
           }
         )
+      }
+      .overlay {
+        if isProcessing {
+          ZStack {
+            Color.black.opacity(0.5)
+              .ignoresSafeArea()
+            
+            VStack(spacing: 16) {
+              ProgressView()
+                .scaleEffect(1.5)
+              Text(processingStatus)
+                .foregroundColor(.white)
+                .font(.headline)
+            }
+            .padding(24)
+            .background(Color.black.opacity(0.8))
+            .cornerRadius(12)
+          }
+        }
       }
       .alert("Import Error", isPresented: .constant(processingError != nil)) {
         Button("OK") {
@@ -66,7 +97,10 @@ struct PhotosVideoPickerModifier: ViewModifier {
   private func processSelectedVideos(_ items: [PhotosPickerItem]) async {
     
     isProcessing = true
-    defer { isProcessing = false }
+    defer { 
+      isProcessing = false 
+      processingStatus = ""
+    }
     
     selectedItems = []
     
@@ -74,39 +108,48 @@ struct PhotosVideoPickerModifier: ViewModifier {
     
     for (index, item) in items.enumerated() {
       do {
-        // Create temporary file URL
-        let tempURL = FileManager.default.temporaryDirectory
+        processingStatus = "Processing video \(index + 1) of \(items.count)..."
+        
+        // Create temporary file URL for video
+        let videoTempURL = FileManager.default.temporaryDirectory
           .appendingPathComponent(UUID().uuidString)
           .appendingPathExtension("mov")
         
         // Load video data from PhotosPickerItem
-        // First try as Data
         guard let data = try await item.loadTransferable(type: Data.self) else {
           Log.warning("Could not load video from PhotosPickerItem at index \(index)")
           continue
         }
         
-        // Write data to temporary file
-        try data.write(to: tempURL)
+        // Write video data to temporary file
+        try data.write(to: videoTempURL)
         
         Log.debug("Loaded video as Data, size: \(data.count) bytes")
         
-        // Verify the file exists and has content
-        let fileAttributes = try FileManager.default.attributesOfItem(atPath: tempURL.path)
+        // Verify the video file exists and has content
+        let fileAttributes = try FileManager.default.attributesOfItem(atPath: videoTempURL.path)
         let fileSize = fileAttributes[.size] as? Int64 ?? 0
         
         guard fileSize > 0 else {
-          Log.warning("Video file is empty at: \(tempURL)")
-          try? FileManager.default.removeItem(at: tempURL)
+          Log.warning("Video file is empty at: \(videoTempURL)")
+          try? FileManager.default.removeItem(at: videoTempURL)
           continue
         }
         
-        Log.debug("Video file created at \(tempURL) with size \(fileSize) bytes")
+        processingStatus = "Extracting audio from video \(index + 1)..."
         
-        // Create target file with generated name
+        // Extract audio from video
+        let audioURL = try await AudioExtractor.extractAudio(from: videoTempURL)
+        
+        // Clean up the temporary video file immediately
+        try? FileManager.default.removeItem(at: videoTempURL)
+        
+        Log.debug("Successfully extracted audio to \(audioURL)")
+        
+        // Create target file with the extracted audio
         let target = TargetFile(
           name: "Video \(index + 1)",
-          url: tempURL
+          url: audioURL
         )
         targets.append(target)
         
@@ -114,18 +157,20 @@ struct PhotosVideoPickerModifier: ViewModifier {
         
       } catch {
         Log.error("Failed to process video \(index): \(error)")
-        processingError = error
+        processingError = ImportError.audioExtractionFailed(error)
       }
     }
     
     Log.debug("Processed \(targets.count) videos out of \(items.count) selected")
     
     if !targets.isEmpty {
-      videoTargets = targets
+      audioTargets = targets
       showImportView = true
     } else {
       Log.warning("No videos were successfully processed")
-      processingError = ImportError.noVideosProcessed
+      if processingError == nil {
+        processingError = ImportError.noVideosProcessed
+      }
     }
   }
 }
