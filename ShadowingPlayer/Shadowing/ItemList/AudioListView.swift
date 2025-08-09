@@ -32,6 +32,7 @@ struct AudioListView: View {
   @State private var isInSettings: Bool = false
   @State private var isImportingAudioAndSRT: Bool = false
   @State private var isImportingAudioFromFiles: Bool = false
+  @State private var isImportingVideoFromPhotos: Bool = false
   @State private var isImportingYouTube: Bool = false
   @State private var tagEditingItem: ItemEntity?
 
@@ -94,7 +95,7 @@ struct AudioListView: View {
           }
           Menu.init(content: {            
             Button("Photos") {
-              isImportingAudioFromFiles = true
+              isImportingVideoFromPhotos = true
             }
             Button("Files") {
               isImportingAudioFromFiles = true
@@ -147,6 +148,12 @@ struct AudioListView: View {
     .modifier(
       ImportModifier(
         isPresented: $isImportingAudioFromFiles,
+        service: service
+      )
+    )
+    .modifier(
+      PhotosVideoPickerModifier(
+        isPresented: $isImportingVideoFromPhotos,
         service: service
       )
     )
