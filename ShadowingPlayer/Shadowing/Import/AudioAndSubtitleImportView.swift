@@ -17,16 +17,19 @@ struct AudioAndSubtitleImportView: View {
   @Environment(\.modelContext) var modelContext
 
   private let service: Service
+  private let defaultTag: TagEntity?
 
   var onComplete: () -> Void
   var onCancel: () -> Void
 
   init(
     service: Service,
+    defaultTag: TagEntity? = nil,
     onComplete: @escaping () -> Void,
     onCancel: @escaping () -> Void
   ) {
     self.service = service
+    self.defaultTag = defaultTag
     self.onComplete = onComplete
     self.onCancel = onCancel
   }
@@ -38,10 +41,12 @@ struct AudioAndSubtitleImportView: View {
       ImportContentView(onImport: { draft in
 
         Task {
+          let tags = defaultTag != nil ? [defaultTag!] : []
           try await service.importItem(
             title: draft.title,
             audioFileURL: draft.audioFileURL,
-            subtitleFileURL: draft.subtitleFileURL
+            subtitleFileURL: draft.subtitleFileURL,
+            tags: tags
           )
           onComplete()
         }
@@ -69,11 +74,13 @@ struct AudioAndSubtitleImportView: View {
               drafts: drafts,
               onConfirm: {
                 Task {
+                  let tags = defaultTag != nil ? [defaultTag!] : []
                   for draft in drafts {
                     try await service.importItem(
                       title: draft.title,
                       audioFileURL: draft.audioFileURL,
-                      subtitleFileURL: draft.subtitleFileURL
+                      subtitleFileURL: draft.subtitleFileURL,
+                      tags: tags
                     )
                   }
                   onComplete()

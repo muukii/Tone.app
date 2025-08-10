@@ -16,15 +16,23 @@ struct AudioImportView: View {
   @State private var batchTags: [TagEntity] = []
   @Environment(\.modelContext) private var modelContext
   let onSubmit: @MainActor () -> Void
+  private let defaultTag: TagEntity?
 
   init(
     service: Service,
     targets: [TargetFile],
+    defaultTag: TagEntity? = nil,
     onSubmit: @escaping @MainActor () -> Void
   ) {
     self.service = service
     self.targetFiles = targets
+    self.defaultTag = defaultTag
     self.onSubmit = onSubmit
+    
+    // Set default tag in batch tags if provided
+    if let defaultTag = defaultTag {
+      self._batchTags = State(initialValue: [defaultTag])
+    }
   }
   
   private var totalTagCount: Int {
@@ -41,7 +49,7 @@ struct AudioImportView: View {
         ForEach(targetFiles) { target in
           VStack(alignment: .leading, spacing: 16) {
             HStack {
-              Image(systemName: "music.note")
+              Image(systemName: target.fileType == .video ? "video.fill" : "music.note")
                 .font(.system(size: 20))
                 .foregroundColor(.accentColor)
                 .frame(width: 40, height: 40)

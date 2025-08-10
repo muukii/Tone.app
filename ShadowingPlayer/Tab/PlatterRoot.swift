@@ -341,8 +341,10 @@ private struct PlayerWrapper: View {
             try await service.renameItem(item: item, newTitle: title)
           case .onInsertSeparator(let beforeCueId):
             try await service.insertSeparator(for: item, beforeCueId: beforeCueId)
+            try player.reloadCues(from: item)
           case .onDeleteSeparator(let cueId):
             try await service.deleteSeparator(for: item, cueId: cueId)
+            try player.reloadCues(from: item)
           }
         } catch {
           Log.error("\(error.localizedDescription)")

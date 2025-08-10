@@ -62,10 +62,9 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
   private let actionHandler: @MainActor (PlayerAction) async -> Void
 
   @State var isFollowing: Bool = true
+  @State private var snapshot: NSDiffableDataSourceSnapshot<String, DisplayCue>
 
   private let pins: [PinEntity]
-
-  private let snapshot: NSDiffableDataSourceSnapshot<String, DisplayCue>
 
   init(
     controller: PlayerController,
@@ -75,10 +74,15 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
     self.controller = controller
     self.pins = pins
     self.actionHandler = actionHandler
+    
+    // Initialize snapshot with current cues
+    self._snapshot = State(initialValue: Self.makeSnapshot(from: controller.cues))
+  }
+  
+  private static func makeSnapshot(from cues: [DisplayCue]) -> NSDiffableDataSourceSnapshot<String, DisplayCue> {
+    return NSDiffableDataSourceSnapshot<String, DisplayCue>.init()&>.modify({ s in
 
-    self.snapshot = NSDiffableDataSourceSnapshot<String, DisplayCue>.init()&>.modify({ s in
-
-      let chunks = controller.cues.chunked(by: {
+      let chunks = cues.chunked(by: {
         // Don't chunk together if there's a time gap > 0.08s OR if the next segment is a separator
         let hasTimeGap = ($1.backed.startTime - $0.backed.endTime > 0.08)
         let nextIsSeparator = $1.backed.kind == .separator
@@ -212,6 +216,10 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
       .relative(horizontalAlignment: .trailing, verticalAlignment: .bottom)
       .padding(20)
 
+    }
+    .onChange(of: controller.cues) { newCues in
+      // Update snapshot when cues change
+      snapshot = Self.makeSnapshot(from: newCues)
     }
   }
 

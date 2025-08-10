@@ -32,6 +32,7 @@ struct AudioListView: View {
   @State private var isInSettings: Bool = false
   @State private var isImportingAudioAndSRT: Bool = false
   @State private var isImportingAudioFromFiles: Bool = false
+  @State private var isImportingVideoFromPhotos: Bool = false
   @State private var isImportingYouTube: Bool = false
   @State private var tagEditingItem: ItemEntity?
 
@@ -94,7 +95,7 @@ struct AudioListView: View {
           }
           Menu.init(content: {            
             Button("Photos") {
-              isImportingAudioFromFiles = true
+              isImportingVideoFromPhotos = true
             }
             Button("Files") {
               isImportingAudioFromFiles = true
@@ -147,6 +148,12 @@ struct AudioListView: View {
     .modifier(
       ImportModifier(
         isPresented: $isImportingAudioFromFiles,
+        service: service
+      )
+    )
+    .modifier(
+      PhotosVideoPickerModifier(
+        isPresented: $isImportingVideoFromPhotos,
         service: service
       )
     )
@@ -208,86 +215,7 @@ struct AudioListView: View {
 
 }
 
-struct AudioListInTagView: View {
-
-  @Query private var items: [ItemEntity]
-  private let service: Service
-  private let onSelect: (ItemEntity) -> Void
-  private let tag: TagEntity
-
-  @State private var isRenaming = false
-  @State private var newTagName = ""
-  @State private var isProcessingRename = false
-
-  init(
-    service: Service,
-    tag: TagEntity,
-    onSelect: @escaping (ItemEntity) -> Void
-  ) {
-
-    self.service = service
-    self.onSelect = onSelect
-
-    let tagName = tag.name
-
-    self._items = Query(
-      filter: #Predicate<ItemEntity> {
-        $0.tags.contains(where: { $0.name == tagName })
-      },
-      sort: \.title
-    )
-
-    self.tag = tag
-
-  }
-
-  var body: some View {
-    CollectionView(layout: .list) {
-      ItemListFragment(
-        items: items,
-        onSelect: onSelect,
-        service: service
-      )
-    }
-    .navigationTitle(tag.name ?? "")
-    .toolbar {
-      ToolbarItem(placement: .topBarTrailing) {
-        Button {
-          newTagName = tag.name ?? ""
-          isRenaming = true
-        } label: {
-          Text("Rename")
-          //          Image(systemName: "pencil")
-          //            .resizable()
-          //            .aspectRatio(contentMode: .fit)
-          //            .frame(width: 20, height: 20)
-        }
-        .disabled(isProcessingRename)
-      }
-    }
-    .alert("Rename Tag", isPresented: $isRenaming) {
-      TextField("Tag name", text: $newTagName)
-      Button("Cancel", role: .cancel) {
-        isRenaming = false
-      }
-      Button("Rename") {
-        Task {
-          isProcessingRename = true
-          defer { isProcessingRename = false }
-
-          do {
-            try await service.renameTag(tag: tag, newName: newTagName)
-          } catch {
-            Log.error("Failed to rename tag: \(error)")
-          }
-        }
-        isRenaming = false
-      }
-    }
-  }
-}
-
-private struct ItemListFragment: View {
+struct ItemListFragment: View {
 
   let items: [ItemEntity]
   let onSelect: (ItemEntity) -> Void
@@ -381,7 +309,7 @@ private struct ItemEditingModifier: ViewModifier {
 
 }
 
-private struct ImportModifier: ViewModifier {
+struct ImportModifier: ViewModifier {
 
   private let audioUTTypes: Set<UTType> = [
     .mp3, .aiff, .wav, .mpeg4Audio,
@@ -395,10 +323,12 @@ private struct ImportModifier: ViewModifier {
   @Binding var isPresented: Bool
   @State private var selected: Selected?
   private let service: Service
+  private let defaultTag: TagEntity?
 
-  init(isPresented: Binding<Bool>, service: Service) {
+  init(isPresented: Binding<Bool>, service: Service, defaultTag: TagEntity? = nil) {
     self._isPresented = isPresented
     self.service = service
+    self.defaultTag = defaultTag
   }
 
   func body(content: Content) -> some View {
@@ -409,6 +339,7 @@ private struct ImportModifier: ViewModifier {
           AudioImportView(
             service: service,
             targets: selected.selectingFiles,
+            defaultTag: defaultTag,
             onSubmit: {
               self.selected = nil
             }
