@@ -49,7 +49,7 @@ struct AudioImportView: View {
         ForEach(targetFiles) { target in
           VStack(alignment: .leading, spacing: 16) {
             HStack {
-              Image(systemName: "music.note")
+              Image(systemName: target.fileType == .video ? "video.fill" : "music.note")
                 .font(.system(size: 20))
                 .foregroundColor(.accentColor)
                 .frame(width: 40, height: 40)

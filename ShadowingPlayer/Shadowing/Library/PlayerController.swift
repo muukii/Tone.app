@@ -32,7 +32,8 @@ public final class PlayerController: NSObject {
   @GraphStored
   public var currentCue: DisplayCue?
 
-  public let cues: [DisplayCue]
+  @GraphStored
+  public var cues: [DisplayCue]
 
   @GraphStored
   public var pin: [PinEntity] = []
@@ -131,6 +132,33 @@ public final class PlayerController: NSObject {
 
   public func makeRepeatingRange() -> PlayingRange {
     .init(whole: cues)
+  }
+
+  @MainActor
+  public func reloadCues(from item: ItemEntity) throws {
+    let segments = try item.segment()
+    self.cues = segments.items.enumerated()
+      .map { i, e in .init(segment: e, index: i) }
+    
+    // Reset current cue if needed
+    if let currentCue = currentCue,
+       !cues.contains(where: { $0.id == currentCue.id }) {
+      self.currentCue = nil
+    }
+    
+    // Reset playing range if needed
+    if let playingRange = playingRange {
+      var newRange = makeRepeatingRange()
+      if let startCue = cues.first(where: { $0.id == playingRange.startCue.id }),
+         let endCue = cues.first(where: { $0.id == playingRange.endCue.id }) {
+        newRange.select(cue: startCue)
+        newRange.select(cue: endCue)
+        self.playingRange = newRange
+      } else {
+        self.playingRange = nil
+        controller.repeating = .atEnd
+      }
+    }
   }
 
   @MainActor

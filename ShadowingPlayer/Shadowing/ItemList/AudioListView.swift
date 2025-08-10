@@ -30,7 +30,10 @@ struct AudioListView: View {
 
   @Environment(\.modelContext) var modelContext
   @State private var isInSettings: Bool = false
-  @State private var activeImportType: ImportType?
+  @State private var isImportingAudioAndSRT: Bool = false
+  @State private var isImportingAudioFromFiles: Bool = false
+  @State private var isImportingVideoFromPhotos: Bool = false
+  @State private var isImportingYouTube: Bool = false
   @State private var tagEditingItem: ItemEntity?
 
   private let namespace: Namespace.ID
@@ -88,20 +91,20 @@ struct AudioListView: View {
 
         Menu {
           Button("File and SRT") {
-            activeImportType = .audioAndSRT
+            isImportingAudioAndSRT = true
           }
           Menu.init(content: {            
             Button("Photos") {
-              activeImportType = .videoFromPhotos
+              isImportingVideoFromPhotos = true
             }
             Button("Files") {
-              activeImportType = .audioFromFiles
+              isImportingAudioFromFiles = true
             }
           }, label: {
             Text("From Device")
           })
           Button("YouTube (on-device transcribing)") {
-            activeImportType = .youTube
+            isImportingYouTube = true
           }
         } label: {
           Text("Import")
@@ -110,49 +113,49 @@ struct AudioListView: View {
       }
     })
     .navigationTitle("Tone")
-    .sheet(item: $activeImportType) { importType in
-      switch importType {
-      case .audioAndSRT:
+    .sheet(
+      isPresented: $isImportingAudioAndSRT,
+      content: {
         AudioAndSubtitleImportView(
           service: service,
           onComplete: {
-            activeImportType = nil
+            isImportingAudioAndSRT = false
           },
           onCancel: {
-            activeImportType = nil
-          }
-        )
-      case .youTube:
-        YouTubeImportView(
-          service: service,
-          onComplete: {
-            activeImportType = nil
-          }
-        )
-      case .audioFromFiles:
-        AudioImportViewWrapper(
-          service: service,
-          defaultTag: nil,
-          onDismiss: {
-            activeImportType = nil
-          }
-        )
-      case .videoFromPhotos:
-        PhotosVideoPickerViewWrapper(
-          service: service,
-          defaultTag: nil,
-          onDismiss: {
-            activeImportType = nil
+            isImportingAudioAndSRT = false
           }
         )
       }
-    }
+    )
+    .sheet(
+      isPresented: $isImportingYouTube,
+      content: {
+        YouTubeImportView(
+          service: service,
+          onComplete: {
+            isImportingYouTube = false
+          }
+        )
+      }
+    )
     .sheet(
       isPresented: $isInSettings,
       content: {
         SettingsView(service: service)
           .navigationTransition(.zoom(sourceID: "settings", in: namespace))
       }
+    )
+    .modifier(
+      ImportModifier(
+        isPresented: $isImportingAudioFromFiles,
+        service: service
+      )
+    )
+    .modifier(
+      PhotosVideoPickerModifier(
+        isPresented: $isImportingVideoFromPhotos,
+        service: service
+      )
     )
 
   }

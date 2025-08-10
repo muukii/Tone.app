@@ -539,18 +539,41 @@ public final class Service {
           
           item.status = .processing
           
+          // Handle video extraction if needed
+          let audioURL: URL
+          if file.fileType == .video {
+            Log.debug("Extracting audio from video: \(file.name)")
+            // Extract audio from video
+            audioURL = try await AudioExtractor.extractAudio(from: file.url)
+            // Clean up the original video file
+            try? FileManager.default.removeItem(at: file.url)
+            Log.debug("Audio extracted successfully, video file removed")
+          } else {
+            audioURL = file.url
+          }
+          
+          // Transcribe the audio
           try await self.transcribe(
             title: file.name,
-            audioFileURL: file.url,
+            audioFileURL: audioURL,
             tags: file.tags + additionalTags
           )
+          
+          // Clean up extracted audio if it was from video
+          if file.fileType == .video {
+            try? FileManager.default.removeItem(at: audioURL)
+            Log.debug("Cleaned up extracted audio file")
+          }
           
           item.status = .completed
 
         } catch {
           item.status = .failed
           Log.error("Transcription failed: \(error)")
-      
+          // Clean up video file on failure if it exists
+          if target.fileType == .video {
+            try? FileManager.default.removeItem(at: target.url)
+          }
         }
         
         self?.transcribingItems.removeAll(where: { $0 == item })
@@ -742,9 +765,15 @@ public final class Service {
 
 public final class TargetFile: Hashable, Identifiable, Sendable {
   
+  public enum FileType: Sendable {
+    case audio
+    case video
+  }
+  
   public let id = UUID()
   public let name: String
   public let url: URL
+  public let fileType: FileType
   
   @GraphStored
   public var tags: [TagEntity]
@@ -752,10 +781,12 @@ public final class TargetFile: Hashable, Identifiable, Sendable {
   public init(
     name: String,
     url: URL,
+    fileType: FileType = .audio,
     tags: [TagEntity] = []
   ) {
     self.name = name
     self.url = url
+    self.fileType = fileType
     self.tags = tags
   }
   

@@ -7,14 +7,11 @@ import UniformTypeIdentifiers
 // Import errors
 enum ImportError: LocalizedError {
   case noVideosProcessed
-  case audioExtractionFailed(Error)
   
   var errorDescription: String? {
     switch self {
     case .noVideosProcessed:
-      return "Failed to process any videos. Please try again."
-    case .audioExtractionFailed(let error):
-      return "Failed to extract audio: \(error.localizedDescription)"
+      return "Failed to load any videos. Please try again."
     }
   }
 }
@@ -108,7 +105,7 @@ struct PhotosVideoPickerModifier: ViewModifier {
     
     for (index, item) in items.enumerated() {
       do {
-        processingStatus = "Processing video \(index + 1) of \(items.count)..."
+        processingStatus = "Loading video \(index + 1) of \(items.count)..."
         
         // Create temporary file URL for video
         let videoTempURL = FileManager.default.temporaryDirectory
@@ -136,38 +133,31 @@ struct PhotosVideoPickerModifier: ViewModifier {
           continue
         }
         
-        processingStatus = "Extracting audio from video \(index + 1)..."
+        Log.debug("Video file created at \(videoTempURL) with size \(fileSize) bytes")
         
-        // Extract audio from video
-        let audioURL = try await AudioExtractor.extractAudio(from: videoTempURL)
-        
-        // Clean up the temporary video file immediately
-        try? FileManager.default.removeItem(at: videoTempURL)
-        
-        Log.debug("Successfully extracted audio to \(audioURL)")
-        
-        // Create target file with the extracted audio
+        // Create target file with video type
         let target = TargetFile(
           name: "Video \(index + 1)",
-          url: audioURL
+          url: videoTempURL,
+          fileType: .video
         )
         targets.append(target)
         
-        Log.debug("Successfully processed video \(index + 1)")
+        Log.debug("Successfully loaded video \(index + 1)")
         
       } catch {
-        Log.error("Failed to process video \(index): \(error)")
-        processingError = ImportError.audioExtractionFailed(error)
+        Log.error("Failed to load video \(index): \(error)")
+        processingError = error
       }
     }
     
-    Log.debug("Processed \(targets.count) videos out of \(items.count) selected")
+    Log.debug("Loaded \(targets.count) videos out of \(items.count) selected")
     
     if !targets.isEmpty {
       audioTargets = targets
       showImportView = true
     } else {
-      Log.warning("No videos were successfully processed")
+      Log.warning("No videos were successfully loaded")
       if processingError == nil {
         processingError = ImportError.noVideosProcessed
       }

@@ -13,7 +13,10 @@ struct AudioListInTagView: View {
   @State private var isRenaming = false
   @State private var newTagName = ""
   @State private var isProcessingRename = false
-  @State private var activeImportType: ImportType?
+  @State private var isImportingAudioAndSRT = false
+  @State private var isImportingAudioFromFiles = false
+  @State private var isImportingVideoFromPhotos = false
+  @State private var isImportingYouTube = false
   
   init(
     service: Service,
@@ -61,19 +64,19 @@ struct AudioListInTagView: View {
           
           Menu {
             Button {
-              activeImportType = .audioAndSRT
+              isImportingAudioAndSRT = true
             } label: {
               Text("File and SRT")
             }
             
             Menu {
               Button {
-                activeImportType = .videoFromPhotos
+                isImportingVideoFromPhotos = true
               } label: {
                 Text("Photos")
               }
               Button {
-                activeImportType = .audioFromFiles
+                isImportingAudioFromFiles = true
               } label: {
                 Text("Files")
               }
@@ -82,7 +85,7 @@ struct AudioListInTagView: View {
             }
             
             Button {
-              activeImportType = .youTube
+              isImportingYouTube = true
             } label: {
               Text("YouTube (on-device transcribing)")
             }
@@ -113,44 +116,46 @@ struct AudioListInTagView: View {
         isRenaming = false
       }
     }
-    .sheet(item: $activeImportType) { importType in
-      switch importType {
-      case .audioAndSRT:
+    .sheet(
+      isPresented: $isImportingAudioAndSRT,
+      content: {
         AudioAndSubtitleImportView(
           service: service,
           defaultTag: tag,
           onComplete: {
-            activeImportType = nil
+            isImportingAudioAndSRT = false
           },
           onCancel: {
-            activeImportType = nil
+            isImportingAudioAndSRT = false
           }
         )
-      case .youTube:
+      }
+    )
+    .sheet(
+      isPresented: $isImportingYouTube,
+      content: {
         YouTubeImportView(
           service: service,
           defaultTag: tag,
           onComplete: {
-            activeImportType = nil
-          }
-        )
-      case .audioFromFiles:
-        AudioImportViewWrapper(
-          service: service,
-          defaultTag: tag,
-          onDismiss: {
-            activeImportType = nil
-          }
-        )
-      case .videoFromPhotos:
-        PhotosVideoPickerViewWrapper(
-          service: service,
-          defaultTag: tag,
-          onDismiss: {
-            activeImportType = nil
+            isImportingYouTube = false
           }
         )
       }
-    }
+    )
+    .modifier(
+      ImportModifier(
+        isPresented: $isImportingAudioFromFiles,
+        service: service,
+        defaultTag: tag
+      )
+    )
+    .modifier(
+      PhotosVideoPickerModifier(
+        isPresented: $isImportingVideoFromPhotos,
+        service: service,
+        defaultTag: tag
+      )
+    )
   }
 }
