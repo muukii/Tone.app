@@ -101,7 +101,12 @@ public enum AudioExtractor {
     exportSession.outputFileType = AVFileType.m4a
     exportSession.outputURL = outputURL
     
-    await exportSession.export()
+    // Use async/await wrapper for exportAsynchronously
+    await withCheckedContinuation { continuation in
+      exportSession.exportAsynchronously {
+        continuation.resume()
+      }
+    }
     
     switch exportSession.status {
     case .completed:

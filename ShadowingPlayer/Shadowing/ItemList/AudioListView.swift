@@ -263,9 +263,7 @@ private struct CellContent: View {
 private struct ItemEditingModifier: ViewModifier {
 
   @Environment(\.modelContext) var modelContext
-  @State private var tagEditingItem: ItemEntity?
-  @State private var isRenaming = false
-  @State private var newTitle = ""
+  @State private var editingItem: ItemEntity?
   @Query var allTags: [TagEntity]
 
   private let item: ItemEntity
@@ -282,51 +280,21 @@ private struct ItemEditingModifier: ViewModifier {
   func body(content: Content) -> some View {
     content
       .contextMenu(menuItems: {
-        Button("Rename") {
-          newTitle = item.title
-          isRenaming = true
-        }
-        Button("Tags") {
-          tagEditingItem = item
+        Button("Edit") {
+          editingItem = item
         }
         Button("Delete", role: .destructive) {
           // TODO: too direct
           modelContext.delete(item)
         }
       })
-      .alert("Rename Item", isPresented: $isRenaming) {
-        TextField("Title", text: $newTitle)
-          .autocorrectionDisabled()
-        Button("Cancel", role: .cancel) {
-          isRenaming = false
-        }
-        Button("Save") {
-          if !newTitle.isEmpty {
-            item.title = newTitle
-            do {
-              try modelContext.save()
-            } catch {
-              Log.error("Failed to save renamed item: \(error)")
-            }
-          }
-          isRenaming = false
-        }
-      } message: {
-        Text("Enter a new title for this item")
-      }
       .sheet(
-        item: $tagEditingItem,
+        item: $editingItem,
         content: { item in
-          TagEditorView(
+          EditItemSheet(
+            item: item,
             service: service,
-            currentTags: item.tags,
-            allTags: allTags,
-            onAddTag: { tag in
-              item.tags.append(tag)
-            },
-            onRemoveTag: { tag in
-              item.tags.removeAll(where: { $0 == tag })
-            }
+            allTags: allTags
           )
           .presentationDetents([.medium, .large])
         }
