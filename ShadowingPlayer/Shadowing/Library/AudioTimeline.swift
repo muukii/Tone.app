@@ -108,6 +108,7 @@ final class AudioTimeline {
     var name: String
     let player: AVAudioPlayerNode
     let pitchControl: AVAudioUnitTimePitch = AVAudioUnitTimePitch()
+    let equalizer: AVAudioUnitEQ = AVAudioUnitEQ(numberOfBands: 1)
     let file: AVAudioFile
     private var isAttached: Bool = false
 
@@ -119,6 +120,15 @@ final class AudioTimeline {
       }
       set {
         player.volume = newValue
+      }
+    }
+    
+    var gain: Float {
+      get {
+        equalizer.globalGain
+      }
+      set {
+        equalizer.globalGain = newValue
       }
     }
 
@@ -300,8 +310,10 @@ final class AudioTimeline {
 
       engine.attach(player)
       engine.attach(pitchControl)
+      engine.attach(equalizer)
       engine.connect(player, to: pitchControl, format: file.processingFormat)
-      engine.connect(pitchControl, to: engine.mainMixerNode, format: file.processingFormat)
+      engine.connect(pitchControl, to: equalizer, format: file.processingFormat)
+      engine.connect(equalizer, to: engine.mainMixerNode, format: file.processingFormat)
     }
   }
 

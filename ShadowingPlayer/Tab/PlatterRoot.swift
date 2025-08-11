@@ -45,11 +45,11 @@ struct PlatterRoot: View {
         .safeAreaPadding(.bottom, isExpanded ? nil : controlHeight ?? 0)
         .navigationDestination(for: TagEntity.self) { tag in
           AudioListInTagView(
+            namespace: namespace,
             service: rootDriver.service,
             tag: tag,
             onSelect: setPlayer
           )
-          .navigationTransition(.zoom(sourceID: tag.id, in: namespace))
         } 
       }      
     } controlContent: {

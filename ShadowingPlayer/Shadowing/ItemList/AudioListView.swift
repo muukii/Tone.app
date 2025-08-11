@@ -264,6 +264,8 @@ private struct ItemEditingModifier: ViewModifier {
 
   @Environment(\.modelContext) var modelContext
   @State private var tagEditingItem: ItemEntity?
+  @State private var isRenaming = false
+  @State private var newTitle = ""
   @Query var allTags: [TagEntity]
 
   private let item: ItemEntity
@@ -280,14 +282,38 @@ private struct ItemEditingModifier: ViewModifier {
   func body(content: Content) -> some View {
     content
       .contextMenu(menuItems: {
-        Button("Delete", role: .destructive) {
-          // TODO: too direct
-          modelContext.delete(item)
+        Button("Rename") {
+          newTitle = item.title
+          isRenaming = true
         }
         Button("Tags") {
           tagEditingItem = item
         }
+        Button("Delete", role: .destructive) {
+          // TODO: too direct
+          modelContext.delete(item)
+        }
       })
+      .alert("Rename Item", isPresented: $isRenaming) {
+        TextField("Title", text: $newTitle)
+          .autocorrectionDisabled()
+        Button("Cancel", role: .cancel) {
+          isRenaming = false
+        }
+        Button("Save") {
+          if !newTitle.isEmpty {
+            item.title = newTitle
+            do {
+              try modelContext.save()
+            } catch {
+              Log.error("Failed to save renamed item: \(error)")
+            }
+          }
+          isRenaming = false
+        }
+      } message: {
+        Text("Enter a new title for this item")
+      }
       .sheet(
         item: $tagEditingItem,
         content: { item in
@@ -313,6 +339,10 @@ struct ImportModifier: ViewModifier {
 
   private let audioUTTypes: Set<UTType> = [
     .mp3, .aiff, .wav, .mpeg4Audio,
+  ]
+  
+  private let videoUTTypes: Set<UTType> = [
+    .movie, .mpeg4Movie, .quickTimeMovie, .avi
   ]
 
   private struct Selected: Identifiable {
@@ -348,17 +378,18 @@ struct ImportModifier: ViewModifier {
       )
       .fileImporter(
         isPresented: $isPresented,
-        allowedContentTypes: Array(audioUTTypes),
+        allowedContentTypes: Array(audioUTTypes.union(videoUTTypes)),
         allowsMultipleSelection: true,
         onCompletion: { result in
           switch result {
           case .success(let urls):
 
-            // find matching audio files and srt files using same file name
-            let audioFiles = Set(
-              urls.filter {
-                for type in audioUTTypes {
-                  if UTType(filenameExtension: $0.pathExtension)?.conforms(to: type) == true {
+            // find matching audio and video files
+            let mediaFiles = Set(
+              urls.filter { url in
+                let allTypes = audioUTTypes.union(videoUTTypes)
+                for type in allTypes {
+                  if UTType(filenameExtension: url.pathExtension)?.conforms(to: type) == true {
                     return true
                   }
                 }
@@ -367,11 +398,16 @@ struct ImportModifier: ViewModifier {
             )
 
             self.selected = Selected(
-              selectingFiles: audioFiles.map {
-
-                TargetFile(
-                  name: $0.lastPathComponent,
-                  url: $0
+              selectingFiles: mediaFiles.map { url in
+                // Determine file type based on extension
+                let isVideo = videoUTTypes.contains { type in
+                  UTType(filenameExtension: url.pathExtension)?.conforms(to: type) == true
+                }
+                
+                return TargetFile(
+                  name: url.lastPathComponent,
+                  url: url,
+                  fileType: isVideo ? .video : .audio
                 )
               }
             )

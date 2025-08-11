@@ -10,6 +10,7 @@ struct AudioListInTagView: View {
   private let onSelect: (ItemEntity) -> Void
   private let tag: TagEntity
   
+  private let namespace: Namespace.ID
   @State private var isRenaming = false
   @State private var newTagName = ""
   @State private var isProcessingRename = false
@@ -19,11 +20,13 @@ struct AudioListInTagView: View {
   @State private var isImportingYouTube = false
   
   init(
+    namespace: Namespace.ID,
     service: Service,
     tag: TagEntity,
     onSelect: @escaping (ItemEntity) -> Void
   ) {
     
+    self.namespace = namespace
     self.service = service
     self.onSelect = onSelect
     
@@ -49,6 +52,7 @@ struct AudioListInTagView: View {
       )
     }
     .navigationTitle(tag.name ?? "")
+    .navigationTransition(.zoom(sourceID: tag.id, in: namespace))
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
         Menu {

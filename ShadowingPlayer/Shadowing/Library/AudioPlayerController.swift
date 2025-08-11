@@ -193,7 +193,10 @@ final class AudioPlayerController: NSObject {
         file: try recording.makeReadingFile(),
         offset: .timeInMain(.from(timeInterval: recording.offsetToMain))
       )
-      recordingTrack.volume = 10 // Increase volume by 50%
+      // 録音トラックの音量を大幅に増幅
+      recordingTrack.volume = 2.0  // 基本音量を200%に
+      recordingTrack.gain = 20.0   // EQで+20dBゲイン（約10倍増幅）
+      // 合計で約20倍の増幅効果
     } catch {
       assertionFailure()
     }
