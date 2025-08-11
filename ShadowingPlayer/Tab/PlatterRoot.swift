@@ -1,8 +1,8 @@
 import AppService
+import StateGraph
 import SwiftData
 import SwiftUI
 import SwiftUIStack
-import StateGraph
 import UIComponents
 
 struct PlatterRoot: View {
@@ -12,19 +12,19 @@ struct PlatterRoot: View {
   @State private var isExpanded = false
   @Namespace private var namespace
   @State private var controlHeight: CGFloat?
-  
+
   init(rootDriver: RootDriver, mainViewModel: MainViewModel) {
     self.rootDriver = rootDriver
     self.mainViewModel = mainViewModel
   }
-  
+
   private func setPlayer(for item: ItemEntity) {
     do {
       try mainViewModel.setPlayerController(for: item)
       isExpanded = true
     } catch {
       assertionFailure()
-    }    
+    }
   }
 
   var body: some View {
@@ -50,32 +50,34 @@ struct PlatterRoot: View {
             tag: tag,
             onSelect: setPlayer
           )
-        } 
-      }      
+        }
+      }
     } controlContent: {
       Group {
         if let player = mainViewModel.currentController {
           ZStack {
-            
+
             detailContent(player: player)
               .id(player)
               .frame(height: isExpanded ? nil : 0)
-              .safeAreaInset(edge: .bottom, content: { 
-                Button.init { 
-                  isExpanded = false
-                } label: { 
-                  Capsule()
-                    .fill(.thinMaterial)
-                    .frame(width: nil, height: 38)
+              .safeAreaInset(
+                edge: .bottom,
+                content: {
+                  Button.init {
+                    isExpanded = false
+                  } label: {
+                    Capsule()
+                      .fill(.thinMaterial)
+                      .frame(width: nil, height: 38)
+                  }
+                  .padding(.horizontal, 8)
                 }
-                .padding(.horizontal, 8)
-              })
+              )
               .opacity(isExpanded ? 1 : 0)
-            
-            compactContent(player: player)
-              .opacity(isExpanded ? 0 : 1)
+
+            compactContent(player: player)              
           }
-          
+
         } else {
           EmptyPlayerView()
             .padding(.horizontal, 16)
@@ -89,8 +91,8 @@ struct PlatterRoot: View {
       }
     }
   }
-  
-  private func compactContent(player: PlayerController) -> some View {    
+
+  private func compactContent(player: PlayerController) -> some View {
     CompactPlayerView(
       title: player.title,
       isPlaying: player.isPlaying,
@@ -109,6 +111,16 @@ struct PlatterRoot: View {
         isExpanded = false
       }
     )
+    .opacity(isExpanded ? 0 : 1)
+//    .map { view in
+//      Group {
+//        if #available(iOS 26, *) {
+//          view.glassEffect(.regular.interactive())
+//        } else {
+//          view
+//        }
+//      }
+//    }
     .padding(.horizontal, 16)
   }
 
@@ -127,7 +139,7 @@ struct PlatterRoot: View {
     } else {
       fatalError()
     }
-    
+
   }
 }
 
@@ -137,9 +149,9 @@ private struct CompactPlayerView: View {
   let onTap: () -> Void
   let onPlayPause: () -> Void
   let onClose: () -> Void
-  
-  @State private var isPressed = false  
-  
+
+  @State private var isPressed = false
+
   var body: some View {
     HStack(spacing: 16) {
       WaveformIndicator(isPlaying: isPlaying)
@@ -147,28 +159,28 @@ private struct CompactPlayerView: View {
         MarqueeText(title)
           .font(.caption2)
           .frame(height: 16)
-        
+
         Text(isPlaying ? "Now Playing" : "Paused")
           .font(.caption2)
           .foregroundStyle(.secondary)
       }
-      
+
       Spacer()
-      
+
       // Play/Pause button
-      Button { 
+      Button {
         onPlayPause()
-      } label: { 
+      } label: {
         Image(systemName: isPlaying ? "pause.fill" : "play.fill")
           .font(.title3)
           .symbolRenderingMode(.hierarchical)
           .foregroundStyle(.primary)
       }
       .buttonStyle(.plain)
-      
-      Button { 
+
+      Button {
         onClose()
-      } label: { 
+      } label: {
         Image(
           systemName: "xmark.circle.fill"
         )
@@ -177,7 +189,7 @@ private struct CompactPlayerView: View {
         .foregroundStyle(.secondary)
       }
       .buttonStyle(.plain)
-      
+
     }
     .padding(.horizontal, 20)
     .padding(.vertical, 12)
@@ -190,15 +202,18 @@ private struct CompactPlayerView: View {
         }
         .shadow(color: .black.opacity(0.15), radius: 20, y: 10)
     }
-    .animation(.snappy, body: { view in
-      view
-        .scaleEffect(isPressed ? 0.95 : 1.0)
-    })
+    .animation(
+      .snappy,
+      body: { view in
+        view
+          .scaleEffect(isPressed ? 0.95 : 1.0)
+      }
+    )
     ._onButtonGesture { pressing in
       isPressed = pressing
     } perform: {
       onTap()
-    }    
+    }
   }
 }
 
@@ -236,7 +251,6 @@ private struct CompactPlayerView: View {
   .padding()
 }
 
-
 #Preview("Waveform Indicator - Playing") {
   WaveformIndicator(isPlaying: true)
     .padding()
@@ -249,26 +263,26 @@ private struct CompactPlayerView: View {
 
 private struct EmptyPlayerView: View {
   @State private var isPressed = false
-  
+
   var body: some View {
     HStack(spacing: 16) {
       Image(systemName: "waveform")
         .font(.title3)
         .foregroundStyle(.tertiary)
         .frame(width: 24, height: 24)
-      
+
       VStack(alignment: .leading, spacing: 2) {
         Text("No Audio Playing")
           .font(.footnote.weight(.semibold))
           .foregroundStyle(.primary)
-        
+
         Text("Select an audio to start")
           .font(.caption2)
           .foregroundStyle(.secondary)
       }
-      
+
       Spacer()
-      
+
       Image(systemName: "play.circle")
         .font(.title2)
         .foregroundStyle(.tertiary)
@@ -284,10 +298,13 @@ private struct EmptyPlayerView: View {
         }
     }
     .opacity(0.8)
-    .animation(.snappy, body: { view in
-      view
-        .scaleEffect(isPressed ? 0.98 : 1.0)
-    })
+    .animation(
+      .snappy,
+      body: { view in
+        view
+          .scaleEffect(isPressed ? 0.98 : 1.0)
+      }
+    )
     ._onButtonGesture { pressing in
       isPressed = pressing
     } perform: {
@@ -318,13 +335,13 @@ private struct PlayerWrapper: View {
     self.player = player
 
     let identifier = item.persistentModelID
-    let predicate = #Predicate<PinEntity> { 
+    let predicate = #Predicate<PinEntity> {
       $0.item?.persistentModelID == identifier
     }
 
     self._pins = Query.init(filter: predicate, sort: \.createdAt)
   }
-  
+
   var body: some View {
     PlayerView<PlayerListFlowLayoutView>(
       playerController: player,
@@ -340,7 +357,10 @@ private struct PlayerWrapper: View {
           case .onRename(let title):
             try await service.renameItem(item: item, newTitle: title)
           case .onInsertSeparator(let beforeCueId):
-            try await service.insertSeparator(for: item, beforeCueId: beforeCueId)
+            try await service.insertSeparator(
+              for: item,
+              beforeCueId: beforeCueId
+            )
             try player.reloadCues(from: item)
           case .onDeleteSeparator(let cueId):
             try await service.deleteSeparator(for: item, cueId: cueId)
