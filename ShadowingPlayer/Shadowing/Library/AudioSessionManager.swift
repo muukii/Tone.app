@@ -52,5 +52,18 @@ public final class AudioSessionManager {
     try instance.setMode(.default)
     Log.debug("AudioSessionManager mode changed to default for playback")
   }
+
+  public func isHeadphoneConnected() -> Bool {
+    let currentRoute = instance.currentRoute
+    for output in currentRoute.outputs {
+      switch output.portType {
+      case .headphones, .bluetoothA2DP, .bluetoothHFP, .airPlay:
+        return true
+      default:
+        break
+      }
+    }
+    return false
+  }
   
 } 
