@@ -41,6 +41,7 @@ struct PlayerControlPanel: View {
       isPlaying: controller.isPlaying,
       isRepeating: controller.isRepeating,
       isRecording: controller.isRecording,
+      canRecord: controller.canRecord,
       rate: controller.$rate.binding,
       namespace: namespace,
       onAction: { action in

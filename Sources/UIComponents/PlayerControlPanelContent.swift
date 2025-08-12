@@ -17,6 +17,7 @@ public struct PlayerControlPanelContent: View {
   let isPlaying: Bool
   let isRepeating: Bool
   let isRecording: Bool
+  let canRecord: Bool
   @Binding var rate: Double
   let namespace: Namespace.ID
   private let onAction: @MainActor (Action) -> Void
@@ -25,6 +26,7 @@ public struct PlayerControlPanelContent: View {
     isPlaying: Bool,
     isRepeating: Bool,
     isRecording: Bool,
+    canRecord: Bool,
     rate: Binding<Double>,
     namespace: Namespace.ID,
     onAction: @escaping @MainActor (Action) -> Void
@@ -32,6 +34,7 @@ public struct PlayerControlPanelContent: View {
     self.isPlaying = isPlaying
     self.isRepeating = isRepeating
     self.isRecording = isRecording
+    self.canRecord = canRecord
     self._rate = rate
     self.namespace = namespace
     self.onAction = onAction
@@ -121,6 +124,7 @@ public struct PlayerControlPanelContent: View {
 
         RecordingButton(
           isRecording: isRecording,
+          canRecord: canRecord,
           onRecord: {
             onAction(.startRecord)
           },
@@ -154,6 +158,7 @@ public struct PlayerControlPanelContent: View {
 private struct RecordingButton: View {
 
   var isRecording: Bool
+  var canRecord: Bool
   var onRecord: () -> Void
   var onStop: () -> Void
 
@@ -169,12 +174,14 @@ private struct RecordingButton: View {
       label: {
       }
     )
-    .buttonStyle(_ButtonStyle(isRecording: isRecording))
+    .buttonStyle(_ButtonStyle(isRecording: isRecording, canRecord: canRecord))
     .frame(width: 50, height: 50)
+    .disabled(!canRecord && !isRecording)
   }
 
   private struct _ButtonStyle: ButtonStyle {
     var isRecording: Bool
+    var canRecord: Bool
 
     func makeBody(configuration: Configuration) -> some View {
       Circle()
@@ -184,10 +191,10 @@ private struct RecordingButton: View {
           Circle()
             .stroke(.secondary, lineWidth: 4)
         )
-        .foregroundStyle(.red)
+        .foregroundStyle(canRecord ? .red : .gray)
         .frame(width: 36, height: 36)
         .aspectRatio(1, contentMode: .fill)
-        .opacity(configuration.isPressed ? 0.6 : 1)
+        .opacity(configuration.isPressed ? 0.6 : 1)      
     }
   }
 }
@@ -258,10 +265,11 @@ private struct _Slider: View {
 #Preview {
   @Previewable @Namespace var namespace
 
-  return PlayerControlPanelContent(
+  PlayerControlPanelContent(
     isPlaying: true,
     isRepeating: false,
     isRecording: false,
+    canRecord: true,
     rate: .constant(0.8),
     namespace: namespace,
     onAction: { action in
@@ -273,10 +281,11 @@ private struct _Slider: View {
 #Preview("Recording State") {
   @Previewable @Namespace var namespace
 
-  return PlayerControlPanelContent(
+  PlayerControlPanelContent(
     isPlaying: false,
     isRepeating: true,
     isRecording: true,
+    canRecord: true,
     rate: .constant(1.0),
     namespace: namespace,
     onAction: { action in
@@ -288,10 +297,11 @@ private struct _Slider: View {
 #Preview("Slow Rate") {
   @Previewable @Namespace var namespace
 
-  return PlayerControlPanelContent(
+  PlayerControlPanelContent(
     isPlaying: true,
     isRepeating: true,
     isRecording: false,
+    canRecord: true,
     rate: .constant(0.3),
     namespace: namespace,
     onAction: { action in

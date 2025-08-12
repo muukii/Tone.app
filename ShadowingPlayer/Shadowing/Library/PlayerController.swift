@@ -4,6 +4,7 @@ import AppService
 import MediaPlayer
 import StateGraph
 import SwiftSubtitles
+import AVFoundation
 
 @MainActor
 public final class PlayerController: NSObject {
@@ -37,6 +38,9 @@ public final class PlayerController: NSObject {
 
   @GraphStored
   public var pin: [PinEntity] = []
+
+  @GraphStored
+  public var canRecord: Bool = false
 
   private var currentTimeObservation: NSKeyValueObservation?
 
@@ -105,6 +109,8 @@ public final class PlayerController: NSObject {
 
     super.init()
 
+    self.canRecord = AudioSessionManager.shared.isHeadphoneConnected()
+
     subscription = withGraphTracking {
       $rate.onChange { [weak self] value in
         self?.controller.setSpeed(speed: value)
@@ -113,6 +119,13 @@ public final class PlayerController: NSObject {
         self?.isPlaying = value
       }
     }
+
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleRouteChange),
+      name: AVAudioSession.routeChangeNotification,
+      object: nil
+    )
 
     NotificationCenter.default.addObserver(
       self,
@@ -177,11 +190,21 @@ public final class PlayerController: NSObject {
     setRepeat(range: range)
   }
 
+  @objc
+  private func handleRouteChange(notification: Notification) {
+    canRecord = AudioSessionManager.shared.isHeadphoneConnected()
+    Log.debug("Route changed, canRecord: \(self.canRecord)")
+  }
+
   public func stopRecording() {
     controller.stopRecording()
   }
 
   public func startRecording() {
+    guard canRecord else {
+      Log.debug("Cannot start recording, no headphone connected.")
+      return
+    }
     controller.startRecording()
   }
 
