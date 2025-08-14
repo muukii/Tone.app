@@ -19,7 +19,6 @@ public struct PlayerControlPanelContent: View {
   let isRecording: Bool
   let canRecord: Bool
   @Binding var rate: Double
-  let namespace: Namespace.ID
   private let onAction: @MainActor (Action) -> Void
 
   public init(
@@ -28,7 +27,6 @@ public struct PlayerControlPanelContent: View {
     isRecording: Bool,
     canRecord: Bool,
     rate: Binding<Double>,
-    namespace: Namespace.ID,
     onAction: @escaping @MainActor (Action) -> Void
   ) {
     self.isPlaying = isPlaying
@@ -36,7 +34,6 @@ public struct PlayerControlPanelContent: View {
     self.isRecording = isRecording
     self.canRecord = canRecord
     self._rate = rate
-    self.namespace = namespace
     self.onAction = onAction
   }
 
@@ -263,15 +260,12 @@ private struct _Slider: View {
 }
 
 #Preview {
-  @Previewable @Namespace var namespace
-
   PlayerControlPanelContent(
     isPlaying: true,
     isRepeating: false,
     isRecording: false,
     canRecord: true,
     rate: .constant(0.8),
-    namespace: namespace,
     onAction: { action in
       print("Preview action: \(action)")
     }
@@ -279,15 +273,12 @@ private struct _Slider: View {
 }
 
 #Preview("Recording State") {
-  @Previewable @Namespace var namespace
-
   PlayerControlPanelContent(
     isPlaying: false,
     isRepeating: true,
     isRecording: true,
     canRecord: true,
     rate: .constant(1.0),
-    namespace: namespace,
     onAction: { action in
       print("Preview action: \(action)")
     }
@@ -295,15 +286,12 @@ private struct _Slider: View {
 }
 
 #Preview("Slow Rate") {
-  @Previewable @Namespace var namespace
-
   PlayerControlPanelContent(
     isPlaying: true,
     isRepeating: true,
     isRecording: false,
     canRecord: true,
     rate: .constant(0.3),
-    namespace: namespace,
     onAction: { action in
       print("Preview action: \(action)")
     }

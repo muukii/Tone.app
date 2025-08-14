@@ -12,11 +12,10 @@ import StateGraph
 struct ContentView: View {
 
   let rootDriver: RootDriver
-  @ObjectEdge private var platterViewModel = MainViewModel()
+  @ObjectEdge private var mainViewModel = MainViewModel()
 
   var body: some View {
-//    MainTabView(rootDriver: rootDriver)
-    PlatterRoot(rootDriver: rootDriver, mainViewModel: platterViewModel)
+    TabViewRoot(rootDriver: rootDriver, mainViewModel: mainViewModel)
       .modelContainer(rootDriver.service.modelContainer)
       .onOpenURL { url in
         handleURL(url)
@@ -28,7 +27,7 @@ struct ContentView: View {
     
     switch url.host {
     case "playPause":
-      if let controller = platterViewModel.currentController {
+      if let controller = mainViewModel.currentController {
         if controller.isPlaying {
           controller.pause()
         } else {

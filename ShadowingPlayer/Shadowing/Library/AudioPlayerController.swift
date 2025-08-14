@@ -193,10 +193,7 @@ final class AudioPlayerController: NSObject {
         file: try recording.makeReadingFile(),
         offset: .timeInMain(.from(timeInterval: recording.offsetToMain))
       )
-      // 録音トラックの音量を大幅に増幅
-      recordingTrack.volume = 2.0  // 基本音量を200%に
-      recordingTrack.gain = 20.0   // EQで+20dBゲイン（約10倍増幅）
-      // 合計で約20倍の増幅効果
+      recordingTrack.volume = 10 // Increase volume by 50%
     } catch {
       assertionFailure()
     }
@@ -225,7 +222,7 @@ final class AudioPlayerController: NSObject {
 
     // 録音時の最適化
     try? AudioSessionManager.shared.optimizeForRecording()
-    
+        
     // 録音専用エンジンを作成
     if recordingEngine == nil {
       recordingEngine = AVAudioEngine()
@@ -239,11 +236,11 @@ final class AudioPlayerController: NSObject {
       // inputNodeのフォーマットを先に取得（エンジン起動前）
       let inputFormat = recordingEngine.inputNode.outputFormat(forBus: 0)
       
-      // ミキサーノードを作成して接続（エンジンが動作するために必要）
-      let mixerNode = AVAudioMixerNode()
-      recordingEngine.attach(mixerNode)
-      recordingEngine.connect(recordingEngine.inputNode, to: mixerNode, format: inputFormat)
-      recordingEngine.connect(mixerNode, to: recordingEngine.mainMixerNode, format: inputFormat)
+//      recordingEngine.connect(
+//        recordingEngine.inputNode,
+//        to: recordingEngine.mainMixerNode,
+//        format: inputFormat
+//      )
       
       // 録音エンジンを起動
       try recordingEngine.start()

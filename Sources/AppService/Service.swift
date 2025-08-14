@@ -26,6 +26,9 @@ public final class Service {
   
   @GraphStored(backed: .userDefaults(key: "backgroundTranscriptionNotificationsEnabled"))
   public var backgroundTranscriptionNotificationsEnabled: Bool = false
+  
+  @GraphStored(backed: .userDefaults(key: "chunkFontSize"))
+  public var chunkFontSize: Double = 24.0
 
   public struct TranscriptionProgress {
     public let remainingCount: Int

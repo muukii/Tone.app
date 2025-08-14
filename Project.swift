@@ -35,7 +35,7 @@ let project = Project(
       destinations: [.iPhone, .macWithiPadDesign],
       product: .app,
       bundleId: "app.muukii.tone",
-      deploymentTargets: .iOS("18.0"),
+      deploymentTargets: .iOS("26.0"),
       // infoPlist: "Supporting/Info.plist",
       infoPlist: .extendingDefault(with: [
         "CFBundleShortVersionString": "$(APP_SHORT_VERSION)",
@@ -110,7 +110,7 @@ let project = Project(
       destinations: .iOS,
       product: .appExtension,
       bundleId: "app.muukii.tone.LiveActivity",
-      deploymentTargets: .iOS("18.0"),
+      deploymentTargets: .iOS("26.0"),
       infoPlist: .dictionary([
         "CFBundleName": "$(PRODUCT_NAME)",
         "CFBundleDisplayName": "Tone Widget",
@@ -139,7 +139,7 @@ let project = Project(
       destinations: [.iPhone],
       product: .staticLibrary,
       bundleId: "app.muukii.Speaking.AppService",
-      deploymentTargets: .iOS("18.0"),
+      deploymentTargets: .iOS("26.0"),
       sources: ["Sources/AppService/**"],
       dependencies: [
         .target(name: "ActivityContent"),
@@ -158,7 +158,7 @@ let project = Project(
       destinations: [.iPhone],
       product: .framework,
       bundleId: "app.muukii.Speaking.ActivityContent",
-      deploymentTargets: .iOS("18.0"),
+      deploymentTargets: .iOS("26.0"),
       sources: ["Sources/ActivityContent/**"],
       dependencies: []
     ),
@@ -168,7 +168,7 @@ let project = Project(
       destinations: [.iPhone, .macWithiPadDesign],
       product: .framework,
       bundleId: "app.muukii.tone.UIComponents",
-      deploymentTargets: .iOS("18.0"),
+      deploymentTargets: .iOS("26.0"),
       sources: ["Sources/UIComponents/**"],
       dependencies: [
         .external(name: "SwiftUISupport"),

@@ -1,20 +1,20 @@
-import SwiftUI
-import SwiftData
 import AppService
+import SwiftData
+import SwiftUI
 import UIComponents
 
 struct EditItemSheet: View {
-  
+
   @Environment(\.dismiss) private var dismiss
   @Environment(\.modelContext) private var modelContext
-  
+
   let item: ItemEntity
   let service: Service
   let allTags: [TagEntity]
-  
+
   @State private var title: String
   @State private var selectedTags: Set<TagEntity>
-  
+
   init(
     item: ItemEntity,
     service: Service,
@@ -26,7 +26,7 @@ struct EditItemSheet: View {
     self._title = State(initialValue: item.title)
     self._selectedTags = State(initialValue: Set(item.tags))
   }
-  
+
   var body: some View {
     NavigationStack {
       Form {
@@ -34,7 +34,7 @@ struct EditItemSheet: View {
           TextField("Title", text: $title)
             .autocorrectionDisabled()
         }
-        
+
         Section("Tags") {
           TagEditorInnerView(
             nameKeyPath: \.name,
@@ -63,28 +63,37 @@ struct EditItemSheet: View {
             dismiss()
           }
         }
-        
+
         ToolbarItem(placement: .confirmationAction) {
-          Button("Save") {
-            saveChanges()
-            dismiss()
-          }
-          .fontWeight(.medium)
+
+          Button(
+            role: .confirm,
+            action: {
+              saveChanges()
+              dismiss()
+            },
+            label: {
+              Text("Save")                
+            }
+          )
+          //          Button("Save") {
+                  
+          //          }
           .disabled(title.isEmpty)
         }
       }
     }
   }
-  
+
   private func saveChanges() {
     // Update title
     if item.title != title {
       item.title = title
     }
-    
+
     // Update tags
     item.tags = Array(selectedTags)
-    
+
     // Save changes
     do {
       try modelContext.save()

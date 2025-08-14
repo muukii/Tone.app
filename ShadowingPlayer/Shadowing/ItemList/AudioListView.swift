@@ -35,18 +35,15 @@ struct AudioListView: View {
   @State private var isImportingVideoFromPhotos: Bool = false
   @State private var isImportingYouTube: Bool = false
   @State private var tagEditingItem: ItemEntity?
-
-  private let namespace: Namespace.ID
+  @State private var searchText: String = ""
 
   private let onSelect: (ItemEntity) -> Void
 
   init(
-    namespace: Namespace.ID,
     service: Service,
     openAIService: OpenAIService?,
     onSelect: @escaping (ItemEntity) -> Void
   ) {
-    self.namespace = namespace
     self.service = service
     self.openAIService = openAIService
     self.onSelect = onSelect
@@ -69,6 +66,11 @@ struct AudioListView: View {
       allItems
     }
     .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+    .searchable(
+      text: $searchText,
+      placement: .navigationBarDrawer(displayMode: .always),
+      prompt: "Search in title and subtitles"
+    )
     .overlay {
       if items.isEmpty {
         emptyView()
@@ -83,7 +85,6 @@ struct AudioListView: View {
           } label: {
             Image(systemName: "gearshape")
           }
-          .matchedTransitionSource(id: "settings", in: namespace)
         }
 
       }
@@ -142,7 +143,6 @@ struct AudioListView: View {
       isPresented: $isInSettings,
       content: {
         SettingsView(service: service)
-          .navigationTransition(.zoom(sourceID: "settings", in: namespace))
       }
     )
     .modifier(
@@ -179,7 +179,6 @@ struct AudioListView: View {
                   .padding(.vertical, 10)
               }
             }
-            .matchedTransitionSource(id: tag.id, in: namespace)
           }
           .foregroundStyle(.primary)
           .contextMenu {
@@ -204,12 +203,25 @@ struct AudioListView: View {
   private var allItems: some View {
     Section {
       ItemListFragment(
-        items: items,
+        items: displayingItems,
         onSelect: onSelect,
         service: service
       )
     } header: {
       ListComponents.Header.init(title: "All Items")
+    }
+  }
+
+  private var displayingItems: [ItemEntity] {
+    let keyword = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard keyword.isEmpty == false else { return items }
+    return items.filter { item in
+      // タイトルに一致
+      if item.title.localizedCaseInsensitiveContains(keyword) { return true }
+      // 字幕に一致
+      return item.segments.contains { segment in
+        segment.text.localizedCaseInsensitiveContains(keyword)
+      }
     }
   }
 

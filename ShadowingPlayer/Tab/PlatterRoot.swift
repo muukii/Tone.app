@@ -10,7 +10,6 @@ struct PlatterRoot: View {
   let rootDriver: RootDriver
   let mainViewModel: MainViewModel
   @State private var isExpanded = false
-  @Namespace private var namespace
   @State private var controlHeight: CGFloat?
 
   init(rootDriver: RootDriver, mainViewModel: MainViewModel) {
@@ -36,7 +35,6 @@ struct PlatterRoot: View {
     ) {
       NavigationStack {
         AudioListView(
-          namespace: namespace,
           service: rootDriver.service,
           openAIService: rootDriver.openAIService,
           onSelect: setPlayer
@@ -45,7 +43,6 @@ struct PlatterRoot: View {
         .safeAreaPadding(.bottom, isExpanded ? nil : controlHeight ?? 0)
         .navigationDestination(for: TagEntity.self) { tag in
           AudioListInTagView(
-            namespace: namespace,
             service: rootDriver.service,
             tag: tag,
             onSelect: setPlayer
@@ -324,7 +321,6 @@ private struct PlayerWrapper: View {
   let item: ItemEntity
   unowned let player: PlayerController
   let service: Service
-  @Namespace private var namespace
   init(
     service: Service,
     item: ItemEntity,
@@ -346,7 +342,7 @@ private struct PlayerWrapper: View {
     PlayerView<PlayerListFlowLayoutView>(
       playerController: player,
       pins: pins,
-      namespace: namespace,
+      service: service,
       actionHandler: { action in
         do {
           switch action {

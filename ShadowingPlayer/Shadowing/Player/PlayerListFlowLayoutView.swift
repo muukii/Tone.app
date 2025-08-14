@@ -60,6 +60,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
 
   unowned let controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) async -> Void
+  let service: Service
 
   @State var isFollowing: Bool = true
   @State private var snapshot: NSDiffableDataSourceSnapshot<String, DisplayCue>
@@ -69,10 +70,12 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
   init(
     controller: PlayerController,
     pins: [PinEntity],
+    service: Service,
     actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   ) {
     self.controller = controller
     self.pins = pins
+    self.service = service
     self.actionHandler = actionHandler
     
     // Initialize snapshot with current cues
@@ -164,6 +167,7 @@ struct PlayerListFlowLayoutView: View, PlayerDisplay {
                 identifier: cue.id,
                 isFocusing: customState.isFocusing,
                 isInRange: customState.playingRange?.contains(cue) ?? false,
+                fontSize: service.chunkFontSize,
                 onSelect: {
                   if controller.isRepeating {
                     if var currentRange = customState.playingRange {

@@ -14,15 +14,11 @@ struct PlayerControlPanel: View {
   let controller: PlayerController
   private let onAction: @MainActor (Action) -> Void
 
-  let namespace: Namespace.ID
-
   init(
     controller: PlayerController,
-    namespace: Namespace.ID,
     onAction: @escaping @MainActor (Action) -> Void
   ) {
     self.controller = controller
-    self.namespace = namespace
     self.onAction = onAction
   }
 
@@ -43,7 +39,6 @@ struct PlayerControlPanel: View {
       isRecording: controller.isRecording,
       canRecord: controller.canRecord,
       rate: controller.$rate.binding,
-      namespace: namespace,
       onAction: { action in
         handleAction(action)
       }

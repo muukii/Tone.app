@@ -12,6 +12,7 @@ protocol PlayerDisplay: View {
   init(
     controller: PlayerController,
     pins: [PinEntity],
+    service: Service,
     actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   )
 }
@@ -41,18 +42,18 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
   @State private var isShowingMicrophonePermissionAlert: Bool = false
 
   private let pins: [PinEntity]
-  private let namespace: Namespace.ID
+  private let service: Service
 
   init(
     playerController: PlayerController,
     pins: [PinEntity],
-    namespace: Namespace.ID,
+    service: Service,
     actionHandler: @escaping @MainActor (PlayerAction) async -> Void
   ) {
     self.controller = playerController
     self.actionHandler = actionHandler
     self.pins = pins
-    self.namespace = namespace
+    self.service = service
   }
 
   private var header: some View {
@@ -136,6 +137,7 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
       Display(
         controller: controller,
         pins: pins,
+        service: service,
         actionHandler: actionHandler
       )
       .mask {
@@ -149,7 +151,6 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
 
         PlayerControlPanel(
           controller: controller,
-          namespace: namespace,
           onAction: { action in
             switch action {
             case .onTapPin:
@@ -259,8 +260,6 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
 
     struct Host: View {
 
-      @Namespace private var namespace
-
       @ObjectEdge var playerController: PlayerController = try! .init(item: .social)
 
       var body: some View {
@@ -269,7 +268,7 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
             PlayerView<PlayerListFlowLayoutView>(
               playerController: playerController,
               pins: [],
-              namespace: namespace,
+              service: Service(),
               actionHandler: { action in
               }
             )

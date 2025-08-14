@@ -42,6 +42,24 @@ struct SettingsView: View {
             .font(.caption)
             .foregroundStyle(.secondary)
         }
+        
+        Section("Display") {
+          VStack(alignment: .leading, spacing: 8) {
+            Text("Subtitle Font Size")
+            HStack {
+              Text("12pt")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+              Slider(value: service.$chunkFontSize.binding, in: 12...48, step: 1)
+              Text("48pt")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            Text("Current: \(Int(service.chunkFontSize))pt")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
+        }
 
         // Section {
         //   Button("Start") {

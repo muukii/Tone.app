@@ -10,6 +10,8 @@ struct PlayerListDisplayView: View, PlayerDisplay {
 
   init(
     controller: PlayerController,
+    pins: [PinEntity],
+    service: Service,
     actionHandler: @escaping @MainActor (PlayerAction) -> Void
   ) {
     self.controller = controller
