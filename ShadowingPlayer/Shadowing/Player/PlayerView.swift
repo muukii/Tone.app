@@ -185,6 +185,7 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
             }
           }
         )
+        .frame(maxWidth: .infinity)
         .background(
           RoundedRectangle(cornerRadius: 32)
             .foregroundStyle(
@@ -367,47 +368,3 @@ struct _ButtonStyle: ButtonStyle {
     }
 }
 
-#if DEBUG
-struct Plate: View {
-
-  @Namespace var namespace
-  @State var isActive: Bool = true
-
-  private let identifier: String = "ID"
-  
-  init() {
-  }
-
-  var body: some View {
-
-    ZStack {
-      Group {
-        if isActive {
-
-          VStack {
-            DatePicker("", selection: .constant(Date()))
-            Button("Close") {
-              isActive = false
-            }
-          }
-        } else {
-          Button("Open") {
-            isActive = true
-          }
-
-        }
-      }
-      .matchedGeometryEffect(id: identifier, in: namespace)
-    }
-    .padding(16)    
-    .background(.thickMaterial, in: .capsule)
-    .clipped()
-    .animation(.smooth.speed(1.2), value: isActive)
-  }
-
-}
-
-#Preview("Plate") {
-  Plate()
-}
-#endif

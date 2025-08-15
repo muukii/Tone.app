@@ -10,10 +10,10 @@ struct SettingsView: View {
   var body: some View {
     NavigationStack {
       Form {
-        Section("OpenAI API") {
-          SecureField("API Key", text: service.$openAIAPIKey.binding)
-            .textContentType(.password)
-        }
+//        Section("OpenAI API") {
+//          SecureField("API Key", text: service.$openAIAPIKey.binding)
+//            .textContentType(.password)
+//        }
         
         Section("WhisperKit Models") {
           Picker("Selected Model", selection: service.$selectedWhisperModel.binding) {

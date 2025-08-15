@@ -8,6 +8,7 @@
 import SwiftUI
 import AppService
 import StateGraph
+import HexColorMacro
 
 struct ContentView: View {
 
@@ -16,6 +17,7 @@ struct ContentView: View {
 
   var body: some View {
     TabViewRoot(rootDriver: rootDriver, mainViewModel: mainViewModel)
+      .tint(#hexColor("#8B5CF4", opacity: 1, colorSpace: .displayP3))
       .modelContainer(rootDriver.service.modelContainer)
       .onOpenURL { url in
         handleURL(url)
