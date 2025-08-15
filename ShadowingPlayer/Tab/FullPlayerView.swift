@@ -56,16 +56,5 @@ struct FullPlayerView: View {
         }
       }
     )
-    .navigationBarTitleDisplayMode(.inline)
-    .toolbar {
-      ToolbarItem(placement: .navigationBarLeading) {
-        Button {
-          dismiss()
-        } label: {
-          Image(systemName: "chevron.down")
-            .font(.title3.weight(.semibold))
-        }
-      }
-    }
   }
 }

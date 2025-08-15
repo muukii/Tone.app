@@ -11,6 +11,7 @@ struct TabViewRoot: View {
   
   @State private var selectedTab = 0
   @State private var showingFullPlayer = false
+  @Namespace private var namespace
   
   init(rootDriver: RootDriver, mainViewModel: MainViewModel) {
     self.rootDriver = rootDriver
@@ -50,9 +51,7 @@ struct TabViewRoot: View {
 //    }
     .fullScreenCover(isPresented: $showingFullPlayer) {
       if let player = mainViewModel.currentController {
-        NavigationStack {
-          fullPlayerView(player: player)
-        }
+        fullPlayerView(player: player)
       }
     }
     .tabViewBottomAccessory {
@@ -74,6 +73,7 @@ struct TabViewRoot: View {
             mainViewModel.discardPlayerController()
           }
         )
+        .matchedTransitionSource(id: "player", in: namespace)
       }
     }
   }
@@ -88,6 +88,7 @@ struct TabViewRoot: View {
         item: entity,
         player: player
       )
+      .navigationTransition(.zoom(sourceID: "player", in: namespace))
     } else {
       EmptyView()
     }

@@ -34,7 +34,7 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
 
   unowned let controller: PlayerController
   private let actionHandler: @MainActor (PlayerAction) async -> Void
-//  @State private var controllerForDetail: PlayerController?
+  //  @State private var controllerForDetail: PlayerController?
   @State private var isDisplayingPinList: Bool = false
   @State private var isProcessing: Bool = false
   @State private var isShowingRenameDialog: Bool = false
@@ -63,16 +63,17 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
         .bold()
         .foregroundStyle(.primary)
       Spacer()
-      
+
       HStack(spacing: 8) {
         Button {
           isDisplayingPinList = true
         } label: {
           Image(systemName: "list.bullet")
             .foregroundStyle(.primary)
-        }       
-        .frame(width: 44, height: 44)
-        
+            .frame(width: 28, height: 28)
+        }
+        .buttonStyle(BorderedButtonStyle())
+
         Menu {
           Menu("Transcribe again") {
             Text("It removes all of pinned items.")
@@ -89,16 +90,19 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
             newTitle = controller.title
             isShowingRenameDialog = true
           }
+
         } label: {
           Image(systemName: "ellipsis")
             .foregroundStyle(.primary)
-            .frame(width: 44, height: 44)
+            .frame(width: 28, height: 28)
         }
+        .buttonStyle(BorderedButtonStyle())
+
       }
     }
     .padding(.horizontal, 16)
   }
-  
+
   private var gradientMask: some View {
     VStack(spacing: 0) {
       Rectangle()
@@ -113,9 +117,9 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
           )
         )
         .frame(height: 20)
-      
+
       Rectangle()
-      
+
       Rectangle()
         .fill(
           LinearGradient(
@@ -162,13 +166,11 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
                 await actionHandler(.onPin(range: range))
               }
             case .onTapDetail:
-//              controllerForDetail = controller
+              //              controllerForDetail = controller
               break
             case .onStartRecord:
-              // Taskを使うとhopが発生するため理想的ではないが、
-              // async関数のrequestPermission()を呼ぶために必要
-              Task {
-                let permissionManager = MicrophonePermissionManager()                                                
+              Task.immediate {
+                let permissionManager = MicrophonePermissionManager()
                 if await permissionManager.requestPermission() {
                   controller.startRecording()
                 } else {
@@ -192,12 +194,12 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
         .padding(.horizontal, 8)
       }
     )
-//    .navigationDestination(
-//      item: $controllerForDetail,
-//      destination: { controller in
-//        RepeatingView(controller: controller)
-//      }
-//    )
+    //    .navigationDestination(
+    //      item: $controllerForDetail,
+    //      destination: { controller in
+    //        RepeatingView(controller: controller)
+    //      }
+    //    )
     .onAppear {
       UIApplication.shared.isIdleTimerDisabled = true
     }
@@ -238,7 +240,10 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
       }
       .interactiveDismissDisabled(true)
     }
-    .alert("Microphone Access Required", isPresented: $isShowingMicrophonePermissionAlert) {
+    .alert(
+      "Microphone Access Required",
+      isPresented: $isShowingMicrophonePermissionAlert
+    ) {
       Button("Cancel", role: .cancel) {}
       Button("Open Settings") {
         if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
@@ -246,13 +251,14 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
         }
       }
     } message: {
-      Text("Tone needs access to your microphone to record your voice during shadowing practice. Please enable microphone access in Settings.")
+      Text(
+        "Tone needs access to your microphone to record your voice during shadowing practice. Please enable microphone access in Settings."
+      )
     }
 
   }
 
 }
-
 
 #if DEBUG
 
@@ -260,7 +266,9 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
 
     struct Host: View {
 
-      @ObjectEdge var playerController: PlayerController = try! .init(item: .social)
+      @ObjectEdge var playerController: PlayerController = try! .init(
+        item: .social
+      )
 
       var body: some View {
         Group {
@@ -284,4 +292,122 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
 
   }
 
+#endif
+
+#Preview("button") {
+
+  @Previewable @State var isActive: Bool = false
+
+  ZStack {
+    HStack {
+      ZStack {
+        Color.white
+        Button(isActive ? "Active" : "Inactive") {
+          print("Hit")
+          isActive.toggle()
+        }
+        .buttonStyle(_ButtonStyle(isActive: isActive))
+      }
+      ZStack {
+        Color.red
+        Button(isActive ? "Active" : "Inactive") {
+          print("Hit")
+          isActive.toggle()
+        }
+        .buttonStyle(_ButtonStyle(isActive: isActive))
+      }
+    }
+
+    //  .buttonStyle(BorderedButtonStyle())
+    //  .buttonStyle(PlainButtonStyle())
+    //  .buttonStyle(DefaultButtonStyle())
+    //  .buttonStyle(PlainButtonStyle())
+    //  .buttonStyle(BorderlessButtonStyle())
+    //    .buttonStyle(BorderedButtonStyle())
+    //    .buttonBorderShape(.capsule)
+    //    .backgroundStyle(.brown)
+    //    .foregroundStyle(.red)
+    //    .tint(.red)
+    //  .buttonBorderShape(.capsule)
+  }
+}
+
+struct _ButtonStyle: ButtonStyle {
+
+  let isActive: Bool
+
+  func makeBody(configuration: Configuration) -> some View {
+
+    configuration.label
+      .foregroundStyle(.primary)
+      .blendMode(.overlay)
+      //      .blendMode(isActive ? .destinationOut : .difference)
+      .padding(.horizontal, 16)
+      .padding(.vertical, 8)
+      .background(
+        isActive ? .regularMaterial : .ultraThinMaterial,
+        in: Capsule()
+      )
+      .compositingGroup()
+      .animation(.bouncy) {
+        $0.opacity(configuration.isPressed ? 0.5 : 1)
+      }
+
+  }
+
+}
+
+#Preview {
+  Rectangle()
+    .fill(.blue)
+    .overlay {
+      Text("Hello")
+        .blendMode(.overlay)
+        .overlay(Text("Hello").opacity(1 - 0.5))
+    }
+}
+
+#if DEBUG
+struct Plate: View {
+
+  @Namespace var namespace
+  @State var isActive: Bool = true
+
+  private let identifier: String = "ID"
+  
+  init() {
+  }
+
+  var body: some View {
+
+    ZStack {
+      Group {
+        if isActive {
+
+          VStack {
+            DatePicker("", selection: .constant(Date()))
+            Button("Close") {
+              isActive = false
+            }
+          }
+        } else {
+          Button("Open") {
+            isActive = true
+          }
+
+        }
+      }
+      .matchedGeometryEffect(id: identifier, in: namespace)
+    }
+    .padding(16)    
+    .background(.thickMaterial, in: .capsule)
+    .clipped()
+    .animation(.smooth.speed(1.2), value: isActive)
+  }
+
+}
+
+#Preview("Plate") {
+  Plate()
+}
 #endif

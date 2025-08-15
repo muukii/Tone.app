@@ -10,15 +10,6 @@
       }
     },
     {
-      "identity" : "audiokit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/AudioKit/AudioKit",
-      "state" : {
-        "revision" : "5b3fd238ef8ee95c9842ca4ea83ca58ee151e630",
-        "version" : "5.6.5"
-      }
-    },
-    {
       "identity" : "dsfregex",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dagronf/DSFRegex",
@@ -43,24 +34,6 @@
       "state" : {
         "revision" : "8879db488805122463b6521486d4c0a557fb56dc",
         "version" : "1.2.0"
-      }
-    },
-    {
-      "identity" : "mondrianlayout",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FluidGroup/MondrianLayout",
-      "state" : {
-        "branch" : "main",
-        "revision" : "b26edaa5a469bc5fd58f9afe37d257ca1b3771e0"
-      }
-    },
-    {
-      "identity" : "steppedslider",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/shima11/SteppedSlider.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "36725121569eb55225e100765e057b23f16e3090"
       }
     },
     {
@@ -127,15 +100,6 @@
       }
     },
     {
-      "identity" : "swift-rubber-banding",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FluidGroup/swift-rubber-banding",
-      "state" : {
-        "revision" : "f2dbd09829c6267db0a769e7c37fe332dab0b675",
-        "version" : "1.0.0"
-      }
-    },
-    {
       "identity" : "swift-syntax",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-syntax.git",
@@ -172,15 +136,6 @@
       }
     },
     {
-      "identity" : "swiftui-functional-component-macro",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FluidGroup/swiftui-functional-component-macro",
-      "state" : {
-        "revision" : "4824b57c924da6cd4759a60bdde38a9c82d65bef",
-        "version" : "1.0.0"
-      }
-    },
-    {
       "identity" : "swiftui-introspect",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/siteline/swiftui-introspect",
@@ -208,15 +163,6 @@
       }
     },
     {
-      "identity" : "swiftui-snap-dragging-modifier",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FluidGroup/swiftui-snap-dragging-modifier",
-      "state" : {
-        "revision" : "4472e300e96a42fe496015b3aea063682a0ef03a",
-        "version" : "3.0.0"
-      }
-    },
-    {
       "identity" : "swiftui-support",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/FluidGroup/swiftui-support",
@@ -232,15 +178,6 @@
       "state" : {
         "revision" : "63f30830cd986de84cd844d59926cf1aa2009f0b",
         "version" : "0.5.3"
-      }
-    },
-    {
-      "identity" : "userdefaultssnapshot",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/VergeGroup/UserDefaultsSnapshot",
-      "state" : {
-        "revision" : "26e9064cf45e48ced6220073071eeaf3dd60c62c",
-        "version" : "1.4.1"
       }
     },
     {
