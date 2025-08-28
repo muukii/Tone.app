@@ -82,26 +82,22 @@ class SeparatorAttachmentViewProvider: NSTextAttachmentViewProvider {
 
 /// Text attachment for separators
 class SeparatorAttachment: NSTextAttachment {
-  let cueId: String
   
-  static let fileType = "com.tone.separator"
-  
-  // Register the view provider once
-  static func registerViewProvider() {
-    NSTextAttachment.registerViewProviderClass(
-      SeparatorAttachmentViewProvider.self,
-      forFileType: fileType
+  override func viewProvider(
+    for parentView: UIView?,
+    location: any NSTextLocation,
+    textContainer: NSTextContainer?
+  ) -> NSTextAttachmentViewProvider? {
+    let provider = SeparatorAttachmentViewProvider.init(
+      textAttachment: self,
+      parentView: parentView,
+      textLayoutManager: textContainer?.textLayoutManager,
+      location: location
     )
+    
+    return provider
   }
   
-  init(cueId: String) {
-    self.cueId = cueId
-    super.init(data: nil, ofType: Self.fileType)
-  }
-  
-  required init?(coder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
 }
 
 @MainActor
@@ -162,7 +158,6 @@ private struct TextView: UIViewRepresentable {
 
   func makeUIView(context: Context) -> UITextView {
     // Register the separator view provider once
-    SeparatorAttachment.registerViewProvider()
     let textView = UITextView()
     textView.delegate = context.coordinator
     textView.isEditable = false
@@ -323,7 +318,7 @@ private struct TextView: UIViewRepresentable {
       for (index, cue) in currentCues.enumerated() {
         if cue.backed.kind == .separator {
           // Add custom separator view attachment
-          let separatorAttachment = SeparatorAttachment(cueId: cue.id)
+          let separatorAttachment = SeparatorAttachment()
           let separatorAttributedString = NSMutableAttributedString()
           
           // Add newline before separator (except for first item)
