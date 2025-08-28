@@ -20,8 +20,21 @@
               "icon": "lucide-file",
               "title": "recording-feature-specification"
             }
+          },
+          {
+            "id": "7312e02eadb15873",
+            "type": "leaf",
+            "state": {
+              "type": "release-notes",
+              "state": {
+                "currentVersion": "1.9.10"
+              },
+              "icon": "lucide-book-up",
+              "title": "Release Notes 1.9.10"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -160,6 +173,7 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "bases:Create new base": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
@@ -168,8 +182,10 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "207993f4f92e6d27",
+  "active": "7312e02eadb15873",
   "lastOpenFiles": [
+    "FoundationModels.md",
+    "video-feature-implementation-plan.md",
     "CloudKit-Integration-Plan.md",
     "recording-feature-specification.md",
     "AVAudioSession.md",

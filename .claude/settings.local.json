@@ -23,7 +23,10 @@
       "Bash(git commit:*)",
       "WebFetch(domain:developer.apple.com)",
       "WebFetch(domain:stackoverflow.com)",
-      "WebFetch(domain:www.hackingwithswift.com)"
+      "WebFetch(domain:www.hackingwithswift.com)",
+      "Bash(gemini:*)",
+      "mcp__swiftlens__swift_analyze_files",
+      "WebSearch"
     ],
     "deny": []
   }

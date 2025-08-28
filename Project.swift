@@ -67,7 +67,6 @@ let project = Project(
         .sdk(name: "CloudKit", type: .framework),
         
         .external(name: "YouTubeKit"),
-        .external(name: "AudioKit"),
         .external(name: "StateGraph"),
         .external(name: "HexColorMacro"),
         .external(name: "SwiftUIPersistentControl"),
@@ -148,7 +147,6 @@ let project = Project(
         .external(name: "Wrap"),
         .external(name: "SwiftSubtitles"),
         .external(name: "Alamofire"),
-        .external(name: "UserDefaultsSnapshotLib"),
         .external(name: "ConcurrencyTaskManager"),
       ]
     ),
