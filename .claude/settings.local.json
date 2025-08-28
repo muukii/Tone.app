@@ -26,7 +26,8 @@
       "WebFetch(domain:www.hackingwithswift.com)",
       "Bash(gemini:*)",
       "mcp__swiftlens__swift_analyze_files",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:shadowfacts.net)"
     ],
     "deny": []
   }

@@ -4,6 +4,106 @@ import SwiftUI
 import SwiftUISupport
 import UIKit
 
+// MARK: - Custom Separator Attachment
+
+/// Custom view for displaying separators in the text view
+@MainActor
+class SeparatorAttachmentView: UIView {
+  override init(frame: CGRect) {
+    super.init(frame: frame)
+    backgroundColor = .clear
+  }
+  
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+  
+  override func draw(_ rect: CGRect) {
+    guard let context = UIGraphicsGetCurrentContext() else { return }
+    
+    // Draw a gradient line
+    let colors = [
+      UIColor.quaternaryLabel.withAlphaComponent(0.2).cgColor,
+      UIColor.quaternaryLabel.withAlphaComponent(0.6).cgColor,
+      UIColor.quaternaryLabel.withAlphaComponent(0.2).cgColor
+    ]
+    
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    let locations: [CGFloat] = [0.0, 0.5, 1.0]
+    
+    guard let gradient = CGGradient(
+      colorsSpace: colorSpace,
+      colors: colors as CFArray,
+      locations: locations
+    ) else { return }
+    
+    let startPoint = CGPoint(x: 0, y: rect.height / 2)
+    let endPoint = CGPoint(x: rect.width, y: rect.height / 2)
+    
+    context.drawLinearGradient(
+      gradient,
+      start: startPoint,
+      end: endPoint,
+      options: []
+    )
+  }
+}
+
+/// View provider for the separator attachment
+@MainActor
+class SeparatorAttachmentViewProvider: NSTextAttachmentViewProvider {
+  override func loadView() {
+    super.loadView()
+    
+    // Set to track text container bounds for responsive width
+    tracksTextAttachmentViewBounds = true
+    
+    // Create and set the custom separator view
+    let separatorView = SeparatorAttachmentView()
+    self.view = separatorView
+  }
+  
+  override func attachmentBounds(
+    for attributes: [NSAttributedString.Key : Any],
+    location: NSTextLocation,
+    textContainer: NSTextContainer?,
+    proposedLineFragment: CGRect,
+    position: CGPoint
+  ) -> CGRect {
+    // Return bounds with full width and custom height
+    return CGRect(
+      x: 0,
+      y: 0,
+      width: proposedLineFragment.width,
+      height: 24  // Height for the separator
+    )
+  }
+}
+
+/// Text attachment for separators
+class SeparatorAttachment: NSTextAttachment {
+  let cueId: String
+  
+  static let fileType = "com.tone.separator"
+  
+  // Register the view provider once
+  static func registerViewProvider() {
+    NSTextAttachment.registerViewProviderClass(
+      SeparatorAttachmentViewProvider.self,
+      forFileType: fileType
+    )
+  }
+  
+  init(cueId: String) {
+    self.cueId = cueId
+    super.init(data: nil, ofType: Self.fileType)
+  }
+  
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+}
+
 @MainActor
 struct PlayerTextView: View, PlayerDisplay {
 
@@ -61,6 +161,8 @@ private struct TextView: UIViewRepresentable {
   let actionHandler: @MainActor (PlayerAction) async -> Void
 
   func makeUIView(context: Context) -> UITextView {
+    // Register the separator view provider once
+    SeparatorAttachment.registerViewProvider()
     let textView = UITextView()
     textView.delegate = context.coordinator
     textView.isEditable = false
@@ -220,17 +322,20 @@ private struct TextView: UIViewRepresentable {
 
       for (index, cue) in currentCues.enumerated() {
         if cue.backed.kind == .separator {
-          // Add separator
-          let separatorText =
-            index == 0 ? "━━━━━━━━━━━━━━━━━━━━\n" : "\n━━━━━━━━━━━━━━━━━━━━\n"
-          let separatorAttributedString = NSAttributedString(
-            string: separatorText,
-            attributes: [
-              .foregroundColor: UIColor.quaternaryLabel,
-              .font: UIFont.systemFont(ofSize: fontSize * 0.7),
-              .paragraphStyle: centerParagraphStyle(),
-            ]
-          )
+          // Add custom separator view attachment
+          let separatorAttachment = SeparatorAttachment(cueId: cue.id)
+          let separatorAttributedString = NSMutableAttributedString()
+          
+          // Add newline before separator (except for first item)
+          if index != 0 {
+            separatorAttributedString.append(NSAttributedString(string: "\n"))
+          }
+          
+          // Add the attachment
+          separatorAttributedString.append(NSAttributedString(attachment: separatorAttachment))
+          
+          // Add newline after separator
+          separatorAttributedString.append(NSAttributedString(string: "\n"))
 
           let range = NSRange(
             location: currentLocation,
@@ -622,7 +727,7 @@ extension UITextView {
     )
     
     let absoluteIndex = charIndexInLine + fragmentStart
-    return min(absoluteIndex, (text.count ?? 1) - 1)
+    return min(absoluteIndex, text.count - 1)
   }
 }
 
