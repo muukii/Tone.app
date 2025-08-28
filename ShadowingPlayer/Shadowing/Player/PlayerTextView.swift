@@ -83,12 +83,12 @@ private struct TextView: UIViewRepresentable {
     )
     textView.addGestureRecognizer(tapGesture)
 
-//    let longPressGesture = UILongPressGestureRecognizer()
-//    longPressGesture.addTarget(
-//      context.coordinator,
-//      action: #selector(Coordinator.handleLongPress(_:))
-//    )
-//    textView.addGestureRecognizer(longPressGesture)
+    let longPressGesture = UILongPressGestureRecognizer()
+    longPressGesture.addTarget(
+      context.coordinator,
+      action: #selector(Coordinator.handleLongPress(_:))
+    )
+    textView.addGestureRecognizer(longPressGesture)
 
     return textView
   }
@@ -161,16 +161,6 @@ private struct TextView: UIViewRepresentable {
       fontSize: Double,
       isFollowing: Bool
     ) {
-      
-      self.currentCues = cues
-      self.fontSize = fontSize
-      self.pinnedCueIds = Set(pins.map(\.startCueRawIdentifier))
-      
-      buildAttributedString()
-      
-      self.textView?.attributedText = attributedString
-      
-      return;
       
       // Skip expensive updates while user is scrolling
       if isUserScrolling {
@@ -409,17 +399,17 @@ private struct TextView: UIViewRepresentable {
     @objc func handleTap(_ gesture: UITapGestureRecognizer) {
       guard let textView = gesture.view as? UITextView else { return }
 
-//      let location = gesture.location(in: textView)
-//      let characterIndex = textView.characterIndex(for: location)
-//
-//      if let cue = findCue(at: characterIndex) {
-//        handleCueTap(cue)
-//
-//        // Disable following when user taps
-//        if isFollowingBinding.wrappedValue {
-//          isFollowingBinding.wrappedValue = false
-//        }
-//      }
+      let location = gesture.location(in: textView)
+      let characterIndex = textView.textKit2_characterIndex(for: location)
+
+      if let cue = findCue(at: characterIndex) {
+        handleCueTap(cue)
+
+        // Disable following when user taps
+        if isFollowingBinding.wrappedValue {
+          isFollowingBinding.wrappedValue = false
+        }
+      }
     }
 
     @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
@@ -428,7 +418,7 @@ private struct TextView: UIViewRepresentable {
       else { return }
 
       let location = gesture.location(in: textView)
-      let characterIndex = textView.characterIndex(for: location)
+      let characterIndex = textView.textKit2_characterIndex(for: location)
 
       if let cue = findCue(at: characterIndex) {
         handleCueLongPress(cue, at: location, in: textView)
@@ -584,19 +574,55 @@ extension UIView {
 }
 
 extension UITextView {
-  func characterIndex(for point: CGPoint) -> Int {
-    let adjustedPoint = CGPoint(
+  func textKit2_characterIndex(for point: CGPoint) -> Int {
+    // Use TextKit 2 API (iOS 18+)
+    // Implementation based on: https://shadowfacts.net/2022/textkit-2/
+    guard let textLayoutManager = textLayoutManager else {
+      // TextKit 2 should always be available on iOS 18+
+      return 0
+    }
+    
+    // Convert point to text container coordinates
+    let pointInContainer = CGPoint(
       x: point.x - textContainerInset.left,
       y: point.y - textContainerInset.top
     )
-
-    let characterIndex = layoutManager.characterIndex(
-      for: adjustedPoint,
-      in: textContainer,
-      fractionOfDistanceBetweenInsertionPoints: nil
+    
+    // Get the text layout fragment at the point
+    guard let fragment = textLayoutManager.textLayoutFragment(for: pointInContainer) else {
+      return 0
+    }
+    
+    // Convert to fragment coordinates
+    let pointInFragment = CGPoint(
+      x: pointInContainer.x - fragment.layoutFragmentFrame.minX,
+      y: pointInContainer.y - fragment.layoutFragmentFrame.minY
     )
-
-    return min(characterIndex, text.count - 1)
+    
+    // Find the line fragment containing the point
+    guard let lineFragment = fragment.textLineFragments.first(where: { lineFragment in
+      lineFragment.typographicBounds.contains(pointInFragment)
+    }) else {
+      return 0
+    }
+    
+    // Convert to line fragment coordinates
+    let pointInLine = CGPoint(
+      x: pointInFragment.x - lineFragment.typographicBounds.minX,
+      y: pointInFragment.y - lineFragment.typographicBounds.minY
+    )
+    
+    // Get character index within the line fragment
+    let charIndexInLine = lineFragment.characterIndex(for: pointInLine)
+    
+    // Convert to document-relative index
+    let fragmentStart = textLayoutManager.offset(
+      from: textLayoutManager.documentRange.location,
+      to: fragment.rangeInElement.location
+    )
+    
+    let absoluteIndex = charIndexInLine + fragmentStart
+    return min(absoluteIndex, (text.count ?? 1) - 1)
   }
 }
 
