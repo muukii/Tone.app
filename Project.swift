@@ -51,12 +51,7 @@ let project = Project(
           "To record your voice and play it back for pronunciation practice.",
         "BGTaskSchedulerPermittedIdentifiers": ["app.muukii.tone.transcription"],
       ]),
-      sources: ["ShadowingPlayer/**"],
-      resources: [
-        "ShadowingPlayer/Assets.xcassets",
-        "ShadowingPlayer/Preview Content/**",
-        "ShadowingPlayer/PrivacyInfo.xcprivacy",
-      ],
+      buildableFolders: [.folder("ShadowingPlayer")],
       entitlements: .dictionary([
         "com.apple.developer.icloud-services": ["CloudKit"],
         "com.apple.developer.icloud-container-identifiers": ["iCloud.app.muukii.tone"],
@@ -121,7 +116,7 @@ let project = Project(
           "NSExtensionPointIdentifier": "com.apple.widgetkit-extension"
         ],
       ]),
-      sources: ["Sources/LiveActivity/**"],
+      buildableFolders: [.folder("Sources/LiveActivity")],
       entitlements: .dictionary([
         "com.apple.security.application-groups": ["group.app.muukii.tone"],
       ]),
@@ -139,7 +134,7 @@ let project = Project(
       product: .staticLibrary,
       bundleId: "app.muukii.Speaking.AppService",
       deploymentTargets: .iOS("26.0"),
-      sources: ["Sources/AppService/**"],
+      buildableFolders: [.folder("Sources/AppService")],
       dependencies: [
         .target(name: "ActivityContent"),
         .external(name: "StateGraph"),
@@ -157,7 +152,7 @@ let project = Project(
       product: .framework,
       bundleId: "app.muukii.Speaking.ActivityContent",
       deploymentTargets: .iOS("26.0"),
-      sources: ["Sources/ActivityContent/**"],
+      buildableFolders: ["Sources/ActivityContent"],
       dependencies: []
     ),
 
@@ -167,7 +162,7 @@ let project = Project(
       product: .framework,
       bundleId: "app.muukii.tone.UIComponents",
       deploymentTargets: .iOS("26.0"),
-      sources: ["Sources/UIComponents/**"],
+      buildableFolders: ["Sources/UIComponents"],
       dependencies: [
         .external(name: "SwiftUISupport"),
         .external(name: "SwiftUISupportLayout"),
