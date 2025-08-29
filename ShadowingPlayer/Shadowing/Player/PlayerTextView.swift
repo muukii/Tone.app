@@ -59,7 +59,7 @@ class SeparatorAttachmentViewProvider: NSTextAttachmentViewProvider {
     tracksTextAttachmentViewBounds = true
     
     // Create and set the custom separator view
-    let separatorView = SeparatorAttachmentView()
+    let separatorView = SeparatorAttachmentView(frame: .zero)
     self.view = separatorView
   }
   
@@ -159,6 +159,12 @@ private struct TextView: UIViewRepresentable {
   func makeUIView(context: Context) -> UITextView {
     // Register the separator view provider once
     let textView = UITextView()
+    
+    // Force TextKit 2 usage - prevent fallback to TextKit 1
+    if #available(iOS 16.0, *) {
+      _ = textView.textLayoutManager // Access to force initialization
+    }
+    
     textView.delegate = context.coordinator
     textView.isEditable = false
     textView.isSelectable = false
@@ -214,6 +220,13 @@ private struct TextView: UIViewRepresentable {
   // MARK: - Coordinator
 
   final class Coordinator: NSObject, UITextViewDelegate {
+    
+    /// TextKitのバージョンを指定するenum
+    enum TextKitVersion {
+      case automatic  // システムが自動選択（デフォルト）
+      case textKit1   // TextKit 1を強制使用
+      case textKit2   // TextKit 2を強制使用
+    }
 
     private struct CueRange {
       let cue: DisplayCue
@@ -223,6 +236,9 @@ private struct TextView: UIViewRepresentable {
     weak var textView: UITextView?
     private var cueRanges: [CueRange] = []
     private var attributedString = NSMutableAttributedString()
+    
+    // TextKitバージョンの強制設定（デバッグ/テスト用）
+    var forcedTextKitVersion: TextKitVersion = .textKit1
 
     private let controller: PlayerController
     private let actionHandler: @MainActor (PlayerAction) async -> Void
@@ -474,22 +490,67 @@ private struct TextView: UIViewRepresentable {
         return
       }
 
-      DispatchQueue.main.async {
-        let range = cueRange.range
-        if range.location < textView.text.count {
-          // Get the rect for the text range using layout manager
-          let glyphRange = textView.layoutManager.glyphRange(forCharacterRange: range, actualCharacterRange: nil)
-          let rect = textView.layoutManager.boundingRect(forGlyphRange: glyphRange, in: textView.textContainer)
-          
-          // Calculate the center position
-          let visibleHeight = textView.bounds.height - textView.contentInset.top - textView.contentInset.bottom
-          let centerY = visibleHeight / 2
-          let targetY = rect.midY + textView.textContainerInset.top - centerY
-          
-          // Scroll to center the text
-          let maxY = textView.contentSize.height - visibleHeight
-          let clampedY = max(0, min(targetY, maxY))
-          textView.setContentOffset(CGPoint(x: 0, y: clampedY), animated: animated)
+      let range = cueRange.range
+      guard range.location < textView.attributedText.length else {
+        return
+      }
+
+      // Ensure we're on the main thread
+      if Thread.isMainThread {
+        performScrollToCue(range: range, in: textView, animated: animated)
+      } else {
+        DispatchQueue.main.async {
+          self.performScrollToCue(range: range, in: textView, animated: animated)
+        }
+      }
+    }
+    
+    private func performScrollToCue(range: NSRange, in textView: UITextView, animated: Bool) {
+      // Get the bounding rect for the text range
+      let rect = getBoundingRect(for: range, in: textView)
+      
+      // Calculate the visible area (accounting for insets)
+      let visibleHeight = textView.bounds.height - textView.adjustedContentInset.top - textView.adjustedContentInset.bottom
+      let centerY = visibleHeight / 2
+      
+      // Calculate target Y position to center the text
+      let targetY = rect.midY - centerY
+      
+      // Clamp to valid scroll range
+      let maxY = max(0, textView.contentSize.height - visibleHeight)
+      let clampedY = max(-textView.adjustedContentInset.top, min(targetY, maxY))
+      
+      // Scroll to the position
+      textView.setContentOffset(CGPoint(x: 0, y: clampedY), animated: animated)
+    }
+    
+    /// 適切なTextKitバージョンを選択して境界矩形を取得
+    /// forcedTextKitVersionプロパティで特定のバージョンを強制可能
+    /// - Parameters:
+    ///   - range: 対象の範囲
+    ///   - textView: 対象のUITextView
+    /// - Returns: 境界矩形
+    private func getBoundingRect(for range: NSRange, in textView: UITextView) -> CGRect {
+      switch forcedTextKitVersion {
+      case .automatic:
+        // 自動選択: TextKit 2を優先、利用不可ならTextKit 1を使用
+        if textView.textLayoutManager != nil {
+          return textKit2_boundingRect(for: range, in: textView)
+        } else {
+          return textKit1_boundingRect(for: range, in: textView)
+        }
+        
+      case .textKit1:
+        // TextKit 1を強制使用
+        return textKit1_boundingRect(for: range, in: textView)
+        
+      case .textKit2:
+        // TextKit 2を強制使用（利用不可の場合はTextKit 1にフォールバック）
+        if textView.textLayoutManager != nil {
+          return textKit2_boundingRect(for: range, in: textView)
+        } else {
+          print("⚠️ TextKit 2 forced but not available, falling back to TextKit 1")
+          return textKit1_boundingRect(for: range, in: textView)
         }
       }
     }
@@ -640,6 +701,146 @@ private struct TextView: UIViewRepresentable {
     }
 
     // MARK: - Helper methods
+    
+    // MARK: TextKit 1 Implementation (for comparison)
+    
+    /// TextKit 1版: NSLayoutManagerを使用した範囲の矩形計算
+    /// - Parameters:
+    ///   - range: 計算対象のNSRange
+    ///   - textView: 対象のUITextView
+    /// - Returns: テキスト範囲の境界矩形
+    private func textKit1_boundingRect(for range: NSRange, in textView: UITextView) -> CGRect {
+      let layoutManager = textView.layoutManager
+      let textContainer = textView.textContainer
+      
+      // レイアウトを確実にする
+      layoutManager.ensureLayout(forCharacterRange: range)
+      
+      // 文字範囲からグリフ範囲を取得
+      let glyphRange = layoutManager.glyphRange(forCharacterRange: range, actualCharacterRange: nil)
+      
+      // グリフ範囲の境界矩形を取得
+      let rect = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer)
+      
+      // テキストコンテナのインセットを加算
+      return rect.offsetBy(
+        dx: textView.textContainerInset.left,
+        dy: textView.textContainerInset.top
+      )
+    }
+    
+    /// TextKit 1版: タップ位置から文字インデックスを取得
+    /// - Parameters:
+    ///   - point: タップ位置
+    ///   - textView: 対象のUITextView
+    /// - Returns: 文字インデックス
+    private func textKit1_characterIndex(for point: CGPoint, in textView: UITextView) -> Int {
+      let layoutManager = textView.layoutManager
+      let textContainer = textView.textContainer
+      
+      // テキストコンテナ座標に変換
+      let locationInTextContainer = CGPoint(
+        x: point.x - textView.textContainerInset.left,
+        y: point.y - textView.textContainerInset.top
+      )
+      
+      // グリフインデックスを取得
+      let glyphIndex = layoutManager.glyphIndex(
+        for: locationInTextContainer,
+        in: textContainer,
+        fractionOfDistanceThroughGlyph: nil
+      )
+      
+      // グリフインデックスから文字インデックスに変換
+      let characterIndex = layoutManager.characterIndexForGlyph(at: glyphIndex)
+      
+      return characterIndex
+    }
+    
+    // MARK: TextKit 2 Implementation (current/improved)
+
+    /// TextKit 2版: NSTextLayoutManagerを使用した範囲の矩形計算
+    /// shadowfacts.netの記事を参考に実装
+    /// - Parameters:
+    ///   - range: 計算対象のNSRange
+    ///   - textView: 対象のUITextView
+    /// - Returns: テキスト範囲の境界矩形
+    private func textKit2_boundingRect(for range: NSRange, in textView: UITextView) -> CGRect {
+      guard let textLayoutManager = textView.textLayoutManager else {
+        // Simple fallback calculation
+        return CGRect(x: 0, y: CGFloat(range.location) * 20, width: textView.bounds.width, height: 20)
+      }
+      
+      // Convert NSRange to document-relative locations
+      guard let textContentManager = textLayoutManager.textContentManager else {
+        return CGRect(x: 0, y: CGFloat(range.location) * 20, width: textView.bounds.width, height: 20)
+      }
+      
+      // Calculate start and end locations
+      let docStart = textContentManager.documentRange.location
+      guard let startLocation = textContentManager.location(docStart, offsetBy: range.location),
+            let endLocation = textContentManager.location(startLocation, offsetBy: range.length) else {
+        return CGRect(x: 0, y: CGFloat(range.location) * 20, width: textView.bounds.width, height: 20)
+      }
+      
+      // Create text range
+      guard let textRange = NSTextRange(location: startLocation, end: endLocation) else {
+        return CGRect(x: 0, y: CGFloat(range.location) * 20, width: textView.bounds.width, height: 20)
+      }
+      
+      // Ensure layout for the range
+      textLayoutManager.ensureLayout(for: textRange)
+      
+      // Enumerate text segments to find exact bounds
+      var boundingRect = CGRect.zero
+      var foundFirst = false
+      
+      textLayoutManager.enumerateTextSegments(
+        in: textRange,
+        type: .standard,
+        options: [.rangeNotRequired]
+      ) { textSegmentRange, textSegmentFrame, _, _ in
+        if !foundFirst {
+          boundingRect = textSegmentFrame
+          foundFirst = true
+        } else {
+          boundingRect = boundingRect.union(textSegmentFrame)
+        }
+        return true  // Continue enumeration
+      }
+      
+      // If we didn't find any segments, try fragment-based approach
+      if boundingRect.isEmpty {
+        textLayoutManager.enumerateTextLayoutFragments(
+          from: startLocation,
+          options: [.ensuresLayout]
+        ) { layoutFragment in
+          // Check if this fragment intersects our range
+          if layoutFragment.rangeInElement.intersects(textRange) {
+            if !foundFirst {
+              boundingRect = layoutFragment.layoutFragmentFrame
+              foundFirst = true
+            } else {
+              boundingRect = boundingRect.union(layoutFragment.layoutFragmentFrame)
+            }
+          }
+          
+          // Stop if we've passed our range
+          let fragmentEnd = layoutFragment.rangeInElement.endLocation
+          if textContentManager.offset(from: startLocation, to: fragmentEnd) >= range.length {
+            return false  // Stop enumeration
+          }
+          
+          return true  // Continue
+        }
+      }
+      
+      // Add text container inset to the rect
+      return boundingRect.offsetBy(
+        dx: textView.textContainerInset.left,
+        dy: textView.textContainerInset.top
+      )
+    }
 
     private func defaultParagraphStyle() -> NSParagraphStyle {
       let style = NSMutableParagraphStyle()
@@ -674,6 +875,18 @@ extension UIView {
 }
 
 extension UITextView {
+  func textRange(from nsRange: NSRange) -> UITextRange? {
+    guard let start = position(from: beginningOfDocument, offset: nsRange.location),
+          let end = position(from: start, offset: nsRange.length) else {
+      return nil
+    }
+    return textRange(from: start, to: end)
+  }
+  
+  /// TextKit 2版: タップ位置から文字インデックスを取得
+  /// shadowfacts.netの記事に基づく実装
+  /// - Parameter point: タップ位置（UITextView座標系）
+  /// - Returns: 文字インデックス
   func textKit2_characterIndex(for point: CGPoint) -> Int {
     // Use TextKit 2 API (iOS 18+)
     // Implementation based on: https://shadowfacts.net/2022/textkit-2/

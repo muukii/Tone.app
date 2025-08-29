@@ -50,6 +50,9 @@ struct FullPlayerView: View {
           case .onDeleteSeparator(let cueId):
             try await service.deleteSeparator(for: item, cueId: cueId)
             try player.reloadCues(from: item)
+          case .debug(let debugAction):
+            // Debug actions are handled in the view layer
+            Log.debug("Debug action: \(debugAction)")
           }
         } catch {
           Log.error("\(error.localizedDescription)")
