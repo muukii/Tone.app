@@ -18,30 +18,6 @@ protocol PlayerDisplay: View {
 }
 
 
-enum PlayerAction {
-  enum DebugAction: CustomStringConvertible {
-    case forceTextKit1
-    case forceTextKit2
-    case useAutomaticTextKit
-    
-    var description: String {
-      switch self {
-      case .forceTextKit1:
-        return "Force TextKit 1"
-      case .forceTextKit2:
-        return "Force TextKit 2"
-      case .useAutomaticTextKit:
-        return "Use Automatic TextKit Selection"
-      }
-    }
-  }
-  case onPin(range: PlayingRange)
-  case onTranscribeAgain
-  case onRename(title: String)
-  case onInsertSeparator(beforeCueId: String)
-  case onDeleteSeparator(cueId: String)
-  case debug(DebugAction)
-}
 
 struct PlayerView<Display: PlayerDisplay & Sendable>: View {
 
@@ -115,19 +91,45 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
           Menu("Debug - TextKit Version") {
             Button("Force TextKit 1") {
               Task {
-                await actionHandler(.debug(.forceTextKit1))
+                await actionHandler(.debug(.textKit(.forceTextKit1)))
               }
             }
             
             Button("Force TextKit 2") {
               Task {
-                await actionHandler(.debug(.forceTextKit2))
+                await actionHandler(.debug(.textKit(.forceTextKit2)))
               }
             }
             
             Button("Use Automatic Selection") {
               Task {
-                await actionHandler(.debug(.useAutomaticTextKit))
+                await actionHandler(.debug(.textKit(.useAutomaticTextKit)))
+              }
+            }
+          }
+          
+          Menu("Debug - AudioSession") {
+            Button("Switch to Playback Category") {
+              Task {
+                await actionHandler(.debug(.audioSession(.switchToPlaybackCategory)))
+              }
+            }
+            
+            Button("Switch to Record Category") {
+              Task {
+                await actionHandler(.debug(.audioSession(.switchToRecordCategory)))
+              }
+            }
+            
+            Button("Switch to PlayAndRecord Category") {
+              Task {
+                await actionHandler(.debug(.audioSession(.switchToPlayAndRecordCategory)))
+              }
+            }
+            
+            Button("Switch to SoloAmbient Category") {
+              Task {
+                await actionHandler(.debug(.audioSession(.switchToSoloAmbientCategory)))
               }
             }
           }

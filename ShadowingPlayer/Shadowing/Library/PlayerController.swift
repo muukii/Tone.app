@@ -48,13 +48,15 @@ public final class PlayerController: NSObject {
 
   private var currentTimerForLoop: Timer?
 
-  private let controller: AudioPlayerController
+  let controller: AudioPlayerController
 
   private var isActivated: Bool = false
 
   private var isAppInBackground: Bool = false
 
   private let liveActivityManager = LiveActivityManager.shared
+  
+  private var isPerformingAudioSession: Bool = false
 
   public enum Source: Equatable {
     case item(Item)
@@ -146,6 +148,19 @@ public final class PlayerController: NSObject {
   public func makeRepeatingRange() -> PlayingRange {
     .init(whole: cues)
   }
+  
+  func performAudioSession(_ perform: () -> Void) async {
+            
+    pause()
+    
+    perform()
+    
+    // Wait for a moment to ensure the audio session changes take effect
+    try? await Task.sleep(for: .milliseconds(500))
+    
+    play()
+    
+  }
 
   @MainActor
   public func reloadCues(from item: ItemEntity) throws {
@@ -195,17 +210,36 @@ public final class PlayerController: NSObject {
     canRecord = AudioSessionManager.shared.isHeadphoneConnected()
     Log.debug("Route changed, canRecord: \(self.canRecord)")
   }
+  
+  private var task: Task<Void, Never>?
 
   public func stopRecording() {
-    controller.stopRecording()
+    
+    task = Task {
+      controller.stopRecording()
+      
+      await performAudioSession {
+        try! AudioSessionManager.shared.optimizeForPlayback()
+      }
+    }
+    
   }
 
   public func startRecording() {
+        
     guard canRecord else {
       Log.debug("Cannot start recording, no headphone connected.")
       return
     }
-    controller.startRecording()
+    
+    task = Task {
+      
+      await performAudioSession {
+        try! AudioSessionManager.shared.optimizeForRecording()
+      }
+      
+      controller.startRecording()
+    }
   }
 
   private func resetCommandCenter() {

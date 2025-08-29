@@ -14,7 +14,8 @@ public final class AudioSessionManager {
   // 初期状態に設定する（アプリ起動時や初期状態に戻す時に使用）
   public func resetToDefaultState() {
     do {
-      try optimizeForRecording()
+      try optimizeForPlayback()
+      try instance.setActive(true)
     } catch {
       Log.error("AudioSessionManager.resetToDefaultState() failed with error: \(error)")      
     }
@@ -42,16 +43,12 @@ public final class AudioSessionManager {
 
   // 再生専用時に呼ぶ（必要に応じて）
   public func optimizeForPlayback() throws {
-    Log.debug("AudioSessionManager.resetToDefaultState() called")
+    Log.debug("AudioSessionManager.optimizeForPlayback() called")
     // 再生のみの状態にして、AirPodsの音質を保つ
     try instance.setCategory(
       .playback,
       mode: .default,
-      options: [.allowBluetoothHFP, .allowBluetoothA2DP]
-    )
-    try instance.setActive(true)
-    Log.debug(
-      "AudioSessionManager reset to default state - category: playback, mode: default, active: true"
+      options: []
     )
   }
 

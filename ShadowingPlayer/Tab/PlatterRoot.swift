@@ -1,3 +1,4 @@
+import AVFoundation
 import AppService
 import StateGraph
 import SwiftData
@@ -72,7 +73,7 @@ struct PlatterRoot: View {
               )
               .opacity(isExpanded ? 1 : 0)
 
-            compactContent(player: player)              
+            compactContent(player: player)
           }
 
         } else {
@@ -109,15 +110,15 @@ struct PlatterRoot: View {
       }
     )
     .opacity(isExpanded ? 0 : 1)
-//    .map { view in
-//      Group {
-//        if #available(iOS 26, *) {
-//          view.glassEffect(.regular.interactive())
-//        } else {
-//          view
-//        }
-//      }
-//    }
+    //    .map { view in
+    //      Group {
+    //        if #available(iOS 26, *) {
+    //          view.glassEffect(.regular.interactive())
+    //        } else {
+    //          view
+    //        }
+    //      }
+    //    }
     .padding(.horizontal, 16)
   }
 
@@ -364,11 +365,25 @@ private struct PlayerWrapper: View {
           case .debug(let debugAction):
             // Debug actions are handled in the view layer
             Log.debug("Debug action: \(debugAction)")
+
+            switch debugAction {
+            case .textKit:
+              // TextKit actions are handled by the view
+              break
+            case .audioSession(let sessionAction):
+              switchAudioSession(to: sessionAction)
+            }
           }
         } catch {
           Log.error("\(error.localizedDescription)")
         }
       }
     )
+  }
+
+  private func switchAudioSession(
+    to action: PlayerAction.DebugAction.AudioSessionAction
+  ) {
+    
   }
 }

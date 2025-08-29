@@ -169,10 +169,7 @@ final class AudioPlayerController: NSObject {
       recordingEngine.stop()
       self.recordingEngine = nil
     }
-    
-    // 再生専用に戻す
-    try? AudioSessionManager.shared.optimizeForPlayback()
-    
+        
     Log.debug("Stop recording")
 
     currentRecording.writingFile.close()
@@ -193,13 +190,13 @@ final class AudioPlayerController: NSObject {
         file: try recording.makeReadingFile(),
         offset: .timeInMain(.from(timeInterval: recording.offsetToMain))
       )
-      recordingTrack.volume = 10 // Increase volume by 50%
+      recordingTrack.volume = 2 // Increase volume by 50%
     } catch {
       assertionFailure()
     }
     timeline.attach(to: currentActiveEngine!)
   }
-    
+      
   func startRecording() {
 
     guard isPlaying else {
