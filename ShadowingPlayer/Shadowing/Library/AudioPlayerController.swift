@@ -158,10 +158,6 @@ final class AudioPlayerController: NSObject {
   }
 
   func stopRecording() {
-
-    guard let currentRecording else {
-      return
-    }
     
     // 録音エンジンのタップを削除して停止
     if let recordingEngine = recordingEngine {
@@ -169,16 +165,8 @@ final class AudioPlayerController: NSObject {
       recordingEngine.stop()
       self.recordingEngine = nil
     }
-        
-    Log.debug("Stop recording")
 
-    currentRecording.writingFile.close()
-
-    recordings.append(currentRecording)
-    
-    addRecordingToPlay(recording: currentRecording)
-
-    self.currentRecording = nil
+    finalizeRecording()
 
   }
   
@@ -210,16 +198,7 @@ final class AudioPlayerController: NSObject {
     assert(MicrophonePermissionManager().isGranted, "Microphone permission must be granted before calling startRecording()")
 
     // take a value before pause   
-    
-    guard let currentTimeInMain = self.mainTrack!.currentTime() else {
-      return
-    }
-    
-    Log.debug("Start recording at: \(currentTimeInMain)")
-
-    // 録音時の最適化
-    try? AudioSessionManager.shared.optimizeForRecording()
-        
+             
     // 録音専用エンジンを作成
     if recordingEngine == nil {
       recordingEngine = AVAudioEngine()
@@ -233,40 +212,53 @@ final class AudioPlayerController: NSObject {
       // inputNodeのフォーマットを先に取得（エンジン起動前）
       let inputFormat = recordingEngine.inputNode.outputFormat(forBus: 0)
       
-//      recordingEngine.connect(
-//        recordingEngine.inputNode,
-//        to: recordingEngine.mainMixerNode,
-//        format: inputFormat
-//      )
-      
       // 録音エンジンを起動
       try recordingEngine.start()
       
-      // フォーマットが有効かチェック（サンプルレートとチャンネル数が0でないこと）
-      guard inputFormat.sampleRate > 0 && inputFormat.channelCount > 0 else {
-        Log.error("Input node is not enabled. Format: \(inputFormat)")
-        recordingEngine.stop()
-        return
-      }
-      
-      Log.info("Recording inputNode format: \(inputFormat)")
-
-      let recording = try Recording.init(
-        offsetToMain: currentTimeInMain,
-        destination: URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf"),
-        format: inputFormat
-      )
-
-      self.currentRecording = recording
-
-      print("outputFile: \(recording.filePath)")
-      
       // 録音エンジンにタップを設定
-      setRecordingTap(with: nil)
+      setRecordingTap(with: inputFormat)
+      
+      try addRecording(timing: self.mainTrack!.currentTime()!)
     } catch {
       assertionFailure()
     }
 
+  }
+  
+  private func addRecording(timing: TimeInterval) throws {
+    
+    finalizeRecording()
+           
+    guard let recordingEngine else {
+      assertionFailure()
+      return
+    }
+    
+    // inputNodeのフォーマットを先に取得（エンジン起動前）
+    let inputFormat = recordingEngine.inputNode.outputFormat(forBus: 0)
+    let recording = try Recording.init(
+      offsetToMain: timing,
+      destination: URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf"),
+      format: inputFormat
+    )
+
+    self.currentRecording = recording
+  }
+  
+  private func finalizeRecording() {
+    guard let currentRecording else {
+      return
+    }    
+        
+    Log.debug("Stop recording")
+
+    currentRecording.writingFile.close()
+
+    recordings.append(currentRecording)
+    
+    addRecordingToPlay(recording: currentRecording)
+
+    self.currentRecording = nil
   }
   
   // 録音エンジン用
@@ -386,9 +378,20 @@ final class AudioPlayerController: NSObject {
 
   func seek(positionInMain: TimeInterval) {
     Log.debug("Seek \(positionInMain)")
-    createEngine()
-    timeline.seek(position: positionInMain, in: .main)
-
+    
+    // If recording is active, stop current recording and start a new one at the new position
+    if isRecording {     
+      timeline.seek(position: positionInMain, in: .main)      
+      do {
+        try addRecording(timing: positionInMain)     
+      } catch {
+        assertionFailure()
+      }
+    } else {
+      // Normal seek without recording
+      createEngine()
+      timeline.seek(position: positionInMain, in: .main)
+    }
   }
   
   

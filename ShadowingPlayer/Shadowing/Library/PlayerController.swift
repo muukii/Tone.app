@@ -142,7 +142,7 @@ public final class PlayerController: NSObject {
       name: UIApplication.didBecomeActiveNotification,
       object: nil
     )
-
+      
   }
 
   public func makeRepeatingRange() -> PlayingRange {

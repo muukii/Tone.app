@@ -413,23 +413,35 @@ private struct TextView: UIViewRepresentable {
     }
 
     private func updateDynamicStyling() {
-      // Reset dynamic attributes
+      // Reset all dynamic attributes for the full range
       let fullRange = NSRange(location: 0, length: attributedString.length)
       attributedString.removeAttribute(.backgroundColor, range: fullRange)
       
-      // Track which cues need updates
-      let changedCues = cueRanges.filter { cueRange in
+      // Reset all cues to their default state first
+      for cueRange in cueRanges {
         let cue = cueRange.cue
-        let wasCurrentCue = (cue == previousCurrentCue)
-        let isCurrentCue = (cue == currentCue)
-        let wasInPlayingRange = previousPlayingRange?.contains(cue) ?? false
-        let isInPlayingRange = playingRange?.contains(cue) ?? false
+        let range = cueRange.range
         
-        return wasCurrentCue != isCurrentCue || wasInPlayingRange != isInPlayingRange
+        // Skip separator styling
+        if cue.backed.kind == .separator {
+          continue
+        }
+        
+        // Reset to default appearance (dimmed)
+        attributedString.addAttribute(
+          .font,
+          value: UIFont.systemFont(ofSize: fontSize, weight: .medium),
+          range: range
+        )
+        attributedString.addAttribute(
+          .foregroundColor,
+          value: UIColor.secondaryLabel,
+          range: range
+        )
       }
       
-      // Only update attributes for changed cues
-      for cueRange in changedCues {
+      // Then apply highlighting for current and playing range cues
+      for cueRange in cueRanges {
         let cue = cueRange.cue
         let range = cueRange.range
 
@@ -438,7 +450,7 @@ private struct TextView: UIViewRepresentable {
           continue
         }
 
-        // Apply current cue highlighting
+        // Apply current cue highlighting (override default if this is the current cue)
         if cue == currentCue {
           attributedString.addAttribute(
             .backgroundColor,
@@ -454,18 +466,6 @@ private struct TextView: UIViewRepresentable {
           attributedString.addAttribute(
             .foregroundColor,
             value: UIColor.label,
-            range: range
-          )
-        } else {
-          // Non-current cues are dimmed
-          attributedString.addAttribute(
-            .font,
-            value: UIFont.systemFont(ofSize: fontSize, weight: .medium),
-            range: range
-          )
-          attributedString.addAttribute(
-            .foregroundColor,
-            value: UIColor.secondaryLabel,
             range: range
           )
         }

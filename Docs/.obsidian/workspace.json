@@ -20,21 +20,8 @@
               "icon": "lucide-file",
               "title": "recording-feature-specification"
             }
-          },
-          {
-            "id": "7312e02eadb15873",
-            "type": "leaf",
-            "state": {
-              "type": "release-notes",
-              "state": {
-                "currentVersion": "1.9.10"
-              },
-              "icon": "lucide-book-up",
-              "title": "Release Notes 1.9.10"
-            }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -182,7 +169,7 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "7312e02eadb15873",
+  "active": "207993f4f92e6d27",
   "lastOpenFiles": [
     "FoundationModels.md",
     "video-feature-implementation-plan.md",
