@@ -1,6 +1,5 @@
 import AVFoundation
 import AppService
-import SteppedSlider
 import SwiftData
 import SwiftUI
 import SwiftUIRingSlider
@@ -17,8 +16,6 @@ protocol PlayerDisplay: View {
   )
 }
 
-
-
 struct PlayerView<Display: PlayerDisplay & Sendable>: View {
 
   struct Term: Identifiable {
@@ -34,6 +31,7 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
   @State private var isShowingRenameDialog: Bool = false
   @State private var newTitle: String = ""
   @State private var isShowingMicrophonePermissionAlert: Bool = false
+  @State private var isShowingOverlappingView: Bool = false
 
   private let pins: [PinEntity]
   private let service: Service
@@ -84,6 +82,7 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
             newTitle = controller.title
             isShowingRenameDialog = true
           }
+
           
           #if DEBUG
           Divider()
@@ -212,20 +211,8 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
             case .onTapDetail:
               //              controllerForDetail = controller
               break
-            case .onStartRecord:
-              Task.immediate {
-                let permissionManager = MicrophonePermissionManager()
-                if await permissionManager.requestPermission() {
-                  controller.startRecording()
-                } else {
-                  // パーミッションが拒否されている場合はアラートを表示
-                  if permissionManager.currentStatus == .denied {
-                    isShowingMicrophonePermissionAlert = true
-                  }
-                }
-              }
-            case .onStopRecording:
-              controller.stopRecording()
+            case .onOverlapping:
+              isShowingOverlappingView = true
             }
           }
         )
@@ -299,6 +286,10 @@ struct PlayerView<Display: PlayerDisplay & Sendable>: View {
       Text(
         "Tone needs access to your microphone to record your voice during shadowing practice. Please enable microphone access in Settings."
       )
+    }
+    .sheet(isPresented: $isShowingOverlappingView) {
+      OverlappingView(controller: controller)
+        .presentationDetents([.large])
     }
 
   }

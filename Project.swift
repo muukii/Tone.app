@@ -65,11 +65,8 @@ let project = Project(
         .external(name: "StateGraph"),
         .external(name: "HexColorMacro"),
         .external(name: "SwiftUIPersistentControl"),
-        .external(name: "FunctionalViewComponent"),
-        .external(name: "SteppedSlider"),
         .external(name: "ObjectEdge"),
         .external(name: "Alamofire"),
-        .external(name: "SwiftUIStack"),
 
         .target(name: "AppService"),
         .target(name: "ActivityContent"),
@@ -85,7 +82,6 @@ let project = Project(
         .external(name: "SwiftUISupportLayout"),
         .external(name: "SwiftUISupport"),
         .external(name: "Wrap"),
-        .external(name: "MondrianLayout"),
         .external(name: "SwiftUIIntrospect"),
         .external(name: "Algorithms"),
 
@@ -166,7 +162,6 @@ let project = Project(
       dependencies: [
         .external(name: "SwiftUISupport"),
         .external(name: "SwiftUISupportLayout"),
-        .external(name: "SteppedSlider"),
       ]
     ),
   ],

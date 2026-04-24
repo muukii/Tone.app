@@ -29,7 +29,7 @@ struct FullPlayerView: View {
   }
   
   var body: some View {
-    PlayerView<PlayerTextView>(
+    PlayerView<PlayerListFlowLayoutView>(
       playerController: player,
       pins: pins,
       service: service,

@@ -20,6 +20,11 @@ struct AppRoot: App {
   init() {
     try? Tips.configure()
 
+    // Clean up recording files in background on app launch
+    Task {
+      RecordingFileManager.cleanupAllRecordings()
+    }
+
     //    do {
     //      let instance = AVAudioSession.sharedInstance()
     //      try instance.setCategory(

@@ -7,8 +7,7 @@ struct PlayerControlPanel: View {
   enum Action {
     case onTapPin
     case onTapDetail
-    case onStartRecord
-    case onStopRecording
+    case onOverlapping
   }
 
   let controller: PlayerController
@@ -36,8 +35,6 @@ struct PlayerControlPanel: View {
     PlayerControlPanelContent(
       isPlaying: controller.isPlaying,
       isRepeating: controller.isRepeating,
-      isRecording: controller.isRecording,
-      canRecord: controller.canRecord,
       rate: controller.$rate.binding,
       onAction: { action in
         handleAction(action)
@@ -63,10 +60,8 @@ struct PlayerControlPanel: View {
       onAction(.onTapPin)
     case .detail:
       onAction(.onTapDetail)
-    case .startRecord:
-      onAction(.onStartRecord)
-    case .stopRecording:
-      onAction(.onStopRecording)
+    case .overlapping:
+      onAction(.onOverlapping)
     case .setRate(let newRate):
       controller.rate = newRate
     case .resetRate:

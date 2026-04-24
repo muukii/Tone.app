@@ -1,4 +1,3 @@
-import SteppedSlider
 import SwiftUI
 
 public struct PlayerControlPanelContent: View {
@@ -8,31 +7,24 @@ public struct PlayerControlPanelContent: View {
     case toggleRepeat
     case pin
     case detail
-    case startRecord
-    case stopRecording
+    case overlapping
     case setRate(Double)
     case resetRate
   }
 
   let isPlaying: Bool
   let isRepeating: Bool
-  let isRecording: Bool
-  let canRecord: Bool
   @Binding var rate: Double
   private let onAction: @MainActor (Action) -> Void
 
   public init(
     isPlaying: Bool,
     isRepeating: Bool,
-    isRecording: Bool,
-    canRecord: Bool,
     rate: Binding<Double>,
     onAction: @escaping @MainActor (Action) -> Void
   ) {
     self.isPlaying = isPlaying
     self.isRepeating = isRepeating
-    self.isRecording = isRecording
-    self.canRecord = canRecord
     self._rate = rate
     self.onAction = onAction
   }
@@ -119,16 +111,21 @@ public struct PlayerControlPanelContent: View {
         }
         .buttonStyle(PlainButtonStyle())
 
-        RecordingButton(
-          isRecording: isRecording,
-          canRecord: canRecord,
-          onRecord: {
-            onAction(.startRecord)
-          },
-          onStop: {
-            onAction(.stopRecording)
+        // Overlapping button
+        Button {
+          MainActor.assumeIsolated {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
           }
-        )
+          onAction(.overlapping)
+        } label: {
+          Image(systemName: "waveform.circle")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 30, height: 30)
+            .foregroundColor(isRepeating ? Color.primary : Color.secondary)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .disabled(!isRepeating)
 
       }
       .frame(width: 50, height: 50)
@@ -152,49 +149,6 @@ public struct PlayerControlPanelContent: View {
 
 }
 
-private struct RecordingButton: View {
-
-  var isRecording: Bool
-  var canRecord: Bool
-  var onRecord: () -> Void
-  var onStop: () -> Void
-
-  var body: some View {
-    Button(
-      action: {
-        if isRecording {
-          onStop()
-        } else {
-          onRecord()
-        }
-      },
-      label: {
-      }
-    )
-    .buttonStyle(_ButtonStyle(isRecording: isRecording, canRecord: canRecord))
-    .frame(width: 50, height: 50)
-    .disabled(!canRecord && !isRecording)
-  }
-
-  private struct _ButtonStyle: ButtonStyle {
-    var isRecording: Bool
-    var canRecord: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-      Circle()
-        .fill(.primary)
-        .padding(5)
-        .overlay(
-          Circle()
-            .stroke(.secondary, lineWidth: 4)
-        )
-        .foregroundStyle(canRecord ? .red : .gray)
-        .frame(width: 36, height: 36)
-        .aspectRatio(1, contentMode: .fill)
-        .opacity(configuration.isPressed ? 0.6 : 1)      
-    }
-  }
-}
 
 private struct _Slider: View {
 
@@ -263,8 +217,6 @@ private struct _Slider: View {
   PlayerControlPanelContent(
     isPlaying: true,
     isRepeating: false,
-    isRecording: false,
-    canRecord: true,
     rate: .constant(0.8),
     onAction: { action in
       print("Preview action: \(action)")
@@ -276,8 +228,6 @@ private struct _Slider: View {
   PlayerControlPanelContent(
     isPlaying: false,
     isRepeating: true,
-    isRecording: true,
-    canRecord: true,
     rate: .constant(1.0),
     onAction: { action in
       print("Preview action: \(action)")
@@ -289,8 +239,6 @@ private struct _Slider: View {
   PlayerControlPanelContent(
     isPlaying: true,
     isRepeating: true,
-    isRecording: false,
-    canRecord: true,
     rate: .constant(0.3),
     onAction: { action in
       print("Preview action: \(action)")

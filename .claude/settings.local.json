@@ -27,7 +27,10 @@
       "Bash(gemini:*)",
       "mcp__swiftlens__swift_analyze_files",
       "WebSearch",
-      "WebFetch(domain:shadowfacts.net)"
+      "WebFetch(domain:shadowfacts.net)",
+      "mcp__swiftlens__swift_validate_file",
+      "Bash(tuist clean:*)",
+      "Bash(xcbeautify:*)"
     ],
     "deny": []
   }

@@ -1,5 +1,4 @@
 import AppService
-import FunctionalViewComponent
 import HexColorMacro
 import StateGraph
 import SwiftData

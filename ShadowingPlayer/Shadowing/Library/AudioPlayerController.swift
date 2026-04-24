@@ -238,7 +238,7 @@ final class AudioPlayerController: NSObject {
     let inputFormat = recordingEngine.inputNode.outputFormat(forBus: 0)
     let recording = try Recording.init(
       offsetToMain: timing,
-      destination: URL.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).caf"),
+      destination: RecordingFileManager.makeNewRecordingURL(),
       format: inputFormat
     )
 
